@@ -484,7 +484,7 @@ git commit -m "feat: add safe OpenCLI process runner"
 - Produces: `build_card_extract_js()`, `build_detail_extract_js(note_id)`, `merge_search_rows(rows, cards)`.
 - Produces: `XiaohongshuProvider(runner, cache, session_lock)` implementing `AssetProvider`.
 
-- [ ] **Step 1: Write failing merge, command, and persistence-boundary tests**
+- [x] **Step 1: Write failing merge, command, and persistence-boundary tests**
 
 ```python
 def test_search_uses_official_adapter_then_persistent_read_only_eval(fake_runner):
@@ -509,13 +509,13 @@ def test_detail_rejects_unsigned_note_url(fake_runner):
         make_xhs_provider(fake_runner).detail(item)
 ```
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run: `uv run --project ..\.. pytest tests/test_xiaohongshu_extract.py tests/test_xiaohongshu_provider.py -q`
 
 Expected: imports fail for extraction and provider modules.
 
-- [ ] **Step 3: Implement extraction helpers and strategy**
+- [x] **Step 3: Implement extraction helpers and strategy**
 
 The search adapter command includes explicit `--limit`, `--sort`, `--note-type`, `--publish-time`, `--format json`, `--site-session persistent`, and `--window background`. The browser eval script reads visible note cards and returns only `{id, url, preview_url, image_count}`. It performs no clicks, fetches, form submission, or navigation.
 
@@ -539,13 +539,13 @@ Wrap the complete adapter-plus-eval or detail-plus-eval sequence in the injected
 
 Implement private `_snapshot_images(directory) -> set[Path]` and `_verified_new_images(directory, before, output_root) -> DownloadResult` helpers in `xiaohongshu.py`. They resolve every candidate under `output_root`, accept only files that Pillow can verify as images, and return output-relative paths.
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run: `uv run --project ..\.. pytest tests/test_xiaohongshu_extract.py tests/test_xiaohongshu_provider.py -q`
 
 Expected: all fixture-driven tests pass; command arguments contain no shell string and persistent serialization excludes signed URLs.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add src/ty_image_spider/providers/xiaohongshu_extract.py src/ty_image_spider/providers/xiaohongshu.py tests/fixtures/xiaohongshu_* tests/test_xiaohongshu_extract.py tests/test_xiaohongshu_provider.py

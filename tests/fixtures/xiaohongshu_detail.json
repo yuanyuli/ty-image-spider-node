@@ -1,0 +1,18 @@
+{
+  "rows": [
+    {"field": "title", "value": "秋季通勤穿搭"},
+    {"field": "author", "value": "小葵"},
+    {"field": "content", "value": "三套适合上班的叠穿思路"},
+    {"field": "likes", "value": "128"},
+    {"field": "collects", "value": "32"},
+    {"field": "comments", "value": "9"},
+    {"field": "tags", "value": "通勤, 秋季穿搭"}
+  ],
+  "browser": {
+    "id": "66abcdef1234567890abcdef",
+    "images": [
+      "https://sns-img-bd.xhscdn.com/detail-one.webp",
+      "https://sns-img-bd.xhscdn.com/detail-two.webp"
+    ]
+  }
+}

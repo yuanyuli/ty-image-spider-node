@@ -1,0 +1,14 @@
+[
+  {
+    "id": "66abcdef1234567890abcdef",
+    "url": "https://www.xiaohongshu.com/explore/66abcdef1234567890abcdef?xsec_token=signed-one",
+    "preview_url": "https://sns-img-bd.xhscdn.com/card-one.webp?imageView2/2/w/600",
+    "image_count": 4
+  },
+  {
+    "id": "66abcdef1234567890abcdee",
+    "url": "https://www.xiaohongshu.com/search_result/66abcdef1234567890abcdee?xsec_token=signed-two",
+    "preview_url": "https://sns-img-bd.xhscdn.com/card-two.webp",
+    "image_count": 1
+  }
+]
