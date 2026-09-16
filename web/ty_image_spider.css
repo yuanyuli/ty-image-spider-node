@@ -24,6 +24,12 @@
   letter-spacing: 0;
 }
 
+.tyis-workspace [hidden],
+.tyis-dialog [hidden],
+.tyis-gallery [hidden] {
+  display: none !important;
+}
+
 .tyis-workspace {
   container-type: inline-size;
   display: flex;
@@ -209,6 +215,11 @@
   font: inherit;
   font-weight: 650;
   cursor: pointer;
+}
+
+.tyis-subtle-button[hidden],
+.tyis-icon-button[hidden] {
+  display: none !important;
 }
 
 .tyis-search-button,

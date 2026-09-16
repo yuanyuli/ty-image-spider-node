@@ -99,7 +99,11 @@ class LocalProvider:
         self, root: Path, path: Path, needle: str, only_with_prompt: bool
     ) -> tuple[int, str, AssetItem] | None:
         try:
-            if path.is_symlink() or not path.is_file() or path.suffix.casefold() not in _IMAGE_EXTENSIONS:
+            if (
+                path.is_symlink()
+                or not path.is_file()
+                or path.suffix.casefold() not in _IMAGE_EXTENSIONS
+            ):
                 return None
             resolved = path.resolve(strict=True)
             resolved.relative_to(root)
@@ -109,7 +113,11 @@ class LocalProvider:
             prompt, negative = extract_prompts(metadata)
             if only_with_prompt and not prompt:
                 return None
-            if needle and needle not in path.name.casefold() and needle not in prompt.casefold():
+            if (
+                needle
+                and needle not in path.name.casefold()
+                and needle not in prompt.casefold()
+            ):
                 return None
             stat = resolved.stat()
             relative = resolved.relative_to(self._output_root)
@@ -118,7 +126,9 @@ class LocalProvider:
                 id=relative.as_posix(),
                 preview_url=_view_url(resolved, self._output_root),
                 title=path.name,
-                created_at=datetime.fromtimestamp(stat.st_mtime, timezone.utc).isoformat(),
+                created_at=datetime.fromtimestamp(
+                    stat.st_mtime, timezone.utc
+                ).isoformat(),
                 width=_integer(metadata.get("width")),
                 height=_integer(metadata.get("height")),
                 has_prompt=bool(prompt),
@@ -142,7 +152,11 @@ class LocalProvider:
             raise SpiderError("invalid_asset", "本地素材路径无效") from exc
         if not relative.parts or relative.parts[0] not in _ROOT_NAMES:
             raise SpiderError("invalid_asset", "本地素材路径无效")
-        if path.is_symlink() or not path.is_file() or path.suffix.casefold() not in _IMAGE_EXTENSIONS:
+        if (
+            path.is_symlink()
+            or not path.is_file()
+            or path.suffix.casefold() not in _IMAGE_EXTENSIONS
+        ):
             raise SpiderError("asset_not_found", "本地素材不存在", status=404)
         return path
 
@@ -164,7 +178,9 @@ def _view_url(path: Path, output_root: Path) -> str:
     return "/view?" + urlencode(
         {
             "filename": relative.name,
-            "subfolder": relative.parent.as_posix() if relative.parent != Path(".") else "",
+            "subfolder": relative.parent.as_posix()
+            if relative.parent != Path(".")
+            else "",
             "type": "output",
         }
     )

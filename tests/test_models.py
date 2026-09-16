@@ -43,7 +43,9 @@ def test_domain_results_serialize_nested_values():
     detail = AssetDetail(item=item, images=("/view?a",), content="正文")
     page = SearchPage(items=(item,), next_cursor="10", stale=True, message="缓存")
     download = DownloadResult(files=("ty-image-spider/a.png",), message="完成")
-    status = ProviderStatus(available=False, code="missing", message="未安装", action="安装")
+    status = ProviderStatus(
+        available=False, code="missing", message="未安装", action="安装"
+    )
 
     assert detail.to_dict()["item"]["id"] == "a"
     assert page.to_dict()["items"][0]["download_mode"] == "none"
@@ -62,4 +64,3 @@ def test_search_request_copies_mutable_filters():
     filters["count"] = 1
 
     assert request.filters == {"count": 9}
-

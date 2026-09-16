@@ -28,4 +28,3 @@ class TyImageSpider:
     def browse(self, state_json: object = "{}"):
         serialized = state_json if isinstance(state_json, str) else "{}"
         return {"ui": {"state": [serialized]}}
-

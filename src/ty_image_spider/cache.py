@@ -28,7 +28,10 @@ class JsonCache:
         path = self._path(key)
         if not path.is_file():
             return None
-        if max_age_seconds is not None and self._now() - path.stat().st_mtime > max_age_seconds:
+        if (
+            max_age_seconds is not None
+            and self._now() - path.stat().st_mtime > max_age_seconds
+        ):
             path.unlink(missing_ok=True)
             return None
         try:

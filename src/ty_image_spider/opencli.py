@@ -16,10 +16,25 @@ from .models import SpiderError
 _MINIMUM_VERSION = (1, 8, 8)
 _VERSION_PATTERN = re.compile(r"(?<!\d)(\d+)\.(\d+)\.(\d+)(?!\d)")
 _EXIT_CODES = {
-    69: ("opencli_bridge_unavailable", "OpenCLI 浏览器桥接不可用", "请启动 Chrome 扩展后重试", 503),
+    69: (
+        "opencli_bridge_unavailable",
+        "OpenCLI 浏览器桥接不可用",
+        "请启动 Chrome 扩展后重试",
+        503,
+    ),
     75: ("opencli_timeout", "OpenCLI 执行超时", "请稍后重试", 504),
-    77: ("opencli_auth_required", "小红书登录状态不可用", "请在 Chrome 中登录小红书", 401),
-    78: ("opencli_config_error", "OpenCLI 配置无效", "请运行 opencli doctor 检查配置", 503),
+    77: (
+        "opencli_auth_required",
+        "小红书登录状态不可用",
+        "请在 Chrome 中登录小红书",
+        401,
+    ),
+    78: (
+        "opencli_config_error",
+        "OpenCLI 配置无效",
+        "请运行 opencli doctor 检查配置",
+        503,
+    ),
 }
 
 
@@ -48,7 +63,9 @@ class OpenCliRunner:
         result = self._execute(["--version"], 10)
         match = _VERSION_PATTERN.search(result.stdout)
         if match is None:
-            raise SpiderError("opencli_version_invalid", "无法识别 OpenCLI 版本", status=503)
+            raise SpiderError(
+                "opencli_version_invalid", "无法识别 OpenCLI 版本", status=503
+            )
         version = tuple(int(part) for part in match.groups())
         if version < _MINIMUM_VERSION:
             raise SpiderError(
@@ -60,7 +77,21 @@ class OpenCliRunner:
         return ".".join(match.groups())
 
     def doctor(self) -> CommandResult:
-        return self._execute(["doctor", "--format=json"], 30)
+        result = self._execute(["doctor"], 30)
+        report = f"{result.stdout}\n{result.stderr}".casefold()
+        disconnected = (
+            "extension: not connected" in report
+            or "browser bridge extension not connected" in report
+            or "connectivity: failed" in report
+        )
+        if disconnected:
+            raise SpiderError(
+                "opencli_bridge_unavailable",
+                "OpenCLI Chrome 扩展未连接",
+                "请启用 Chrome 扩展后重试",
+                503,
+            )
+        return result
 
     def run_json(self, args: Sequence[str], timeout_seconds: int) -> Any:
         result = self._execute(args, timeout_seconds)

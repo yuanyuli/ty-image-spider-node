@@ -114,4 +114,19 @@ def test_doctor_returns_process_result():
     result = runner(fake_run).doctor()
 
     assert result == CommandResult(0, '{"ok":true}\n', "")
-    assert fake_run.calls[0][0][-2:] == ["doctor", "--format=json"]
+    assert fake_run.calls[0][0][-1:] == ["doctor"]
+
+
+def test_doctor_maps_disconnected_extension_even_when_exit_code_is_zero():
+    fake_run = FakeRun(
+        completed(
+            0,
+            "[MISSING] Extension: not connected\n"
+            "[FAIL] Connectivity: failed (Browser Bridge extension not connected)\n",
+        )
+    )
+
+    with pytest.raises(SpiderError) as caught:
+        runner(fake_run).doctor()
+
+    assert caught.value.code == "opencli_bridge_unavailable"

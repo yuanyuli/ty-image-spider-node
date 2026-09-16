@@ -31,4 +31,3 @@ class ProviderRegistry:
 
     def all(self) -> tuple[AssetProvider, ...]:
         return tuple(self._providers.values())
-

@@ -20,8 +20,10 @@ _SAFE_ID = re.compile(r"^[0-9]+$")
 
 
 def _is_civitai_host(host: str) -> bool:
-    return host in {"civitai.com", "civitai.red"} or host.endswith(".civitai.com") or host.endswith(
-        ".civitai.red"
+    return (
+        host in {"civitai.com", "civitai.red"}
+        or host.endswith(".civitai.com")
+        or host.endswith(".civitai.red")
     )
 
 
@@ -42,20 +44,26 @@ class ImageDownloader:
 
         directory = resolve_inside(output_root, Path("ty-image-spider/civitai"))
         directory.mkdir(parents=True, exist_ok=True)
-        request = Request(url, headers={"User-Agent": "TY-Image-Spider/2.0", "Accept": "image/*"})
+        request = Request(
+            url, headers={"User-Agent": "TY-Image-Spider/2.0", "Accept": "image/*"}
+        )
         try:
             with self._open_url(request, 60) as response:
                 try:
                     require_https_host(response.geturl(), _is_civitai_host)
                 except SpiderError as exc:
-                    raise SpiderError("unsafe_redirect", "图片下载发生了不安全的重定向") from exc
+                    raise SpiderError(
+                        "unsafe_redirect", "图片下载发生了不安全的重定向"
+                    ) from exc
                 payload = read_limited(response, self._max_bytes)
         except SpiderError:
             raise
         except OSError as exc:
             raise SpiderError("download_failed", "图片下载失败", status=502) from exc
 
-        descriptor, temp_name = tempfile.mkstemp(prefix=f".{item_id}-", suffix=".tmp", dir=directory)
+        descriptor, temp_name = tempfile.mkstemp(
+            prefix=f".{item_id}-", suffix=".tmp", dir=directory
+        )
         temp = Path(temp_name)
         try:
             with os.fdopen(descriptor, "wb") as handle:
@@ -78,7 +86,9 @@ class ImageDownloader:
                 image.verify()
                 image_format = (image.format or "").lower()
         except (OSError, ValueError) as exc:
-            raise SpiderError("invalid_image", "下载内容不是有效图片", status=502) from exc
+            raise SpiderError(
+                "invalid_image", "下载内容不是有效图片", status=502
+            ) from exc
         extensions = {"jpeg": ".jpg", "png": ".png", "webp": ".webp", "gif": ".gif"}
         extension = extensions.get(image_format)
         if extension is None:

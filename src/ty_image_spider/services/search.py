@@ -32,7 +32,7 @@ class SearchService:
         request = SearchRequest(
             provider_id,
             query,
-            filters,  # type: ignore[arg-type]
+            filters,
             cursor,
             refresh,
         )

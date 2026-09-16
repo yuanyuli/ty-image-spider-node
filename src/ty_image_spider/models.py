@@ -6,7 +6,9 @@ from dataclasses import dataclass, field
 from typing import Any, Mapping, TypeAlias
 
 
-JsonValue: TypeAlias = None | bool | int | float | str | list["JsonValue"] | dict[str, "JsonValue"]
+JsonValue: TypeAlias = (
+    None | bool | int | float | str | list["JsonValue"] | dict[str, "JsonValue"]
+)
 
 
 class SpiderError(Exception):
@@ -179,7 +181,12 @@ class AssetItem:
             raise SpiderError("invalid_asset", "素材数据必须是对象")
         provider = value.get("provider")
         item_id = value.get("id")
-        if not isinstance(provider, str) or not provider or not isinstance(item_id, str) or not item_id:
+        if (
+            not isinstance(provider, str)
+            or not provider
+            or not isinstance(item_id, str)
+            or not item_id
+        ):
             raise SpiderError("invalid_asset", "素材数据缺少有效的来源或 ID")
 
         string_fields = (
@@ -198,28 +205,38 @@ class AssetItem:
             raw = value.get(name)
             if raw is not None:
                 if not isinstance(raw, str):
-                    raise SpiderError("invalid_asset", f"素材数据字段 {name} 必须是字符串")
+                    raise SpiderError(
+                        "invalid_asset", f"素材数据字段 {name} 必须是字符串"
+                    )
                 kwargs[name] = raw
         for name in ("width", "height", "image_count"):
             raw = value.get(name)
             if raw is not None:
                 if not isinstance(raw, int) or isinstance(raw, bool):
-                    raise SpiderError("invalid_asset", f"素材数据字段 {name} 必须是整数")
+                    raise SpiderError(
+                        "invalid_asset", f"素材数据字段 {name} 必须是整数"
+                    )
                 kwargs[name] = raw
         has_prompt = value.get("has_prompt")
         if has_prompt is not None:
             if not isinstance(has_prompt, bool):
-                raise SpiderError("invalid_asset", "素材数据字段 has_prompt 必须是布尔值")
+                raise SpiderError(
+                    "invalid_asset", "素材数据字段 has_prompt 必须是布尔值"
+                )
             kwargs["has_prompt"] = has_prompt
         for name in ("stats", "metadata"):
             raw = value.get(name)
             if raw is not None:
                 if not isinstance(raw, Mapping):
-                    raise SpiderError("invalid_asset", f"素材数据字段 {name} 必须是对象")
+                    raise SpiderError(
+                        "invalid_asset", f"素材数据字段 {name} 必须是对象"
+                    )
                 kwargs[name] = dict(raw)
         tags = value.get("tags")
         if tags is not None:
-            if not isinstance(tags, (list, tuple)) or not all(isinstance(tag, str) for tag in tags):
+            if not isinstance(tags, (list, tuple)) or not all(
+                isinstance(tag, str) for tag in tags
+            ):
                 raise SpiderError("invalid_asset", "素材数据字段 tags 必须是字符串数组")
             kwargs["tags"] = tuple(tags)
         return cls(**kwargs)
@@ -273,4 +290,3 @@ class DownloadResult:
 
     def to_dict(self) -> dict[str, JsonValue]:
         return {"files": list(self.files), "message": self.message}
-

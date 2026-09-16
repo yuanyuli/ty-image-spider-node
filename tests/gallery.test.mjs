@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { JSDOM } from "jsdom";
 
@@ -21,6 +22,9 @@ function item(overrides = {}) {
 
 test("小红书画廊隐藏整页下载并显示多图数量", () => {
   const dom = new JSDOM("<!doctype html><body></body>");
+  const style = dom.window.document.createElement("style");
+  style.textContent = readFileSync(new URL("../web/ty_image_spider.css", import.meta.url), "utf8");
+  dom.window.document.head.append(style);
   const view = createGallery({
     document: dom.window.document,
     provider: "xiaohongshu",
@@ -28,8 +32,10 @@ test("小红书画廊隐藏整页下载并显示多图数量", () => {
   });
 
   view.render([item({ image_count: 6 })], { next_cursor: null });
+  dom.window.document.body.append(view.root);
 
   assert.equal(view.bulkDownloadButton.hidden, true);
+  assert.equal(dom.window.getComputedStyle(view.bulkDownloadButton).display, "none");
   assert.match(view.root.textContent, /6 张/);
   assert.equal(view.root.querySelectorAll(".tyis-card").length, 1);
 });

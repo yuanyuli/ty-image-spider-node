@@ -109,7 +109,9 @@ def test_search_uses_official_adapter_then_persistent_read_only_eval(tmp_path):
 
 
 def test_signed_note_url_uses_note_flow_instead_of_keyword_search(tmp_path):
-    url = "https://www.xiaohongshu.com/explore/66abcdef1234567890abcdef?xsec_token=signed"
+    url = (
+        "https://www.xiaohongshu.com/explore/66abcdef1234567890abcdef?xsec_token=signed"
+    )
     runner = FakeRunner([DETAIL["rows"], DETAIL["browser"]])
 
     page = make_provider(tmp_path, runner).search(SearchRequest("xiaohongshu", url))
@@ -122,7 +124,9 @@ def test_signed_note_url_uses_note_flow_instead_of_keyword_search(tmp_path):
 
 def test_search_rejects_untrusted_http_url(tmp_path):
     with pytest.raises(SpiderError) as caught:
-        make_provider(tmp_path).search(SearchRequest("xiaohongshu", "https://evil.example/a"))
+        make_provider(tmp_path).search(
+            SearchRequest("xiaohongshu", "https://evil.example/a")
+        )
     assert caught.value.code == "invalid_note_url"
 
 
@@ -135,7 +139,9 @@ def test_detail_rejects_unsigned_note_url(tmp_path):
 def test_keyword_cache_never_persists_signed_urls(tmp_path):
     make_provider(tmp_path).search(SearchRequest("xiaohongshu", "秋季穿搭"))
 
-    cache_text = "".join(path.read_text(encoding="utf-8") for path in (tmp_path / "cache").glob("*.json"))
+    cache_text = "".join(
+        path.read_text(encoding="utf-8") for path in (tmp_path / "cache").glob("*.json")
+    )
     assert "xsec_token" not in cache_text
     assert "signed-one" not in cache_text
 
@@ -166,7 +172,9 @@ def test_download_returns_only_new_verified_images(tmp_path):
         (target / "not-image.txt").write_text("ignore", encoding="utf-8")
 
     runner = FakeRunner([[]], on_call=write_download)
-    result = make_provider(tmp_path, runner).download(xhs_item(SEARCH[0]["url"]), output)
+    result = make_provider(tmp_path, runner).download(
+        xhs_item(SEARCH[0]["url"]), output
+    )
 
     assert result.files == (
         "ty-image-spider/xiaohongshu/66abcdef1234567890abcdef/image-1.png",
@@ -175,7 +183,9 @@ def test_download_returns_only_new_verified_images(tmp_path):
 
 
 def test_status_exposes_optional_dependency_failure(tmp_path):
-    runner = FakeRunner(error=SpiderError("opencli_missing", "未找到 OpenCLI", status=503))
+    runner = FakeRunner(
+        error=SpiderError("opencli_missing", "未找到 OpenCLI", status=503)
+    )
 
     status = make_provider(tmp_path, runner).status()
 

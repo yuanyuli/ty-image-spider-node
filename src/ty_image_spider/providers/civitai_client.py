@@ -46,7 +46,11 @@ class CivitaiClient:
     def search(self, site: str, params: Mapping[str, object]) -> CivitaiPage:
         self._require_site(site)
         query = urlencode(
-            [(key, value) for key, value in params.items() if value is not None and value != ""]
+            [
+                (key, value)
+                for key, value in params.items()
+                if value is not None and value != ""
+            ]
         )
         url = f"https://{site}/api/v1/images"
         if query:
@@ -55,7 +59,9 @@ class CivitaiClient:
         raw_items = payload.get("items", [])
         metadata = payload.get("metadata", {})
         if not isinstance(raw_items, list) or not isinstance(metadata, Mapping):
-            raise SpiderError("civitai_invalid_response", "Civitai 返回的数据格式无效", status=502)
+            raise SpiderError(
+                "civitai_invalid_response", "Civitai 返回的数据格式无效", status=502
+            )
         items = tuple(dict(item) for item in raw_items if isinstance(item, Mapping))
         cursor = metadata.get("nextCursor")
         return CivitaiPage(items, str(cursor) if cursor not in (None, "") else None)
@@ -68,7 +74,9 @@ class CivitaiClient:
         try:
             with self._open_url(request, timeout=self._timeout_seconds) as response:
                 self._validate_final_url(response.geturl(), site)
-                html = read_limited(response, _MAX_PAGE_BYTES).decode("utf-8", errors="replace")
+                html = read_limited(response, _MAX_PAGE_BYTES).decode(
+                    "utf-8", errors="replace"
+                )
         except (HTTPError, URLError, TimeoutError, socket.timeout) as exc:
             raise self._map_error(exc) from exc
         return _extract_page_metadata(html)
@@ -82,8 +90,12 @@ class CivitaiClient:
                         response.geturl(), lambda host: host in _ALLOWED_SITES
                     )
                     if parsed.hostname not in _ALLOWED_SITES:
-                        raise SpiderError("unsafe_redirect", "Civitai 请求发生了不安全的重定向")
-                    payload = json.loads(read_limited(response, _MAX_API_BYTES).decode("utf-8"))
+                        raise SpiderError(
+                            "unsafe_redirect", "Civitai 请求发生了不安全的重定向"
+                        )
+                    payload = json.loads(
+                        read_limited(response, _MAX_API_BYTES).decode("utf-8")
+                    )
                     if not isinstance(payload, dict):
                         raise ValueError("root is not an object")
                     return payload
@@ -140,7 +152,9 @@ class CivitaiClient:
             )
         if isinstance(error, (TimeoutError, socket.timeout)):
             return SpiderError("civitai_timeout", "Civitai 请求超时", status=504)
-        if isinstance(error, URLError) and isinstance(error.reason, (TimeoutError, socket.timeout)):
+        if isinstance(error, URLError) and isinstance(
+            error.reason, (TimeoutError, socket.timeout)
+        ):
             return SpiderError("civitai_timeout", "Civitai 请求超时", status=504)
         return SpiderError("civitai_unavailable", "无法连接 Civitai", status=502)
 
@@ -148,7 +162,9 @@ class CivitaiClient:
 def _retry_delay(error: HTTPError, attempt: int) -> float:
     raw = error.headers.get("Retry-After") if error.headers else None
     try:
-        return max(0.0, min(float(raw), 30.0)) if raw is not None else float(attempt + 1)
+        return (
+            max(0.0, min(float(raw), 30.0)) if raw is not None else float(attempt + 1)
+        )
     except (TypeError, ValueError):
         return float(attempt + 1)
 
@@ -156,7 +172,11 @@ def _retry_delay(error: HTTPError, attempt: int) -> float:
 def _extract_page_metadata(html: str) -> dict[str, Any]:
     """从页面脚本中提取最接近图片详情的 JSON 对象。"""
 
-    for match in re.finditer(r'<script[^>]*type=["\']application/json["\'][^>]*>(.*?)</script>', html, re.I | re.S):
+    for match in re.finditer(
+        r'<script[^>]*type=["\']application/json["\'][^>]*>(.*?)</script>',
+        html,
+        re.I | re.S,
+    ):
         try:
             value = json.loads(match.group(1))
         except json.JSONDecodeError:

@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from PIL import Image, PngImagePlugin
 
 from ty_image_spider.metadata import extract_prompts, read_image_metadata
@@ -39,4 +37,3 @@ def test_read_image_metadata_returns_empty_for_non_image(tmp_path):
     path.write_text("hello", encoding="utf-8")
 
     assert read_image_metadata(path) == {}
-

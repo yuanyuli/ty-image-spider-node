@@ -65,4 +65,3 @@ def redact_secrets(value: Any) -> Any:
     if isinstance(value, (list, tuple)):
         return [redact_secrets(item) for item in value]
     return value
-

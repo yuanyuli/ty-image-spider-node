@@ -8,13 +8,18 @@ from ty_image_spider.models import SpiderError
 from ty_image_spider.providers.civitai_client import CivitaiClient
 
 
-FIXTURE = json.loads((Path(__file__).parent / "fixtures/civitai_images.json").read_text())
+FIXTURE = json.loads(
+    (Path(__file__).parent / "fixtures/civitai_images.json").read_text()
+)
 
 
 class Response:
     def __init__(self, payload, final_url="https://civitai.com/api/v1/images"):
         self.payload = json.dumps(payload).encode()
-        self.headers = {"Content-Type": "application/json", "Content-Length": str(len(self.payload))}
+        self.headers = {
+            "Content-Type": "application/json",
+            "Content-Length": str(len(self.payload)),
+        }
         self.final_url = final_url
 
     def __enter__(self):
@@ -39,7 +44,9 @@ def test_client_builds_query_and_keeps_api_key_out_of_url():
         return Response(FIXTURE)
 
     client = CivitaiClient(open_url=open_url, api_key="top-secret")
-    page = client.search("civitai.com", {"query": "red cat", "limit": 6, "nsfw": "None"})
+    page = client.search(
+        "civitai.com", {"query": "red cat", "limit": 6, "nsfw": "None"}
+    )
 
     assert page.next_cursor == "cursor-2"
     assert page.items[0]["id"] == 101
@@ -57,10 +64,14 @@ def test_client_retries_429_using_retry_after():
         nonlocal calls
         calls += 1
         if calls == 1:
-            raise HTTPError(request.full_url, 429, "limited", {"Retry-After": "2"}, None)
+            raise HTTPError(
+                request.full_url, 429, "limited", {"Retry-After": "2"}, None
+            )
         return Response(FIXTURE)
 
-    page = CivitaiClient(open_url=open_url, sleep=sleeps.append).search("civitai.red", {})
+    page = CivitaiClient(open_url=open_url, sleep=sleeps.append).search(
+        "civitai.red", {}
+    )
 
     assert page.items
     assert calls == 2
@@ -80,5 +91,6 @@ def test_client_maps_forbidden_without_retry():
 
 def test_client_rejects_unknown_site_before_network():
     with pytest.raises(SpiderError, match="站点"):
-        CivitaiClient(open_url=lambda *_: pytest.fail("不应访问网络")).search("evil.example", {})
-
+        CivitaiClient(open_url=lambda *_: pytest.fail("不应访问网络")).search(
+            "evil.example", {}
+        )

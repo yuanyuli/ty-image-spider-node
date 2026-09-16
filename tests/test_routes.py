@@ -160,7 +160,9 @@ def test_register_routes_is_idempotent_and_safe_without_comfyui(monkeypatch):
     monkeypatch.setitem(
         sys.modules,
         "server",
-        SimpleNamespace(PromptServer=SimpleNamespace(instance=SimpleNamespace(routes=table))),
+        SimpleNamespace(
+            PromptServer=SimpleNamespace(instance=SimpleNamespace(routes=table))
+        ),
     )
     assert routes.register_routes() is True
     count = len(table)

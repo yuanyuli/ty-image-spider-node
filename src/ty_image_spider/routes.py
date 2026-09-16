@@ -8,7 +8,7 @@ import logging
 import re
 import threading
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Mapping
+from typing import Awaitable, Callable, Mapping
 
 from aiohttp import web
 

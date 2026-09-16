@@ -37,12 +37,19 @@ def read_image_metadata(path: Path) -> dict[str, Any]:
             with Image.open(path) as image:
                 if image.width * image.height > MAX_IMAGE_PIXELS:
                     return {}
-                result = {str(key): _json_safe(value) for key, value in image.info.items()}
+                result = {
+                    str(key): _json_safe(value) for key, value in image.info.items()
+                }
                 result["width"] = image.width
                 result["height"] = image.height
                 result["format"] = image.format or ""
                 return result
-    except (OSError, ValueError, Image.DecompressionBombError, Image.DecompressionBombWarning):
+    except (
+        OSError,
+        ValueError,
+        Image.DecompressionBombError,
+        Image.DecompressionBombWarning,
+    ):
         return {}
 
 
@@ -56,7 +63,9 @@ def _looks_like_workflow(value: str) -> bool:
         return False
     if isinstance(parsed, list):
         return True
-    return isinstance(parsed, dict) and any(key in parsed for key in ("nodes", "workflow"))
+    return isinstance(parsed, dict) and any(
+        key in parsed for key in ("nodes", "workflow")
+    )
 
 
 def _first_string(metadata: Mapping[str, Any], names: tuple[str, ...]) -> str:
@@ -76,4 +85,3 @@ def extract_prompts(metadata: Mapping[str, Any]) -> tuple[str, str]:
     if prompt and _looks_like_workflow(prompt):
         return "", ""
     return prompt, negative
-

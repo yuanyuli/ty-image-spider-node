@@ -35,7 +35,10 @@ def test_redaction_is_recursive_and_case_insensitive():
 def test_require_https_host_rejects_http_and_suffix_tricks():
     allowed = lambda host: host == "civitai.com" or host.endswith(".civitai.com")
 
-    assert require_https_host("https://image.civitai.com/a.jpg", allowed).hostname == "image.civitai.com"
+    assert (
+        require_https_host("https://image.civitai.com/a.jpg", allowed).hostname
+        == "image.civitai.com"
+    )
     with pytest.raises(SpiderError, match="不属于"):
         require_https_host("http://image.civitai.com/a.jpg", allowed)
     with pytest.raises(SpiderError, match="不属于"):
@@ -43,7 +46,10 @@ def test_require_https_host_rejects_http_and_suffix_tricks():
 
 
 def test_resolve_inside_rejects_escape_and_absolute_path(tmp_path):
-    assert resolve_inside(tmp_path, Path("folder/image.png")) == (tmp_path / "folder/image.png").resolve()
+    assert (
+        resolve_inside(tmp_path, Path("folder/image.png"))
+        == (tmp_path / "folder/image.png").resolve()
+    )
     with pytest.raises(SpiderError, match="输出目录"):
         resolve_inside(tmp_path, Path("../escape.png"))
     with pytest.raises(SpiderError, match="输出目录"):
@@ -56,4 +62,3 @@ def test_read_limited_checks_header_and_stream_size():
     with pytest.raises(SpiderError, match="大小限制"):
         read_limited(Response(b"12345"), max_bytes=4)
     assert read_limited(Response(b"1234"), max_bytes=4) == b"1234"
-

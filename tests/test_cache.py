@@ -1,8 +1,6 @@
 import json
 import os
 import time
-from pathlib import Path
-
 from ty_image_spider.cache import JsonCache
 
 
@@ -22,12 +20,18 @@ def test_cache_prunes_old_entries_and_removes_corrupt_json(tmp_path):
     cache = JsonCache(tmp_path, max_entries=2)
     for index in range(3):
         cache.put(str(index), {"index": index})
-        path = next(path for path in tmp_path.glob("*.json") if json.loads(path.read_text())["index"] == index)
+        path = next(
+            path
+            for path in tmp_path.glob("*.json")
+            if json.loads(path.read_text())["index"] == index
+        )
         path.touch()
 
     assert len(list(tmp_path.glob("*.json"))) == 2
     cache.put("broken", {"value": "will-break"})
-    corrupt = next(path for path in tmp_path.glob("*.json") if "will-break" in path.read_text())
+    corrupt = next(
+        path for path in tmp_path.glob("*.json") if "will-break" in path.read_text()
+    )
     corrupt.write_text("{", encoding="utf-8")
     assert cache.get("broken", 60) is None
     assert not corrupt.exists()

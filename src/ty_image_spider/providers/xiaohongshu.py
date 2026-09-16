@@ -72,11 +72,16 @@ class XiaohongshuProvider:
                     "排序",
                     "select",
                     "comprehensive",
-                    tuple(FilterOption(value, label) for value, label in (
-                        ("comprehensive", "综合"), ("latest", "最新"),
-                        ("most-liked", "最多点赞"), ("most-commented", "最多评论"),
-                        ("most-collected", "最多收藏"),
-                    )),
+                    tuple(
+                        FilterOption(value, label)
+                        for value, label in (
+                            ("comprehensive", "综合"),
+                            ("latest", "最新"),
+                            ("most-liked", "最多点赞"),
+                            ("most-commented", "最多评论"),
+                            ("most-collected", "最多收藏"),
+                        )
+                    ),
                 ),
                 FilterField(
                     "note_type",
@@ -90,10 +95,15 @@ class XiaohongshuProvider:
                     "发布时间",
                     "select",
                     "anytime",
-                    tuple(FilterOption(value, label) for value, label in (
-                        ("anytime", "不限"), ("day", "一天内"),
-                        ("week", "一周内"), ("half-year", "半年内"),
-                    )),
+                    tuple(
+                        FilterOption(value, label)
+                        for value, label in (
+                            ("anytime", "不限"),
+                            ("day", "一天内"),
+                            ("week", "一周内"),
+                            ("half-year", "半年内"),
+                        )
+                    ),
                 ),
                 FilterField("count", "数量", "number", 12, minimum=1, maximum=50),
             ),
@@ -137,7 +147,9 @@ class XiaohongshuProvider:
     def download(self, item: AssetItem, output_root: Path) -> DownloadResult:
         self._require_item(item)
         if not item.source_url or _classify_query(item.source_url) != "note":
-            raise SpiderError("signed_note_url_required", "下载小红书笔记需要完整签名链接")
+            raise SpiderError(
+                "signed_note_url_required", "下载小红书笔记需要完整签名链接"
+            )
         target = resolve_inside(
             output_root, Path("ty-image-spider/xiaohongshu") / item.id
         )
@@ -175,22 +187,40 @@ class XiaohongshuProvider:
             with self._session_lock:
                 rows = self._runner.run_json(
                     [
-                        "xiaohongshu", "search", query,
-                        "--site-session", "persistent", "--window", "background",
-                        "--limit", str(count), "--sort", sort,
-                        "--note-type", note_type, "--publish-time", publish_time,
-                        "--format", "json",
+                        "xiaohongshu",
+                        "search",
+                        query,
+                        "--site-session",
+                        "persistent",
+                        "--window",
+                        "background",
+                        "--limit",
+                        str(count),
+                        "--sort",
+                        sort,
+                        "--note-type",
+                        note_type,
+                        "--publish-time",
+                        publish_time,
+                        "--format",
+                        "json",
                     ],
                     timeout_seconds=120,
                 )
                 cards = self._runner.run_json(
                     [
-                        "browser", "site:xiaohongshu", "eval", build_card_extract_js(),
-                        "--format", "json",
+                        "browser",
+                        "site:xiaohongshu",
+                        "eval",
+                        build_card_extract_js(),
+                        "--format",
+                        "json",
                     ],
                     timeout_seconds=30,
                 )
-            items = tuple(_search_item(value) for value in merge_search_rows(rows, cards))
+            items = tuple(
+                _search_item(value) for value in merge_search_rows(rows, cards)
+            )
             page = SearchPage(items)
             self._cache.put(cache_key, _persistent_page(page))
             return page
@@ -206,15 +236,26 @@ class XiaohongshuProvider:
         with self._session_lock:
             rows = self._runner.run_json(
                 [
-                    "xiaohongshu", "note", url, "--format", "json",
-                    "--site-session", "persistent", "--window", "background",
+                    "xiaohongshu",
+                    "note",
+                    url,
+                    "--format",
+                    "json",
+                    "--site-session",
+                    "persistent",
+                    "--window",
+                    "background",
                 ],
                 timeout_seconds=120,
             )
             browser = self._runner.run_json(
                 [
-                    "browser", "site:xiaohongshu", "eval",
-                    build_detail_extract_js(fallback_id), "--format", "json",
+                    "browser",
+                    "site:xiaohongshu",
+                    "eval",
+                    build_detail_extract_js(fallback_id),
+                    "--format",
+                    "json",
                 ],
                 timeout_seconds=30,
             )
@@ -228,11 +269,15 @@ class XiaohongshuProvider:
             for key in ("likes", "collects", "comments")
             if fields.get(key) is not None
         }
-        tags = tuple(part.strip() for part in fields.get("tags", "").split(",") if part.strip())
+        tags = tuple(
+            part.strip() for part in fields.get("tags", "").split(",") if part.strip()
+        )
         item = AssetItem(
             provider=self.id,
             id=note_id,
-            preview_url=images[0] if images else (base_item.preview_url if base_item else None),
+            preview_url=images[0]
+            if images
+            else (base_item.preview_url if base_item else None),
             source_url=url,
             title=fields.get("title") or (base_item.title if base_item else None),
             author=fields.get("author") or (base_item.author if base_item else None),
@@ -242,7 +287,9 @@ class XiaohongshuProvider:
             metadata={"opencli": "xiaohongshu"},
             download_mode="note",
         )
-        return AssetDetail(item, images, fields.get("content", ""), metadata={"tags": list(item.tags)})
+        return AssetDetail(
+            item, images, fields.get("content", ""), metadata={"tags": list(item.tags)}
+        )
 
     @staticmethod
     def _require_item(item: AssetItem) -> None:
@@ -291,7 +338,12 @@ def _classify_query(value: str) -> str:
         return "note"
     trusted_host = host == "xiaohongshu.com" or host.endswith(".xiaohongshu.com")
     signed = bool(parsed.query and "xsec_token=" in parsed.query)
-    if parsed.scheme == "https" and trusted_host and _NOTE_PATH.fullmatch(parsed.path) and signed:
+    if (
+        parsed.scheme == "https"
+        and trusted_host
+        and _NOTE_PATH.fullmatch(parsed.path)
+        and signed
+    ):
         return "note"
     return "invalid_url"
 
@@ -303,7 +355,9 @@ def _note_id(url: str) -> str:
     return hashlib.sha256(url.encode("utf-8")).hexdigest()[:24]
 
 
-def _cache_key(query: str, sort: str, note_type: str, publish_time: str, count: int) -> str:
+def _cache_key(
+    query: str, sort: str, note_type: str, publish_time: str, count: int
+) -> str:
     raw = "\0".join((query, sort, note_type, publish_time, str(count)))
     return "xiaohongshu:" + hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
@@ -325,7 +379,9 @@ def _cached_page(value: object) -> SearchPage:
     if not isinstance(value, Mapping) or not isinstance(value.get("items"), list):
         raise SpiderError("cache_invalid", "小红书缓存数据无效", status=502)
     items = tuple(AssetItem.from_untrusted(item) for item in value["items"])
-    return SearchPage(items, stale=True, message="正在显示短期缓存结果，请重新搜索后查看详情")
+    return SearchPage(
+        items, stale=True, message="正在显示短期缓存结果，请重新搜索后查看详情"
+    )
 
 
 def _snapshot_images(directory: Path) -> set[Path]:
@@ -334,11 +390,15 @@ def _snapshot_images(directory: Path) -> set[Path]:
     return {
         path.resolve()
         for path in directory.rglob("*")
-        if path.is_file() and not path.is_symlink() and path.suffix.casefold() in _IMAGE_EXTENSIONS
+        if path.is_file()
+        and not path.is_symlink()
+        and path.suffix.casefold() in _IMAGE_EXTENSIONS
     }
 
 
-def _verified_new_images(directory: Path, before: set[Path], output_root: Path) -> DownloadResult:
+def _verified_new_images(
+    directory: Path, before: set[Path], output_root: Path
+) -> DownloadResult:
     root = output_root.resolve()
     verified: list[str] = []
     if directory.is_dir():

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -31,7 +32,9 @@ _TAGS = {"Portrait": 1441}
 class CivitaiProvider:
     id = "civitai"
 
-    def __init__(self, client: CivitaiClient, cache: JsonCache, downloader: ImageDownloader) -> None:
+    def __init__(
+        self, client: CivitaiClient, cache: JsonCache, downloader: ImageDownloader
+    ) -> None:
         self._client = client
         self._cache = cache
         self._downloader = downloader
@@ -47,14 +50,20 @@ class CivitaiProvider:
                     "站点",
                     "select",
                     "civitai.com",
-                    (FilterOption("civitai.com", "civitai.com"), FilterOption("civitai.red", "civitai.red")),
+                    (
+                        FilterOption("civitai.com", "civitai.com"),
+                        FilterOption("civitai.red", "civitai.red"),
+                    ),
                 ),
                 FilterField(
                     "period",
                     "时间范围",
                     "select",
                     "AllTime",
-                    tuple(FilterOption(value, value) for value in ("AllTime", "Year", "Month", "Week", "Day")),
+                    tuple(
+                        FilterOption(value, value)
+                        for value in ("AllTime", "Year", "Month", "Week", "Day")
+                    ),
                 ),
                 FilterField(
                     "sort",
@@ -63,7 +72,13 @@ class CivitaiProvider:
                     "Most Reactions",
                     tuple(
                         FilterOption(value, value)
-                        for value in ("Most Reactions", "Most Comments", "Most Collected", "Newest", "Oldest")
+                        for value in (
+                            "Most Reactions",
+                            "Most Comments",
+                            "Most Collected",
+                            "Newest",
+                            "Oldest",
+                        )
                     ),
                 ),
                 FilterField("sfw", "仅 SFW", "toggle", True),
@@ -111,18 +126,20 @@ class CivitaiProvider:
         merged = dict(item.metadata)
         merged.update(page_metadata)
         prompt, negative = extract_prompts(merged)
-        updated = AssetItem(
-            **{
-                **item.to_dict(),
-                "prompt": prompt or item.prompt,
-                "negative_prompt": negative or item.negative_prompt,
-                "has_prompt": bool(prompt or item.prompt),
-                "tags": tuple(item.tags),
-                "metadata": merged,
-            }
+        updated = replace(
+            item,
+            prompt=prompt or item.prompt,
+            negative_prompt=negative or item.negative_prompt,
+            has_prompt=bool(prompt or item.prompt),
+            metadata=merged,
         )
         workflow = merged.get("workflow")
-        return AssetDetail(updated, (item.preview_url,) if item.preview_url else (), workflow=workflow, metadata=merged)
+        return AssetDetail(
+            updated,
+            (item.preview_url,) if item.preview_url else (),
+            workflow=workflow,
+            metadata=merged,
+        )
 
     def download(self, item: AssetItem, output_root: Path) -> DownloadResult:
         self._require_item(item)
@@ -131,7 +148,9 @@ class CivitaiProvider:
         return self._downloader.download(item.preview_url, item.id, output_root)
 
     @staticmethod
-    def _search_parameters(request: SearchRequest) -> tuple[str, dict[str, object], bool]:
+    def _search_parameters(
+        request: SearchRequest,
+    ) -> tuple[str, dict[str, object], bool]:
         filters = request.filters
         site = str(filters.get("site") or "civitai.com")
         count = filters.get("count", 12)
@@ -152,9 +171,10 @@ class CivitaiProvider:
     @staticmethod
     def _normalize(raw: Mapping[str, Any], site: str) -> AssetItem:
         item_id = str(raw.get("id", ""))
-        meta = raw.get("meta") if isinstance(raw.get("meta"), Mapping) else {}
+        raw_meta = raw.get("meta")
+        meta: Mapping[str, Any] = raw_meta if isinstance(raw_meta, Mapping) else {}
         prompt, negative = extract_prompts(meta)
-        resources = meta.get("resources", []) if isinstance(meta, Mapping) else []
+        resources = meta.get("resources", [])
         models: list[dict[str, str]] = []
         loras: list[dict[str, str]] = []
         if isinstance(resources, list):
@@ -191,9 +211,17 @@ class CivitaiProvider:
         )
 
     @staticmethod
-    def _cache_key(site: str, params: Mapping[str, object], only_with_prompt: bool) -> str:
-        value = {"site": site, "params": dict(params), "only_with_prompt": only_with_prompt}
-        return "civitai:" + json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    def _cache_key(
+        site: str, params: Mapping[str, object], only_with_prompt: bool
+    ) -> str:
+        value = {
+            "site": site,
+            "params": dict(params),
+            "only_with_prompt": only_with_prompt,
+        }
+        return "civitai:" + json.dumps(
+            value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        )
 
     @staticmethod
     def _page_from_cache(value: object) -> SearchPage:
@@ -201,7 +229,12 @@ class CivitaiProvider:
             raise SpiderError("cache_invalid", "Civitai 缓存数据无效", status=502)
         items = tuple(AssetItem.from_untrusted(item) for item in value["items"])
         cursor = value.get("next_cursor")
-        return SearchPage(items, str(cursor) if cursor else None, stale=True, message="正在显示缓存结果")
+        return SearchPage(
+            items,
+            str(cursor) if cursor else None,
+            stale=True,
+            message="正在显示缓存结果",
+        )
 
     @staticmethod
     def _require_item(item: AssetItem) -> None:

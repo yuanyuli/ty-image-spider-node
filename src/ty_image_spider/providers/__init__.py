@@ -4,4 +4,3 @@ from .base import AssetProvider
 from .registry import ProviderRegistry
 
 __all__ = ["AssetProvider", "ProviderRegistry"]
-

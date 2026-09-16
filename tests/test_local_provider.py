@@ -37,7 +37,9 @@ def test_local_provider_filters_and_paginates_with_offset_cursor(tmp_path):
     write_png(tmp_path / "ty-image-spider" / "dog.png", "blue dog", 10)
     provider = LocalProvider(tmp_path)
 
-    first = provider.search(SearchRequest("local", "cat", {"count": 1, "only_with_prompt": True}))
+    first = provider.search(
+        SearchRequest("local", "cat", {"count": 1, "only_with_prompt": True})
+    )
     second = provider.search(
         SearchRequest(
             "local",

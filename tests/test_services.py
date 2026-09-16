@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pytest
 
 from ty_image_spider.models import (
@@ -119,7 +117,9 @@ def test_download_page_caps_items_and_rejects_mixed_provider(tmp_path):
     service = DownloadService(registry_with(civitai), tmp_path)
 
     with pytest.raises(SpiderError, match="最多下载 20"):
-        service.download_page("civitai", [item_dict("civitai", str(i)) for i in range(21)])
+        service.download_page(
+            "civitai", [item_dict("civitai", str(i)) for i in range(21)]
+        )
     with pytest.raises(SpiderError, match="来源不一致"):
         service.download_page("civitai", [item_dict("local")])
 

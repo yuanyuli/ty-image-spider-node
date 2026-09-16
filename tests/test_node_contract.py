@@ -18,4 +18,3 @@ def test_node_is_zero_output_and_serializes_only_state():
 
 def test_node_replaces_non_string_state_with_empty_object():
     assert TyImageSpider().browse(None) == {"ui": {"state": ["{}"]}}
-

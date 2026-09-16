@@ -27,4 +27,3 @@ def test_package_registers_only_new_node_id():
         "TyImageSpider": "TY Image Spider · 素材浏览"
     }
     assert package.WEB_DIRECTORY == "./web"
-

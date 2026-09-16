@@ -1,6 +1,4 @@
 from io import BytesIO
-from pathlib import Path
-
 import pytest
 from PIL import Image
 
@@ -18,7 +16,10 @@ class Response:
     def __init__(self, payload, final_url, content_type="image/png"):
         self.payload = payload
         self.final_url = final_url
-        self.headers = {"Content-Length": str(len(payload)), "Content-Type": content_type}
+        self.headers = {
+            "Content-Length": str(len(payload)),
+            "Content-Type": content_type,
+        }
 
     def __enter__(self):
         return self
@@ -77,4 +78,3 @@ def test_image_downloader_cleans_temp_file_after_invalid_payload(tmp_path):
     target = tmp_path / "ty-image-spider/civitai"
     assert not list(target.glob("*.tmp"))
     assert not list(target.glob("1.*"))
-

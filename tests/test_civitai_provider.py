@@ -7,7 +7,9 @@ from ty_image_spider.providers.civitai import CivitaiProvider
 from ty_image_spider.providers.civitai_client import CivitaiPage
 
 
-FIXTURE = json.loads((Path(__file__).parent / "fixtures/civitai_images.json").read_text())
+FIXTURE = json.loads(
+    (Path(__file__).parent / "fixtures/civitai_images.json").read_text()
+)
 
 
 class FakeClient:
@@ -31,7 +33,9 @@ class FakeDownloader:
 
 
 def make_provider(tmp_path, client=None):
-    return CivitaiProvider(client or FakeClient(), JsonCache(tmp_path), FakeDownloader())
+    return CivitaiProvider(
+        client or FakeClient(), JsonCache(tmp_path), FakeDownloader()
+    )
 
 
 def test_civitai_provider_maps_filters_and_normalizes_prompt(tmp_path):
@@ -100,6 +104,13 @@ def test_civitai_descriptor_and_download_capabilities(tmp_path):
     item = provider.search(SearchRequest("civitai")).items[0]
 
     assert descriptor.capabilities.bulk_download is True
-    assert {field.name for field in descriptor.filters} >= {"site", "period", "sort", "sfw", "tag"}
-    assert provider.download(item, tmp_path).files == ("ty-image-spider/civitai/101.png",)
-
+    assert {field.name for field in descriptor.filters} >= {
+        "site",
+        "period",
+        "sort",
+        "sfw",
+        "tag",
+    }
+    assert provider.download(item, tmp_path).files == (
+        "ty-image-spider/civitai/101.png",
+    )

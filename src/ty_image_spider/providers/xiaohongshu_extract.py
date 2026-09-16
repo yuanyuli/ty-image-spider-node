@@ -98,7 +98,11 @@ def merge_search_rows(rows: object, cards: object) -> list[dict[str, Any]]:
             source_url = card_url
         preview = _trusted_image_url(card.get("preview_url"))
         image_count = card.get("image_count", 1)
-        if not isinstance(image_count, int) or isinstance(image_count, bool) or image_count < 1:
+        if (
+            not isinstance(image_count, int)
+            or isinstance(image_count, bool)
+            or image_count < 1
+        ):
             image_count = 1
         merged.append(
             {
@@ -136,7 +140,9 @@ def detail_note_id(value: object, fallback: str) -> str:
         value = value["data"]
     if isinstance(value, Mapping):
         candidate = value.get("id")
-        if isinstance(candidate, str) and re.fullmatch(r"[0-9a-zA-Z_-]{1,64}", candidate):
+        if isinstance(candidate, str) and re.fullmatch(
+            r"[0-9a-zA-Z_-]{1,64}", candidate
+        ):
             return candidate
     return fallback
 
@@ -154,7 +160,9 @@ def _trusted_note_url(value: object) -> str | None:
         return None
     parsed = urlparse(value)
     host = (parsed.hostname or "").lower()
-    if parsed.scheme != "https" or not (host == "xiaohongshu.com" or host.endswith(".xiaohongshu.com")):
+    if parsed.scheme != "https" or not (
+        host == "xiaohongshu.com" or host.endswith(".xiaohongshu.com")
+    ):
         return None
     return value if _NOTE_PATH.fullmatch(parsed.path) else None
 

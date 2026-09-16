@@ -53,7 +53,10 @@ def test_registry_returns_provider_and_ordered_descriptors():
     registry.register(civitai)
 
     assert registry.get("local") is local
-    assert [descriptor.id for descriptor in registry.descriptors()] == ["local", "civitai"]
+    assert [descriptor.id for descriptor in registry.descriptors()] == [
+        "local",
+        "civitai",
+    ]
 
 
 def test_registry_uses_domain_error_for_unknown_provider():
@@ -61,4 +64,3 @@ def test_registry_uses_domain_error_for_unknown_provider():
         ProviderRegistry().get("unknown")
 
     assert caught.value.code == "provider_not_found"
-
