@@ -839,7 +839,7 @@ git commit -m "feat: build image spider gallery interface"
 - Consumes: complete implementation.
 - Produces: reproducible install, development, OpenCLI setup and release verification workflow.
 
-- [ ] **Step 1: Write failing documentation contract test**
+- [x] **Step 1: Write failing documentation contract test**
 
 ```python
 def test_readme_documents_required_install_and_privacy_boundaries():
@@ -852,37 +852,43 @@ def test_readme_documents_required_install_and_privacy_boundaries():
         assert required in text
 ```
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run: `uv run --project ..\.. pytest tests/test_readme.py -q`
 
 Expected: fails because README is missing.
 
-- [ ] **Step 3: Write docs and quality runner**
+- [x] **Step 3: Write docs and quality runner**
 
 README sections: product boundary, supported sources matrix, installation, junction development setup, Civitai API key, OpenCLI/extension/login setup, source-specific controls, downloads and privacy, troubleshooting, tests, and third-party licenses.
 
 `scripts/check_quality.py` runs, in order: Ruff check/format, Mypy on domain/provider/service packages, pytest, Node tests, Prettier check, `node --check` for every web JS module, `compileall`, `git diff --check`, and `git diff --cached --check`. It exits immediately on the first nonzero status and prints Chinese check labels.
 
-- [ ] **Step 4: Run the complete automated gate**
+- [x] **Step 4: Run the complete automated gate**
 
 Run: `uv run --project ..\.. python scripts/check_quality.py`
 
 Expected: every check passes with no warning or skipped required tool.
 
-- [ ] **Step 5: Install OpenCLI and validate optional-source diagnostics**
+- [x] **Step 5: Install OpenCLI and validate optional-source diagnostics**
 
 Run:
 
 ```powershell
-npm install -g @jackwener/opencli@^1.8.8
+git clone https://github.com/jackwener/opencli.git
+Set-Location opencli
+git checkout 8271afc
+npm install --ignore-scripts
+npm run build
+npm pack --ignore-scripts
+npm install -g .\jackwener-opencli-1.8.8.tgz
 opencli --version
 opencli doctor
 ```
 
 Expected: version is at least `1.8.8`; if the extension or login is not configured, record the real error and verify the node maps it to the corresponding Chinese status without blocking Civitai/local. Do not treat missing user login as an automated-test failure.
 
-- [ ] **Step 6: Create or verify the ComfyUI junction**
+- [x] **Step 6: Create or verify the ComfyUI junction**
 
 Run:
 
@@ -895,7 +901,7 @@ Get-Item -LiteralPath $link | Select-Object FullName,LinkType,Target
 
 Expected: the custom node path is a junction targeting this repository.
 
-- [ ] **Step 7: Restart ComfyUI and inspect the UI**
+- [x] **Step 7: Restart ComfyUI and inspect the UI**
 
 Start or restart the local ComfyUI backend, open its actual configured URL, add `TY Image Spider · 素材浏览`, and capture desktop and narrow-node screenshots. Verify:
 
@@ -906,7 +912,7 @@ Start or restart the local ComfyUI backend, open its actual configured URL, add 
 - No overlapping text, controls or modal content at desktop and narrow widths.
 - Node removal and workflow reload leave no duplicate DOM widgets or listeners.
 
-- [ ] **Step 8: Run final verification after any UI fixes**
+- [x] **Step 8: Run final verification after any UI fixes**
 
 Run:
 
@@ -918,7 +924,7 @@ git diff --check
 
 Expected: quality gate passes, only intended files are modified, and no generated screenshot, cache, browser profile or credential file is tracked.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```powershell
 git add README.md requirements-dev.txt scripts/check_quality.py tests/test_readme.py .gitignore

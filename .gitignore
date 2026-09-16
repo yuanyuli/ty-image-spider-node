@@ -8,4 +8,6 @@ __pycache__/
 *.py[cod]
 node_modules/
 .artifacts/
-
+.coverage
+htmlcov/
+dist/
