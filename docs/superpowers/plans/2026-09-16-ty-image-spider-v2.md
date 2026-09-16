@@ -231,7 +231,7 @@ git commit -m "feat: register zero-output image spider node"
 - Produces: `require_https_host(url, allowed)`, `resolve_inside(root, relative)`, `read_limited(response, max_bytes)`, `redact_secrets(value)`.
 - Produces: `read_image_metadata(path)` and `extract_prompts(metadata)`.
 
-- [ ] **Step 1: Write failing utility behavior tests**
+- [x] **Step 1: Write failing utility behavior tests**
 
 ```python
 def test_cache_uses_atomic_hashed_paths_and_expires(tmp_path, monkeypatch):
@@ -252,13 +252,13 @@ def test_workflow_json_is_not_treated_as_prompt():
     assert prompt == "" and negative == ""
 ```
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run: `uv run --project ..\.. pytest tests/test_cache.py tests/test_security.py tests/test_metadata.py -q`
 
 Expected: imports fail for the three new modules.
 
-- [ ] **Step 3: Implement one-purpose utilities**
+- [x] **Step 3: Implement one-purpose utilities**
 
 Use SHA-256 cache filenames, `tempfile.mkstemp()` plus `os.replace()` for atomic writes, `Path.resolve()` plus `relative_to()` for containment, and Pillow with decompression-bomb warnings promoted to errors. Secret-key matching includes `key`, `token`, `secret`, `cookie`, and `authorization` case-insensitively.
 
@@ -271,13 +271,13 @@ def require_https_host(url: str, allowed: Callable[[str], bool]) -> ParseResult:
     return parsed
 ```
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run: `uv run --project ..\.. pytest tests/test_cache.py tests/test_security.py tests/test_metadata.py -q`
 
 Expected: all tests pass, including corrupt-cache cleanup and path traversal cases.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add src/ty_image_spider/cache.py src/ty_image_spider/security.py src/ty_image_spider/metadata.py tests/test_cache.py tests/test_security.py tests/test_metadata.py
