@@ -86,7 +86,7 @@
 - Produces: `AssetItem.to_dict()` and `AssetItem.from_untrusted(value)` for the only accepted HTTP item representation.
 - Produces: `AssetProvider` Protocol and `ProviderRegistry.register(provider)`, `get(provider_id)`, `descriptors()`。
 
-- [ ] **Step 1: Write failing immutable-model and registry tests**
+- [x] **Step 1: Write failing immutable-model and registry tests**
 
 ```python
 def test_asset_item_serializes_without_none_values():
@@ -105,13 +105,13 @@ def test_registry_rejects_duplicate_provider_ids():
         registry.register(FakeProvider("civitai"))
 ```
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run: `uv run --project ..\.. pytest tests/test_models.py tests/test_provider_registry.py -q`
 
 Expected: collection fails because `ty_image_spider.models` and registry do not exist.
 
-- [ ] **Step 3: Implement focused dataclasses, protocol, and registry**
+- [x] **Step 3: Implement focused dataclasses, protocol, and registry**
 
 ```python
 @dataclass(frozen=True, slots=True)
@@ -133,13 +133,13 @@ class AssetProvider(Protocol):
 
 Implement explicit `to_dict()` methods so API serialization never depends on `dataclasses.asdict()` recursively exposing future private fields. `ProviderRegistry.get()` raises `SpiderError("provider_not_found", ...)` for unknown IDs.
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run: `uv run --project ..\.. pytest tests/test_models.py tests/test_provider_registry.py -q`
 
 Expected: all tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add src/ty_image_spider/models.py src/ty_image_spider/providers tests/test_models.py tests/test_provider_registry.py
