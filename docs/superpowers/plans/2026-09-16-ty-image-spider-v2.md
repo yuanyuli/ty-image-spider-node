@@ -161,7 +161,7 @@ git commit -m "feat: define provider domain contracts"
 - Consumes: domain package from Task 1.
 - Produces: `NODE_CLASS_MAPPINGS`, `NODE_DISPLAY_NAME_MAPPINGS`, `WEB_DIRECTORY` and `TyImageSpider.browse(state_json="{}")`.
 
-- [ ] **Step 1: Write failing ComfyUI registration tests**
+- [x] **Step 1: Write failing ComfyUI registration tests**
 
 ```python
 def test_package_registers_only_new_node_id():
@@ -177,13 +177,13 @@ def test_node_is_zero_output_and_serializes_only_state():
     assert TyImageSpider().browse('{"provider":"local"}') == {"ui": {"state": ['{"provider":"local"}']}}
 ```
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run: `uv run --project ..\.. pytest tests/test_package.py tests/test_node_contract.py -q`
 
 Expected: imports fail because package entry and node do not exist.
 
-- [ ] **Step 3: Implement minimal package and node adapter**
+- [x] **Step 3: Implement minimal package and node adapter**
 
 ```python
 class TyImageSpider:
@@ -203,13 +203,13 @@ class TyImageSpider:
 
 Root `__init__.py` adds only this repository's `src` directory to `sys.path`, imports the three ComfyUI exports, and never catches broad import errors.
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run: `uv run --project ..\.. pytest tests/test_package.py tests/test_node_contract.py -q`
 
 Expected: all tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add __init__.py pyproject.toml requirements.txt src/ty_image_spider tests/test_package.py tests/test_node_contract.py

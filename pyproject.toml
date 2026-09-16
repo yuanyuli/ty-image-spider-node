@@ -1,0 +1,23 @@
+[project]
+name = "ty-image-spider-node"
+version = "0.1.0"
+description = "ComfyUI 多来源图片素材浏览节点"
+requires-python = ">=3.10"
+dependencies = ["Pillow>=10"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib"
+
+[tool.ruff]
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E9", "F"]
+
+[tool.mypy]
+python_version = "3.10"
+mypy_path = "src"
+strict = true
+
