@@ -426,7 +426,7 @@ git commit -m "feat: add bounded local history provider"
 - Produces: `CommandResult`, `OpenCliRunner.version()`, `doctor()`, `run_json(args, timeout_seconds)`, and exit-code-to-`SpiderError` mapping.
 - Does not import or reference Xiaohongshu domain models.
 
-- [ ] **Step 1: Write failing subprocess boundary tests**
+- [x] **Step 1: Write failing subprocess boundary tests**
 
 ```python
 def test_runner_passes_arguments_without_shell_and_parses_json(fake_run):
@@ -445,23 +445,23 @@ def test_runner_maps_documented_exit_codes(fake_run, code, expected):
     assert caught.value.code == expected
 ```
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run: `uv run --project ..\.. pytest tests/test_opencli.py -q`
 
 Expected: import fails for `OpenCliRunner`.
 
-- [ ] **Step 3: Implement the process runner**
+- [x] **Step 3: Implement the process runner**
 
 Resolve the executable with `shutil.which`, use `subprocess.run([...], shell=False, capture_output=True, text=True, encoding="utf-8", errors="replace")`, set `CREATE_NO_WINDOW` on Windows, reject stdout over 4 MiB, and convert `TimeoutExpired` into `SpiderError("opencli_timeout", ...)`. Parse semantic versions and reject versions lower than `1.8.8`.
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run: `uv run --project ..\.. pytest tests/test_opencli.py -q`
 
 Expected: all tests pass, including missing executable, malformed JSON, output limit, timeout, and version cases.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add src/ty_image_spider/opencli.py tests/test_opencli.py
