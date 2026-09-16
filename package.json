@@ -1,0 +1,14 @@
+{
+  "name": "ty-image-spider-node",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "format:check": "prettier --check web tests/*.test.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^27.0.0",
+    "prettier": "^3.6.2"
+  }
+}

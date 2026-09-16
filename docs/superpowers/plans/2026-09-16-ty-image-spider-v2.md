@@ -700,7 +700,7 @@ git commit -m "feat: expose image spider HTTP API"
 - Produces: `createApiClient(fetchApi).requestJson(path, options)`, `createSpiderState(initial)`, `serializeWorkflowState(state)`, `createRequestGuard()`, `renderSourceControls(context)`.
 - Source controls emit `sourcechange`, `search`, `refresh`, and `filterchange` callbacks; they do not call HTTP directly.
 
-- [ ] **Step 1: Write failing pure-state and control tests**
+- [x] **Step 1: Write failing pure-state and control tests**
 
 ```javascript
 test("小红书持久状态移除结果和签名链接", () => {
@@ -722,13 +722,13 @@ test("过期请求不能覆盖新搜索", () => {
 });
 ```
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run: `node --test tests/api.test.mjs tests/state.test.mjs tests/source_controls.test.mjs`
 
 Expected: module-not-found failures for frontend modules.
 
-- [ ] **Step 3: Implement framework-free modules**
+- [x] **Step 3: Implement framework-free modules**
 
 `createApiClient(fetchApi)` closes over the `api.fetchApi` function supplied through dependency injection. Its `requestJson` method parses uniform envelopes and throws an `ApiError` containing `code`, `message`, and `action`. `source_controls.js` renders field kinds from Provider descriptors and keeps stable element heights. `icons.js` returns DOM nodes for search, refresh, next, download, copy, external-link, close, and chevron icons with `aria-hidden` and button tooltips.
 
@@ -740,13 +740,13 @@ export function serializeWorkflowState(state) {
 }
 ```
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run: `node --test tests/api.test.mjs tests/state.test.mjs tests/source_controls.test.mjs`
 
 Expected: all tests pass with lightweight fake DOM objects; no browser or ComfyUI process is required.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add web/api.js web/state.js web/source_controls.js web/icons.js tests/*.test.mjs package.json package-lock.json .prettierrc.json
