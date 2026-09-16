@@ -628,7 +628,7 @@ git commit -m "feat: add isolated image spider use cases"
 - Consumes: all Providers and services.
 - Produces: `ApplicationServices` frozen dataclass, `build_services(output_root, cache_root)`, route handler functions, and idempotent `register_routes()`.
 
-- [ ] **Step 1: Write failing route contract tests with fake services**
+- [x] **Step 1: Write failing route contract tests with fake services**
 
 ```python
 @pytest.mark.asyncio
@@ -646,13 +646,13 @@ async def test_route_maps_spider_error_without_secret(fake_request, fake_service
     assert "secret" not in json.dumps(body)
 ```
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run: `uv run --project ..\.. pytest tests/test_bootstrap.py tests/test_routes.py -q`
 
 Expected: imports fail for bootstrap and routes.
 
-- [ ] **Step 3: Implement composition and thin route adapters**
+- [x] **Step 3: Implement composition and thin route adapters**
 
 `build_services()` constructs one registry, one shared OpenCLI lock, three Providers, and four services. It obtains output root lazily from `folder_paths` only in production composition. Route functions accept an optional services argument for tests; registered wrappers call `get_services()`.
 
@@ -669,13 +669,13 @@ ROUTES = (
 
 Use `asyncio.to_thread(service.execute, payload)` for blocking calls. Register once via a module-level boolean owned by this package; do not attach arbitrary attributes to aiohttp route tables.
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run: `uv run --project ..\.. pytest tests/test_bootstrap.py tests/test_routes.py -q`
 
 Expected: success, malformed JSON, missing provider, optional-source unavailable, and route idempotency tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add src/ty_image_spider/bootstrap.py src/ty_image_spider/routes.py src/ty_image_spider/__init__.py tests/test_bootstrap.py tests/test_routes.py
