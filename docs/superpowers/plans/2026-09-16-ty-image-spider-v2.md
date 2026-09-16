@@ -768,7 +768,7 @@ git commit -m "feat: add source-aware frontend state"
 - Consumes: API, state, controls, icons and Provider descriptors.
 - Produces: `createGallery(context)`, `openAssetDialog(context, item)`, and ComfyUI extension `ty.image.spider`.
 
-- [ ] **Step 1: Write failing gallery and lifecycle tests**
+- [x] **Step 1: Write failing gallery and lifecycle tests**
 
 ```javascript
 test("小红书画廊隐藏整页下载并显示多图数量", () => {
@@ -789,13 +789,13 @@ test("重复 configure 不重复安装控件和监听器", async () => {
 });
 ```
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run: `node --test tests/gallery.test.mjs tests/dialog.test.mjs tests/frontend_integration.test.mjs`
 
 Expected: imports fail for gallery, dialog and integration modules.
 
-- [ ] **Step 3: Implement the visual workspace in focused modules**
+- [x] **Step 3: Implement the visual workspace in focused modules**
 
 Gallery cards use `aspect-ratio: 4 / 5`, fixed overlay rows, `object-fit: cover`, two columns below 520 px node width and three columns above it. Loading uses fixed skeleton blocks; image errors preserve card dimensions. Detail dialog uses a full viewport backdrop, main image with `object-fit: contain`, source-specific right panel, thumbnail strip, Escape close, Tab focus loop, and prior-focus restoration.
 
@@ -813,13 +813,13 @@ app.registerExtension({
 
 The CSS uses neutral charcoal surfaces, white/gray text, green operational accents, and a restrained red source marker for Xiaohongshu. Borders, spacing, focus rings, empty states and status colors remain legible under ComfyUI light and dark theme variables.
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run: `node --test tests/gallery.test.mjs tests/dialog.test.mjs tests/frontend_integration.test.mjs`
 
 Expected: all tests pass, including keyboard dialog behavior, source-specific actions, cleanup, restore and stale-request cases.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add web/gallery.js web/dialog.js web/ty_image_spider.js web/ty_image_spider.css tests/gallery.test.mjs tests/dialog.test.mjs tests/frontend_integration.test.mjs
