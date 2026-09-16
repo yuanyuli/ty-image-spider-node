@@ -566,7 +566,7 @@ git commit -m "feat: add optional Xiaohongshu provider"
 - Consumes: `ProviderRegistry` and domain models.
 - Produces: `SearchService.execute(payload)`, `DetailService.execute(payload)`, `DownloadService.execute(payload)`, `StatusService.list()` and `check(provider_id)`.
 
-- [ ] **Step 1: Write failing service isolation tests**
+- [x] **Step 1: Write failing service isolation tests**
 
 ```python
 def test_search_service_calls_only_selected_provider(registry):
@@ -582,13 +582,13 @@ def test_download_page_requires_provider_capability(registry):
         DownloadService(registry, tmp_path).download_page("xiaohongshu", [item_dict])
 ```
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run: `uv run --project ..\.. pytest tests/test_services.py -q`
 
 Expected: service modules do not exist.
 
-- [ ] **Step 3: Implement four narrow services**
+- [x] **Step 3: Implement four narrow services**
 
 Each service validates only fields needed by its use case and delegates to one Provider method. `DownloadService.download_page()` caps the list at 20 items and rejects providers without `bulk_download`. `StatusService.list()` catches an unavailable optional provider and returns its unavailable status without failing the list.
 
@@ -602,13 +602,13 @@ class DetailService:
         return self._providers.get(item.provider).detail(item)
 ```
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run: `uv run --project ..\.. pytest tests/test_services.py -q`
 
 Expected: all tests pass and no service imports aiohttp, ComfyUI, urllib, subprocess, or Pillow.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add src/ty_image_spider/services tests/test_services.py
