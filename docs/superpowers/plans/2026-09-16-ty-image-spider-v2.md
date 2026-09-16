@@ -301,7 +301,7 @@ git commit -m "feat: add cache and asset safety utilities"
 - Produces: `CivitaiProvider(client, cache, downloader)` implementing `AssetProvider`.
 - Produces: `ImageDownloader.download(url, item_id, output_root) -> DownloadResult`.
 
-- [ ] **Step 1: Write failing fake-server and normalization tests**
+- [x] **Step 1: Write failing fake-server and normalization tests**
 
 ```python
 def test_civitai_provider_maps_filters_and_normalizes_prompt(fake_civitai_server, tmp_path):
@@ -321,13 +321,13 @@ def test_civitai_timeout_returns_marked_stale_cache(tmp_path):
     assert page.stale is True and page.items[0].id == "cached"
 ```
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run: `uv run --project ..\.. pytest tests/test_civitai_client.py tests/test_civitai_provider.py tests/test_downloads.py -q`
 
 Expected: imports fail because the client and provider are absent.
 
-- [ ] **Step 3: Implement the client, strategy, and downloader**
+- [x] **Step 3: Implement the client, strategy, and downloader**
 
 Migrate verified behavior from the old repository by rewriting it behind the new interfaces: finite retry for 429/5xx, `Retry-After`, cursor loop protection, prompt fallback from page metadata, source-specific cache keys, official-domain redirect validation, temporary files, Pillow verification, and non-overwriting safe filenames.
 
@@ -343,13 +343,13 @@ class CivitaiProvider:
 
 The descriptor declares `bulk_download=True` and fields `site`, `period`, `sort`, `sfw`, `tag`, `only_with_prompt`, and `count` with fixed defaults and limits.
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run: `uv run --project ..\.. pytest tests/test_civitai_client.py tests/test_civitai_provider.py tests/test_downloads.py -q`
 
 Expected: all tests pass without reaching the public internet.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add src/ty_image_spider/providers/civitai_client.py src/ty_image_spider/providers/civitai.py src/ty_image_spider/downloads.py tests/fixtures tests/test_civitai_client.py tests/test_civitai_provider.py tests/test_downloads.py

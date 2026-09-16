@@ -1,0 +1,31 @@
+{
+  "items": [
+    {
+      "id": 101,
+      "url": "https://image.civitai.com/assets/cat.png",
+      "width": 832,
+      "height": 1216,
+      "createdAt": "2026-09-01T12:00:00Z",
+      "username": "alice",
+      "stats": {"likeCount": 12, "commentCount": 2},
+      "meta": {
+        "prompt": "cinematic cat",
+        "negativePrompt": "blur",
+        "resources": [
+          {"type": "model", "name": "Base XL"},
+          {"type": "lora", "name": "Detail LoRA"}
+        ]
+      }
+    },
+    {
+      "id": 102,
+      "url": "https://image.civitai.com/assets/workflow.png",
+      "width": 1024,
+      "height": 1024,
+      "username": "bob",
+      "meta": {"prompt": "{\"nodes\":[{\"id\":1}]}", "workflow": {"nodes": []}}
+    }
+  ],
+  "metadata": {"nextCursor": "cursor-2"}
+}
+
