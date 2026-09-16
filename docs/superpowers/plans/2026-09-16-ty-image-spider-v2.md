@@ -366,7 +366,7 @@ git commit -m "feat: add Civitai provider"
 - Consumes: `AssetItem`, `AssetDetail`, `SearchPage`, metadata utilities.
 - Produces: `LocalProvider(output_root)` implementing `AssetProvider` over `ty-image-spider/` and legacy `ty-node/`.
 
-- [ ] **Step 1: Write failing local indexing tests**
+- [x] **Step 1: Write failing local indexing tests**
 
 ```python
 def test_local_provider_reads_new_and_legacy_directories_in_mtime_order(tmp_path):
@@ -383,13 +383,13 @@ def test_local_provider_does_not_follow_external_symlink(tmp_path):
     assert LocalProvider(tmp_path).search(SearchRequest("local")).items == ()
 ```
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run: `uv run --project ..\.. pytest tests/test_local_provider.py -q`
 
 Expected: import fails for `LocalProvider`.
 
-- [ ] **Step 3: Implement bounded indexing and `/view` URLs**
+- [x] **Step 3: Implement bounded indexing and `/view` URLs**
 
 Use one scan helper per root, reject resolved paths outside the root, accept PNG/JPEG/WEBP, parse page cursors as integer offsets, and generate `/view` query parameters with `urllib.parse.urlencode()`.
 
@@ -403,13 +403,13 @@ def _view_url(path: Path, output_root: Path) -> str:
     })
 ```
 
-- [ ] **Step 4: Verify GREEN**
+- [x] **Step 4: Verify GREEN**
 
 Run: `uv run --project ..\.. pytest tests/test_local_provider.py -q`
 
 Expected: all tests pass on Windows; symlink test skips only if link creation is unavailable.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```powershell
 git add src/ty_image_spider/providers/local.py tests/test_local_provider.py
