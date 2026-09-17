@@ -70,9 +70,11 @@ export function renderSourceControls(context) {
     filterRow.append(renderField(document, field, filters[field.name], onFilterChange));
   }
   root.append(sourceBar, searchRow, filterRow);
-  if (unavailable && current.status.action) {
+  if (unavailable) {
     const action = element(document, "div", "tyis-source-action");
-    action.append(element(document, "span", "", current.status.action));
+    if (current.status.action) {
+      action.append(element(document, "span", "", current.status.action));
+    }
     const check = element(document, "button", "tyis-subtle-button", "重新检查");
     check.type = "button";
     check.dataset.action = "check-provider";

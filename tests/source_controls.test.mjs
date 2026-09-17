@@ -104,6 +104,19 @@ test("不可用来源禁用检索并显示恢复操作", () => {
   assert.equal(checked, 1);
 });
 
+test("不可用来源即使没有操作文案也能重新检查", () => {
+  const dom = new JSDOM("<!doctype html><body></body>");
+  const withoutAction = structuredClone(providers);
+  withoutAction[1].status.action = "";
+  const view = renderSourceControls({
+    document: dom.window.document,
+    providers: withoutAction,
+    provider: "xiaohongshu",
+  });
+
+  assert.ok(view.root.querySelector('[data-action="check-provider"]'));
+});
+
 test("图标与图标按钮具备可访问标签且尺寸稳定", () => {
   const dom = new JSDOM("<!doctype html><body></body>");
   const icon = createIcon(dom.window.document, "search");

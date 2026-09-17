@@ -152,6 +152,37 @@ test("素材源列表读取失败时保留错误组件", async () => {
   assert.ok(root.querySelector('[data-action="retry-providers"]'));
 });
 
+test("后发素材源检查结果不会被较慢的旧请求覆盖", async () => {
+  const pending = [];
+  let call = 0;
+  const fetchApi = (path) => {
+    if (!path.endsWith("/providers")) return response({ items: [] });
+    call += 1;
+    if (call === 1) return response(providers);
+    return new Promise((resolve) => pending.push(resolve));
+  };
+  const { extension, NodeType } = harness(fetchApi);
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+
+  node.tyImageSpider.checkProviders();
+  node.tyImageSpider.checkProviders();
+  const available = structuredClone(providers);
+  available[1].status = { available: true, message: "已连接" };
+  pending[1](await response(available));
+  await Promise.resolve();
+  pending[0](await response(providers));
+  await Promise.all(pending.map(() => Promise.resolve()));
+
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  const xhs = node.domWidgets[0].element.querySelector('[data-provider="xiaohongshu"]');
+  xhs.click();
+  assert.match(node.domWidgets[0].element.textContent, /已连接/);
+  assert.equal(node.domWidgets[0].element.querySelector('[data-action="search"]').disabled, false);
+});
+
 test("后发搜索结果不会被较慢的旧请求覆盖", async () => {
   const pending = [];
   const fetchApi = (path) => {

@@ -93,10 +93,24 @@ export function openImageViewer({ document, src, alt = "图片", onClose = () =>
   }
 
   function onKeyDown(event) {
-    if (event.key !== "Escape") return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    close();
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      close();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = [...overlay.querySelectorAll("button")].filter((node) => !node.disabled);
+    const first = focusable[0];
+    const last = focusable.at(-1);
+    if (!first || !last) return;
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 
   function close() {
@@ -104,6 +118,7 @@ export function openImageViewer({ document, src, alt = "图片", onClose = () =>
     closed = true;
     document.removeEventListener("pointermove", onPointerMove, true);
     document.removeEventListener("pointerup", onPointerUp, true);
+    document.removeEventListener("pointercancel", onPointerUp, true);
     document.removeEventListener("keydown", onKeyDown, true);
     overlay.remove();
     if (priorFocus?.isConnected) priorFocus.focus();
@@ -115,6 +130,7 @@ export function openImageViewer({ document, src, alt = "图片", onClose = () =>
   stage.addEventListener("dblclick", reset);
   document.addEventListener("pointermove", onPointerMove, true);
   document.addEventListener("pointerup", onPointerUp, true);
+  document.addEventListener("pointercancel", onPointerUp, true);
   document.addEventListener("keydown", onKeyDown, true);
   closeButton.focus();
 

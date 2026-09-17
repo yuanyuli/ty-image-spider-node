@@ -52,3 +52,39 @@ test("全屏查看器支持指针拖拽、Escape 关闭并恢复焦点", () => {
   assert.equal(document.body.contains(view.overlay), false);
   assert.equal(document.activeElement, prior);
 });
+
+test("全屏查看器约束键盘焦点并在指针取消时停止拖拽", () => {
+  const dom = new JSDOM("<!doctype html><body><button id='outside'>外部</button></body>", {
+    url: "https://localhost/",
+  });
+  const { document, PointerEvent = dom.window.MouseEvent } = dom.window;
+  const view = openImageViewer({ document, src: "https://example.com/image.jpg", alt: "图片" });
+  const buttons = [...view.overlay.querySelectorAll("button")];
+
+  buttons.at(-1).focus();
+  document.dispatchEvent(
+    new dom.window.KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true }),
+  );
+  assert.equal(document.activeElement, buttons[0]);
+  buttons[0].focus();
+  document.dispatchEvent(
+    new dom.window.KeyboardEvent("keydown", {
+      key: "Tab",
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  assert.equal(document.activeElement, buttons.at(-1));
+
+  view.stage.dispatchEvent(
+    new PointerEvent("pointerdown", { bubbles: true, button: 0, clientX: 10, clientY: 10 }),
+  );
+  document.dispatchEvent(new PointerEvent("pointercancel", { bubbles: true }));
+  document.dispatchEvent(
+    new PointerEvent("pointermove", { bubbles: true, clientX: 80, clientY: 60 }),
+  );
+  assert.match(view.image.style.transform, /translate\(0px, 0px\)/);
+  assert.equal(view.stage.classList.contains("is-dragging"), false);
+  view.close();
+});

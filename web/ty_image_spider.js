@@ -45,6 +45,7 @@ function mountNode(node, { app, api, document }) {
   hideWidget(stateWidget);
   const state = createSpiderState();
   const guard = createRequestGuard();
+  const providerGuard = createRequestGuard();
   const client = createApiClient(api.fetchApi.bind(api));
   const root = element(document, "div", "tyis-workspace");
   const masthead = element(document, "header", "tyis-masthead");
@@ -80,6 +81,7 @@ function mountNode(node, { app, api, document }) {
     state,
     ready: null,
     search,
+    checkProviders: loadProviders,
     restore,
     dispose,
   };
@@ -88,9 +90,11 @@ function mountNode(node, { app, api, document }) {
   return controller;
 
   async function loadProviders() {
+    const ticket = providerGuard.begin();
     try {
-      providers = await client.requestJson("/ty-image-spider/providers");
-      if (disposed) return;
+      const nextProviders = await client.requestJson("/ty-image-spider/providers");
+      if (!providerGuard.isCurrent(ticket) || disposed) return;
+      providers = nextProviders;
       const current = providers.some((entry) => entry.provider.id === state.get().provider)
         ? state.get().provider
         : providers[0]?.provider.id || "civitai";
@@ -99,6 +103,7 @@ function mountNode(node, { app, api, document }) {
       renderGallery();
       setActivity("就绪");
     } catch (error) {
+      if (!providerGuard.isCurrent(ticket) || disposed) return;
       setActivity(error.message || "素材源读取失败", true);
       renderProviderError(error);
     }
@@ -321,6 +326,7 @@ function mountNode(node, { app, api, document }) {
     if (disposed) return;
     disposed = true;
     guard.invalidate();
+    providerGuard.invalidate();
     dialog?.close();
     document.removeEventListener("keydown", onKeyDown, true);
     root.remove();
