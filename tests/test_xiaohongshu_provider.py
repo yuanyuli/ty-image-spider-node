@@ -41,6 +41,11 @@ class FakeRunner:
             raise self.error
         return object()
 
+    def bridge_status(self):
+        if self.error:
+            raise self.error
+        return object()
+
     def run_json(self, args, timeout_seconds):
         self.calls.append(Call(list(args), timeout_seconds))
         if self.error:

@@ -113,7 +113,7 @@ class XiaohongshuProvider:
     def status(self) -> ProviderStatus:
         try:
             version = self._runner.version()
-            self._runner.doctor()
+            self._runner.bridge_status()
             return ProviderStatus(True, message=f"OpenCLI {version} 已连接")
         except SpiderError as exc:
             return ProviderStatus(False, exc.code, exc.message, exc.action)

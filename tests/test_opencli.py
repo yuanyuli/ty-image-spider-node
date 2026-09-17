@@ -130,3 +130,24 @@ def test_doctor_maps_disconnected_extension_even_when_exit_code_is_zero():
         runner(fake_run).doctor()
 
     assert caught.value.code == "opencli_bridge_unavailable"
+
+
+def test_bridge_status_uses_fast_daemon_probe_and_maps_disconnection():
+    fake_run = FakeRun(
+        completed(0, "Daemon: running\nExtension: disconnected\nPort: 19825\n", "")
+    )
+
+    with pytest.raises(SpiderError) as caught:
+        runner(fake_run).bridge_status()
+
+    assert caught.value.code == "opencli_bridge_unavailable"
+    assert fake_run.calls[0][0][-2:] == ["daemon", "status"]
+    assert fake_run.calls[0][1]["timeout"] == 5
+
+
+def test_bridge_status_accepts_connected_extension():
+    fake_run = FakeRun(completed(0, "Daemon: running\nExtension: connected\n", ""))
+
+    result = runner(fake_run).bridge_status()
+
+    assert result.returncode == 0

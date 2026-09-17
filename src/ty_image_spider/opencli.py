@@ -93,6 +93,18 @@ class OpenCliRunner:
             )
         return result
 
+    def bridge_status(self) -> CommandResult:
+        result = self._execute(["daemon", "status"], 5)
+        report = f"{result.stdout}\n{result.stderr}".casefold()
+        if "extension: disconnected" in report:
+            raise SpiderError(
+                "opencli_bridge_unavailable",
+                "OpenCLI Chrome 扩展未连接",
+                "请启用 Chrome 扩展后重试",
+                503,
+            )
+        return result
+
     def run_json(self, args: Sequence[str], timeout_seconds: int) -> Any:
         result = self._execute(args, timeout_seconds)
         try:
