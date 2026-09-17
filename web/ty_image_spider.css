@@ -435,7 +435,10 @@
 }
 
 .tyis-card {
+  display: flex;
   min-width: 0;
+  min-height: 280px;
+  flex-direction: column;
   overflow: hidden;
   background: var(--tyis-panel);
   border: 1px solid var(--tyis-line);
@@ -457,6 +460,7 @@
   background: #0d0f10;
   border: 0;
   cursor: zoom-in;
+  flex: 0 0 auto;
 }
 
 .tyis-card-image {
@@ -549,6 +553,7 @@
   min-height: 54px;
   box-sizing: border-box;
   padding: 8px 9px;
+  flex: 0 0 54px;
 }
 
 .tyis-card-title {
