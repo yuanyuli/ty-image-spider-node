@@ -122,6 +122,20 @@ export function openAssetDialog(context) {
     if (priorFocus?.isConnected) priorFocus.focus();
     onClose();
   }
+  function update(nextDetail) {
+    if (closed || !nextDetail?.item) return;
+    const nextItem = nextDetail.item;
+    const nextPrompt = nextItem.prompt;
+    const prompt = overlay.querySelector(".tyis-prompt-copy");
+    const unavailable = overlay.querySelector(".tyis-prompt-unavailable");
+    if (prompt && nextPrompt) prompt.textContent = nextPrompt;
+    else if (unavailable && nextPrompt) {
+      unavailable.replaceWith(
+        textSection(document, "正向提示词", nextPrompt, copyText, "copy-prompt"),
+      );
+    }
+    dialog.setAttribute("aria-label", nextItem.title || `素材详情`);
+  }
   function onKeyDown(event) {
     if (viewer) return;
     if (event.key === "Escape") {
@@ -149,7 +163,7 @@ export function openAssetDialog(context) {
   });
   document.addEventListener("keydown", onKeyDown, true);
   closeButton.focus();
-  return { overlay, dialog, mainImage, close, selectImage };
+  return { overlay, dialog, mainImage, close, selectImage, update };
 }
 
 function renderFacts(document, item) {

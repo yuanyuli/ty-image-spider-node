@@ -377,6 +377,28 @@
   flex: 1;
 }
 
+.tyis-gallery-host {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tyis-masthead,
+.tyis-controls-host,
+.tyis-gallery-toolbar {
+  flex-shrink: 0;
+}
+
+.tyis-grid {
+  scrollbar-gutter: stable;
+}
+
+.tyis-field:disabled,
+.tyis-subtle-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .tyis-gallery {
   display: flex;
   flex-direction: column;

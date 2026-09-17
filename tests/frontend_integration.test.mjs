@@ -9,7 +9,7 @@ const providers = [
     provider: {
       id: "civitai",
       label: "Civitai",
-      filters: [],
+      filters: [{ name: "sfw", label: "仅 SFW", kind: "toggle", default: true }],
       capabilities: { bulk_download: true },
     },
     status: { available: true, message: "就绪" },
@@ -242,4 +242,72 @@ test("配置恢复普通来源结果并清理小红书持久结果", async () =>
   });
   node.onConfigure({});
   assert.deepEqual(node.tyImageSpider.state.get().items, []);
+});
+
+test("切换来源后恢复各自已经加载的图片", async () => {
+  const { extension, NodeType } = harness();
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+  node.tyImageSpider.state.set({
+    items: [{ provider: "civitai", id: "c-1" }],
+    filters: { query: "cat" },
+  });
+  node.tyImageSpider.render();
+
+  node.domWidgets[0].element.querySelector('[data-provider="xiaohongshu"]').click();
+  node.domWidgets[0].element.querySelector('[data-provider="civitai"]').click();
+
+  assert.equal(node.tyImageSpider.state.get().items[0].id, "c-1");
+});
+
+test("改变非文本筛选项会立即发起新检索", async () => {
+  let searches = 0;
+  const fetchApi = (path) => {
+    if (path.endsWith("/providers")) return response(providers);
+    if (path.endsWith("/search")) {
+      searches += 1;
+      return response({ items: [] });
+    }
+    return response({});
+  };
+  const { extension, NodeType, dom } = harness(fetchApi);
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+  const checkbox = node.domWidgets[0].element.querySelector('[name="sfw"]');
+  checkbox.checked = false;
+  checkbox.dispatchEvent(new dom.window.Event("change"));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(searches, 1);
+});
+
+test("卡片立即打开预览，关闭后迟到详情不会重开", async () => {
+  let finishDetail;
+  const { extension, NodeType, document } = harness((path) => {
+    if (path.endsWith("/providers")) return response(providers);
+    if (path.endsWith("/search"))
+      return response({
+        items: [
+          { provider: "civitai", id: "101", preview_url: "https://image.civitai.com/101.png" },
+        ],
+      });
+    return new Promise((resolve) => {
+      finishDetail = resolve;
+    });
+  });
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+  await node.tyImageSpider.search();
+  node.domWidgets[0].element.querySelector(".tyis-card-media").click();
+  assert.ok(document.querySelector(".tyis-dialog"));
+  document.querySelector('[aria-label="关闭详情"]').click();
+  finishDetail(await response({ item: { provider: "civitai", id: "101", prompt: "late prompt" } }));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(document.querySelector(".tyis-dialog"), null);
 });

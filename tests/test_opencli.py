@@ -151,3 +151,28 @@ def test_bridge_status_accepts_connected_extension():
     result = runner(fake_run).bridge_status()
 
     assert result.returncode == 0
+
+
+def test_restart_daemon_uses_bounded_opencli_command():
+    fake_run = FakeRun(completed(0, "Daemon restarted\n", ""))
+
+    runner(fake_run).restart_daemon()
+
+    assert fake_run.calls[0][0][-2:] == ["daemon", "restart"]
+    assert fake_run.calls[0][1]["timeout"] == 15
+
+
+def test_command_failure_preserves_xiaohongshu_filter_diagnostic():
+    fake_run = FakeRun(
+        completed(
+            1,
+            "ok: false\nerror:\n  message: filter layout (ambiguous_option)\n",
+            "",
+        )
+    )
+
+    with pytest.raises(SpiderError) as caught:
+        runner(fake_run).run_json(["xiaohongshu", "search", "摄影"], 30)
+
+    assert caught.value.code == "opencli_xiaohongshu_filter_changed"
+    assert "筛选" in caught.value.message

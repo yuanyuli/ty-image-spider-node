@@ -105,6 +105,9 @@ class OpenCliRunner:
             )
         return result
 
+    def restart_daemon(self) -> CommandResult:
+        return self._execute(["daemon", "restart"], 15)
+
     def run_json(self, args: Sequence[str], timeout_seconds: int) -> Any:
         result = self._execute(args, timeout_seconds)
         try:
@@ -153,7 +156,7 @@ class OpenCliRunner:
             )
         result = CommandResult(completed.returncode, stdout, stderr)
         if completed.returncode != 0:
-            raise self._exit_error(completed.returncode)
+            raise self._exit_error(completed.returncode, stdout, stderr)
         return result
 
     @staticmethod
@@ -168,7 +171,15 @@ class OpenCliRunner:
         return result
 
     @staticmethod
-    def _exit_error(returncode: int) -> SpiderError:
+    def _exit_error(returncode: int, stdout: str = "", stderr: str = "") -> SpiderError:
+        report = f"{stdout}\n{stderr}".casefold()
+        if "ambiguous_option" in report or "filter layout" in report:
+            return SpiderError(
+                "opencli_xiaohongshu_filter_changed",
+                "小红书筛选界面已变化，OpenCLI 无法匹配筛选项",
+                "可稍后重试，或更新 OpenCLI 适配器",
+                502,
+            )
         mapped = _EXIT_CODES.get(returncode)
         if mapped is None:
             return SpiderError(

@@ -127,3 +127,15 @@ test("Wallhaven 详情显示统计、分类、标签和色板", () => {
   assert.equal(view.overlay.querySelector(".tyis-dialog-source").textContent, "WALLHAVEN");
   view.close();
 });
+
+test("详情异步更新保留已打开的全屏查看器", () => {
+  const dom = new JSDOM("<!doctype html><body></body>", { url: "https://localhost/" });
+  const value = detail();
+  const view = openAssetDialog({ document: dom.window.document, detail: value });
+  view.mainImage.click();
+  const viewer = dom.window.document.querySelector(".tyis-image-viewer");
+  view.update({ ...value, item: { ...value.item, prompt: "补全后的提示词" } });
+  assert.equal(dom.window.document.querySelector(".tyis-image-viewer"), viewer);
+  assert.match(view.overlay.textContent, /补全后的提示词/);
+  view.close();
+});

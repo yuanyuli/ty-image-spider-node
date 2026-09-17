@@ -28,6 +28,36 @@ export function createSpiderState(initial = {}) {
   };
 }
 
+const EMPTY_SESSION = Object.freeze({
+  filters: { query: "" },
+  items: [],
+  summary: undefined,
+  nextCursor: null,
+  error: null,
+});
+
+export function createProviderSessions() {
+  const values = new Map();
+  return {
+    save(provider, state) {
+      values.set(provider, cloneSession(state));
+    },
+    load(provider) {
+      return cloneSession(values.get(provider) || EMPTY_SESSION);
+    },
+  };
+}
+
+function cloneSession(value) {
+  return {
+    filters: { ...(value.filters || EMPTY_SESSION.filters) },
+    items: [...(value.items || EMPTY_SESSION.items)],
+    summary: value.summary,
+    nextCursor: value.nextCursor ?? null,
+    error: value.error ?? null,
+  };
+}
+
 export function serializeWorkflowState(state) {
   const value = {
     provider: state.provider,

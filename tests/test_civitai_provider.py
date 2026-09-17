@@ -27,6 +27,30 @@ class FakeClient:
         return {}
 
 
+class PromptPagingClient(FakeClient):
+    def search(self, site, params):
+        self.calls.append((site, dict(params)))
+        cursor = params.get("cursor")
+        if cursor is None:
+            return CivitaiPage(
+                ({"id": 201, "url": "https://image.civitai.com/201.png", "meta": {}},),
+                "page-2",
+            )
+        return CivitaiPage(
+            (
+                {
+                    "id": 202,
+                    "url": "https://image.civitai.com/202.png",
+                    "meta": {"prompt": "second page prompt"},
+                },
+            ),
+            None,
+        )
+
+    def page_metadata(self, site, image_id):
+        return {"prompt": "first page prompt"} if image_id == "201" else {}
+
+
 class FakeDownloader:
     def download(self, url, item_id, output_root):
         return DownloadResult((f"ty-image-spider/civitai/{item_id}.png",), "已下载")
@@ -67,8 +91,25 @@ def test_civitai_provider_maps_filters_and_normalizes_prompt(tmp_path):
     assert site == "civitai.com"
     assert params["period"] == "Week"
     assert params["sort"] == "Most Reactions"
-    assert params["tag"] == 1441
-    assert params["nsfw"] == "None"
+    assert params["tags"] == 1441
+    assert params["nsfw"] == "false"
+
+
+def test_only_with_prompt_enriches_missing_metadata_and_continues_pages(tmp_path):
+    client = PromptPagingClient()
+    page = make_provider(tmp_path, client).search(
+        SearchRequest(
+            "civitai", filters={"only_with_prompt": True, "count": 2, "sfw": False}
+        )
+    )
+
+    assert [item.id for item in page.items] == ["201", "202"]
+    assert [item.prompt for item in page.items] == [
+        "first page prompt",
+        "second page prompt",
+    ]
+    assert client.calls[0][1]["nsfw"] == "true"
+    assert client.calls[1][1]["cursor"] == "page-2"
 
 
 def test_civitai_provider_does_not_treat_workflow_as_prompt(tmp_path):

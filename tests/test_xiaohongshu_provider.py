@@ -9,7 +9,10 @@ from PIL import Image
 from ty_image_spider.cache import JsonCache
 from ty_image_spider.models import AssetItem, SearchRequest, SpiderError
 from ty_image_spider.providers.xiaohongshu import XiaohongshuProvider
-from ty_image_spider.providers.xiaohongshu_extract import build_card_extract_js
+from ty_image_spider.providers.xiaohongshu_extract import (
+    build_card_extract_js,
+    build_search_extract_js,
+)
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -53,6 +56,16 @@ class FakeRunner:
         if self.on_call:
             self.on_call(args)
         return self.responses.pop(0) if self.responses else {}
+
+
+class FilterFailureRunner(FakeRunner):
+    def run_json(self, args, timeout_seconds):
+        self.calls.append(Call(list(args), timeout_seconds))
+        if args[:2] == ["xiaohongshu", "search"]:
+            raise SpiderError(
+                "opencli_xiaohongshu_filter_changed", "筛选界面已变化", status=502
+            )
+        return self.responses.pop(0)
 
 
 def make_provider(tmp_path, runner=None):
@@ -196,3 +209,20 @@ def test_status_exposes_optional_dependency_failure(tmp_path):
 
     assert status.available is False
     assert status.code == "opencli_missing"
+
+
+def test_filter_layout_failure_falls_back_to_read_only_browser_cards(tmp_path):
+    runner = FilterFailureRunner([SEARCH])
+
+    page = make_provider(tmp_path, runner).search(
+        SearchRequest("xiaohongshu", "秋季穿搭", {"count": 12})
+    )
+
+    assert runner.calls[1].args[:4] == [
+        "browser",
+        "site:xiaohongshu",
+        "eval",
+        build_search_extract_js("秋季穿搭"),
+    ]
+    assert page.items[0].title == "秋季通勤穿搭"
+    assert "只读" in page.message

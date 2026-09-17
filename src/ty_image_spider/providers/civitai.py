@@ -27,6 +27,7 @@ from .civitai_client import CivitaiClient
 
 
 _TAGS = {"Portrait": 1441}
+_MAX_PROMPT_SCAN_PAGES = 5
 
 
 class CivitaiProvider:
@@ -101,16 +102,39 @@ class CivitaiProvider:
     def search(self, request: SearchRequest) -> SearchPage:
         site, params, only_with_prompt = self._search_parameters(request)
         cache_key = self._cache_key(site, params, only_with_prompt)
+        raw_limit = params.get("limit")
+        target_count = raw_limit if isinstance(raw_limit, int) else 12
         try:
             raw_page = self._client.search(site, params)
-            page = SearchPage(
-                tuple(
-                    item
-                    for item in (self._normalize(raw, site) for raw in raw_page.items)
-                    if not only_with_prompt or item.has_prompt
-                ),
-                raw_page.next_cursor,
-            )
+            items: list[AssetItem] = []
+            item_ids: set[str] = set()
+            seen_cursors: set[str] = set()
+            pages_scanned = 0
+            while True:
+                pages_scanned += 1
+                for raw in raw_page.items:
+                    item = self._normalize(raw, site)
+                    if only_with_prompt and not item.has_prompt:
+                        item = self._with_page_metadata(item, site)
+                    if (
+                        not only_with_prompt or item.has_prompt
+                    ) and item.id not in item_ids:
+                        items.append(item)
+                        item_ids.add(item.id)
+                    if len(items) >= target_count:
+                        break
+                if (
+                    len(items) >= target_count
+                    or not only_with_prompt
+                    or not raw_page.next_cursor
+                    or raw_page.next_cursor in seen_cursors
+                    or pages_scanned >= _MAX_PROMPT_SCAN_PAGES
+                ):
+                    break
+                seen_cursors.add(raw_page.next_cursor)
+                params = {**params, "cursor": raw_page.next_cursor}
+                raw_page = self._client.search(site, params)
+            page = SearchPage(tuple(items), raw_page.next_cursor)
             self._cache.put(cache_key, page.to_dict())
             return page
         except SpiderError:
@@ -141,6 +165,18 @@ class CivitaiProvider:
             metadata=merged,
         )
 
+    def _with_page_metadata(self, item: AssetItem, site: str) -> AssetItem:
+        metadata = dict(item.metadata)
+        metadata.update(self._client.page_metadata(site, item.id))
+        prompt, negative = extract_prompts(metadata)
+        return replace(
+            item,
+            prompt=prompt or None,
+            negative_prompt=negative or None,
+            has_prompt=bool(prompt),
+            metadata=metadata,
+        )
+
     def download(self, item: AssetItem, output_root: Path) -> DownloadResult:
         self._require_item(item)
         if not item.preview_url:
@@ -162,8 +198,8 @@ class CivitaiProvider:
             "period": str(filters.get("period") or "AllTime"),
             "sort": str(filters.get("sort") or "Most Reactions"),
             "limit": count,
-            "nsfw": "None" if filters.get("sfw", True) else None,
-            "tag": _TAGS.get(str(tag), tag or None),
+            "nsfw": "false" if filters.get("sfw", True) else "true",
+            "tags": _TAGS.get(str(tag), tag or None),
             "cursor": request.cursor,
         }
         return site, params, bool(filters.get("only_with_prompt", False))

@@ -11,6 +11,15 @@ from urllib.parse import urlparse
 _NOTE_PATH = re.compile(r"^/(?:explore|search_result|note)/([0-9a-zA-Z_-]+)/*$")
 
 
+def build_search_extract_js(query: str) -> str:
+    guard = (
+        "const pageUrl = new URL(location.href);"
+        "if (pageUrl.pathname !== '/search_result' || "
+        f"pageUrl.searchParams.get('keyword') !== {json.dumps(query)}) return [];"
+    )
+    return build_card_extract_js().replace("(() => {", "(() => {" + guard, 1)
+
+
 def build_card_extract_js() -> str:
     return r"""
 (() => {
@@ -36,7 +45,12 @@ def build_card_extract_js() -> str:
     const previewUrl = clean(image?.currentSrc || image?.src || image?.getAttribute('data-src'));
     const countText = clean(card.querySelector('[class*="image-count"], [class*="count-badge"]')?.textContent);
     const count = Number.parseInt(countText, 10);
-    rows.push({ id: matched[1], url, preview_url: previewUrl, image_count: Number.isFinite(count) ? count : 1 });
+    const title = clean(card.querySelector('.title, .note-title, .footer .title span')?.textContent)
+      || clean(link.querySelector('span')?.textContent);
+    const author = clean(card.querySelector('a.author .name, .author-name, .nick-name')?.textContent);
+    const likes = clean(card.querySelector('.count, .like-count, .like-wrapper .count')?.textContent);
+    rows.push({ id: matched[1], url, title, author, likes, preview_url: previewUrl,
+      image_count: Number.isFinite(count) ? count : 1 });
   }
   return rows;
 })()

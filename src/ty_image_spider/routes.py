@@ -96,6 +96,14 @@ async def post_provider_check(
     return await _respond(lambda: app.status.check("xiaohongshu"))
 
 
+async def post_opencli_connect(
+    request: web.Request, services: ApplicationServices | None = None
+) -> web.Response:
+    del request
+    app = services or get_services()
+    return await _respond(app.opencli_connect.execute)
+
+
 async def _execute_payload(
     request: web.Request, execute: Callable[[Mapping[str, object]], object]
 ) -> web.Response:
@@ -177,6 +185,7 @@ ROUTES: tuple[
     ("POST", "/ty-image-spider/download", post_download),
     ("POST", "/ty-image-spider/download-page", post_download_page),
     ("POST", "/ty-image-spider/providers/xiaohongshu/check", post_provider_check),
+    ("POST", "/ty-image-spider/providers/xiaohongshu/connect", post_opencli_connect),
 )
 
 

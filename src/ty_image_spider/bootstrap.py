@@ -22,6 +22,7 @@ from .services.detail import DetailService
 from .services.download import DownloadService
 from .services.search import SearchService
 from .services.status import StatusService
+from .services.opencli_connect import OpenCliConnectService
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,6 +32,7 @@ class ApplicationServices:
     detail: DetailService
     download: DownloadService
     status: StatusService
+    opencli_connect: OpenCliConnectService
 
 
 def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
@@ -52,11 +54,13 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
             WallhavenDownloader(),
         )
     )
+    opencli = OpenCliRunner()
+    browser_lock = threading.Lock()
     providers.register(
         XiaohongshuProvider(
-            OpenCliRunner(),
+            opencli,
             JsonCache(cache / "xiaohongshu"),
-            threading.Lock(),
+            browser_lock,
         )
     )
     providers.register(LocalProvider(output))
@@ -67,4 +71,5 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
         detail=DetailService(providers),
         download=DownloadService(providers, output),
         status=StatusService(providers),
+        opencli_connect=OpenCliConnectService(opencli, session_lock=browser_lock),
     )

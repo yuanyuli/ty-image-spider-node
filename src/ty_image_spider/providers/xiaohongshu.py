@@ -31,6 +31,7 @@ from ..security import resolve_inside
 from .xiaohongshu_extract import (
     build_card_extract_js,
     build_detail_extract_js,
+    build_search_extract_js,
     detail_note_id,
     merge_search_rows,
     trusted_images,
@@ -183,45 +184,32 @@ class XiaohongshuProvider:
         note_type = str(filters.get("note_type") or "image")
         publish_time = str(filters.get("publish_time") or "anytime")
         cache_key = _cache_key(query, sort, note_type, publish_time, count)
+        args = [
+            "xiaohongshu",
+            "search",
+            query,
+            "--site-session",
+            "persistent",
+            "--window",
+            "background",
+            "--limit",
+            str(count),
+            "--sort",
+            sort,
+            "--note-type",
+            note_type,
+            "--publish-time",
+            publish_time,
+            "--format",
+            "json",
+        ]
         try:
             with self._session_lock:
-                rows = self._runner.run_json(
-                    [
-                        "xiaohongshu",
-                        "search",
-                        query,
-                        "--site-session",
-                        "persistent",
-                        "--window",
-                        "background",
-                        "--limit",
-                        str(count),
-                        "--sort",
-                        sort,
-                        "--note-type",
-                        note_type,
-                        "--publish-time",
-                        publish_time,
-                        "--format",
-                        "json",
-                    ],
-                    timeout_seconds=120,
-                )
-                cards = self._runner.run_json(
-                    [
-                        "browser",
-                        "site:xiaohongshu",
-                        "eval",
-                        build_card_extract_js(),
-                        "--format",
-                        "json",
-                    ],
-                    timeout_seconds=30,
-                )
+                rows, cards, message = self._read_search(args, query)
             items = tuple(
-                _search_item(value) for value in merge_search_rows(rows, cards)
+                _search_item(value) for value in merge_search_rows(rows, cards)[:count]
             )
-            page = SearchPage(items)
+            page = SearchPage(items, message=message)
             self._cache.put(cache_key, _persistent_page(page))
             return page
         except SpiderError:
@@ -229,6 +217,46 @@ class XiaohongshuProvider:
             if cached is None:
                 raise
             return _cached_page(cached)
+
+    def _read_search(self, args: list[str], query: str) -> tuple[Any, Any, str]:
+        try:
+            rows = self._runner.run_json(args, timeout_seconds=120)
+        except SpiderError as exc:
+            if exc.code not in {
+                "opencli_xiaohongshu_filter_changed",
+                "opencli_timeout",
+            }:
+                raise
+            cards = self._runner.run_json(
+                [
+                    "browser",
+                    "site:xiaohongshu",
+                    "eval",
+                    build_search_extract_js(query),
+                    "--format",
+                    "json",
+                ],
+                timeout_seconds=30,
+            )
+            if not merge_search_rows(cards, cards):
+                raise exc
+            return (
+                cards,
+                cards,
+                "OpenCLI 适配失败，显示当前页面只读结果；筛选条件可能未生效",
+            )
+        cards = self._runner.run_json(
+            [
+                "browser",
+                "site:xiaohongshu",
+                "eval",
+                build_card_extract_js(),
+                "--format",
+                "json",
+            ],
+            timeout_seconds=30,
+        )
+        return rows, cards, ""
 
     def _read_note(
         self, url: str, fallback_id: str, base_item: AssetItem | None = None

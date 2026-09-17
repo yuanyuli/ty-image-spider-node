@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createRequestGuard, createSpiderState, serializeWorkflowState } from "../web/state.js";
+import {
+  createProviderSessions,
+  createRequestGuard,
+  createSpiderState,
+  serializeWorkflowState,
+} from "../web/state.js";
 
 test("小红书持久状态移除结果和签名链接", () => {
   const saved = serializeWorkflowState({
@@ -58,4 +63,33 @@ test("过期请求不能覆盖新搜索", () => {
   assert.equal(guard.isCurrent(current), true);
   guard.invalidate();
   assert.equal(guard.isCurrent(current), false);
+});
+
+test("切换素材源时分别保留筛选、结果和分页位置", () => {
+  const sessions = createProviderSessions();
+  const civitai = {
+    filters: { query: "cat", sfw: true },
+    items: [{ id: "c-1" }],
+    summary: { count: 1 },
+    nextCursor: "c-2",
+    error: null,
+  };
+  sessions.save("civitai", civitai);
+  sessions.save("wallhaven", {
+    filters: { query: "nature", sorting: "toplist", top_range: "1w" },
+    items: [{ id: "w-1" }],
+    summary: { count: 1 },
+    nextCursor: "2",
+    error: null,
+  });
+
+  assert.deepEqual(sessions.load("civitai"), civitai);
+  assert.equal(sessions.load("wallhaven").items[0].id, "w-1");
+  assert.deepEqual(sessions.load("local"), {
+    filters: { query: "" },
+    items: [],
+    summary: undefined,
+    nextCursor: null,
+    error: null,
+  });
 });

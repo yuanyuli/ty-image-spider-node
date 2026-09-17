@@ -127,3 +127,65 @@ test("图标与图标按钮具备可访问标签且尺寸稳定", () => {
   assert.equal(button.title, "刷新结果");
   assert.equal(button.getAttribute("aria-label"), "刷新结果");
 });
+
+test("小红书来源提供一键连接操作", () => {
+  const dom = new JSDOM("<!doctype html><body></body>");
+  let connected = 0;
+  const view = renderSourceControls({
+    document: dom.window.document,
+    providers,
+    provider: "xiaohongshu",
+    onConnect: () => {
+      connected += 1;
+    },
+  });
+
+  view.root.querySelector('[data-action="connect-opencli"]').click();
+  assert.equal(connected, 1);
+});
+
+test("Wallhaven 榜单范围仅在热门榜排序时可用", () => {
+  const dom = new JSDOM("<!doctype html><body></body>");
+  const wallhaven = [
+    {
+      provider: {
+        id: "wallhaven",
+        label: "Wallhaven",
+        filters: [
+          {
+            name: "sorting",
+            label: "排序",
+            kind: "select",
+            default: "relevance",
+            options: [{ value: "relevance", label: "相关度" }],
+          },
+          {
+            name: "top_range",
+            label: "榜单范围",
+            kind: "select",
+            default: "1M",
+            options: [{ value: "1M", label: "一月" }],
+          },
+        ],
+        capabilities: {},
+      },
+      status: { available: true },
+    },
+  ];
+
+  const inactive = renderSourceControls({
+    document: dom.window.document,
+    providers: wallhaven,
+    provider: "wallhaven",
+    filters: { sorting: "relevance" },
+  });
+  assert.equal(inactive.root.querySelector('[name="top_range"]').disabled, true);
+
+  const active = renderSourceControls({
+    document: dom.window.document,
+    providers: wallhaven,
+    provider: "wallhaven",
+    filters: { sorting: "toplist" },
+  });
+  assert.equal(active.root.querySelector('[name="top_range"]').disabled, false);
+});

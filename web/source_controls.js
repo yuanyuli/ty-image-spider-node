@@ -10,6 +10,7 @@ export function renderSourceControls(context) {
     onSearch = () => {},
     onRefresh = () => {},
     onCheck = () => {},
+    onConnect = () => {},
     onFilterChange = () => {},
   } = context;
   const current = providers.find((entry) => entry.provider.id === provider) || providers[0];
@@ -36,6 +37,14 @@ export function renderSourceControls(context) {
     current?.status?.message || (current?.status?.available === false ? "不可用" : "就绪"),
   );
   sourceBar.append(segments, status);
+
+  if (current?.provider.id === "xiaohongshu") {
+    const connect = element(document, "button", "tyis-subtle-button", "一键连接 OpenCLI");
+    connect.type = "button";
+    connect.dataset.action = "connect-opencli";
+    connect.addEventListener("click", onConnect);
+    sourceBar.append(connect);
+  }
 
   const searchRow = element(document, "div", "tyis-search-row");
   const searchBox = element(document, "label", "tyis-search-box");
@@ -67,7 +76,14 @@ export function renderSourceControls(context) {
 
   const filterRow = element(document, "div", "tyis-filter-row");
   for (const field of current?.provider.filters || []) {
-    filterRow.append(renderField(document, field, filters[field.name], onFilterChange));
+    filterRow.append(
+      renderField(document, field, filters[field.name], onFilterChange, {
+        disabled:
+          current?.provider.id === "wallhaven" &&
+          field.name === "top_range" &&
+          (filters.sorting ?? "relevance") !== "toplist",
+      }),
+    );
   }
   root.append(sourceBar, searchRow, filterRow);
   if (unavailable) {
@@ -85,7 +101,7 @@ export function renderSourceControls(context) {
   return { root, query, status, descriptor: current?.provider || null };
 }
 
-function renderField(document, field, supplied, onFilterChange) {
+function renderField(document, field, supplied, onFilterChange, options = {}) {
   const wrapper = element(document, "label", `tyis-filter tyis-filter-${field.kind}`);
   const label = element(document, "span", "tyis-filter-label", field.label);
   const value = supplied ?? field.default;
@@ -112,6 +128,7 @@ function renderField(document, field, supplied, onFilterChange) {
     if (field.placeholder) control.placeholder = field.placeholder;
   }
   control.name = field.name;
+  control.disabled = Boolean(options.disabled);
   control.addEventListener("change", () => {
     const next =
       field.kind === "toggle"

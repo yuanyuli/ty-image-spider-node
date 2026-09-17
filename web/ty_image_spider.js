@@ -2,7 +2,12 @@ import { createApiClient } from "./api.js";
 import { openAssetDialog } from "./dialog.js";
 import { createGallery } from "./gallery.js";
 import { renderSourceControls } from "./source_controls.js";
-import { createRequestGuard, createSpiderState, serializeWorkflowState } from "./state.js";
+import {
+  createProviderSessions,
+  createRequestGuard,
+  createSpiderState,
+  serializeWorkflowState,
+} from "./state.js";
 
 const INSTALLED = Symbol("tyImageSpiderInstalled");
 
@@ -44,6 +49,7 @@ function mountNode(node, { app, api, document }) {
   const stateWidget = node.widgets?.find((widget) => widget.name === "state_json");
   hideWidget(stateWidget);
   const state = createSpiderState();
+  const sessions = createProviderSessions();
   const guard = createRequestGuard();
   const providerGuard = createRequestGuard();
   const client = createApiClient(api.fetchApi.bind(api));
@@ -82,6 +88,11 @@ function mountNode(node, { app, api, document }) {
     ready: null,
     search,
     checkProviders: loadProviders,
+    render() {
+      sessions.save(state.get().provider, state.get());
+      renderControls();
+      renderGallery();
+    },
     restore,
     dispose,
   };
@@ -98,7 +109,8 @@ function mountNode(node, { app, api, document }) {
       const current = providers.some((entry) => entry.provider.id === state.get().provider)
         ? state.get().provider
         : providers[0]?.provider.id || "civitai";
-      state.set({ provider: current });
+      state.set({ provider: current, filters: withDefaults(current, state.get().filters) });
+      sessions.save(current, state.get());
       renderControls();
       renderGallery();
       setActivity("就绪");
@@ -156,7 +168,9 @@ function mountNode(node, { app, api, document }) {
       filters: value.filters,
       onSourceChange(provider) {
         guard.invalidate();
-        state.set({ provider, filters: { query: "" }, items: [], nextCursor: null, error: null });
+        sessions.save(value.provider, state.get());
+        const restored = sessions.load(provider);
+        state.set({ provider, ...restored, filters: withDefaults(provider, restored.filters) });
         persist();
         renderControls();
         renderGallery();
@@ -171,9 +185,30 @@ function mountNode(node, { app, api, document }) {
         setActivity("正在检查素材源");
         controller.ready = loadProviders();
       },
+      async onConnect() {
+        setActivity("正在连接 OpenCLI");
+        try {
+          const result = await client.requestJson(
+            "/ty-image-spider/providers/xiaohongshu/connect",
+            {
+              method: "POST",
+            },
+          );
+          setActivity(result.message || "OpenCLI 已连接");
+          controller.ready = loadProviders();
+          await controller.ready;
+        } catch (error) {
+          setActivity(error.message || "OpenCLI 连接失败", true);
+        }
+      },
       onFilterChange(name, value) {
         state.set({ filters: { ...state.get().filters, [name]: value } });
+        sessions.save(state.get().provider, state.get());
         persist();
+        if (name !== "query") {
+          renderControls();
+          search();
+        }
       },
     });
     controlsHost.replaceChildren(controls.root);
@@ -229,6 +264,7 @@ function mountNode(node, { app, api, document }) {
         summary: { query, count: page.items?.length || 0, stale: Boolean(page.stale) },
         error: null,
       });
+      sessions.save(state.get().provider, state.get());
       gallery?.render(state.get().items, { next_cursor: state.get().nextCursor });
       setActivity(page.stale ? "缓存结果" : `${state.get().items.length} 项素材`);
       persist();
@@ -241,22 +277,24 @@ function mountNode(node, { app, api, document }) {
   }
 
   async function openDetail(item) {
+    dialog?.close();
+    dialog = openAssetDialog({
+      document,
+      detail: { item, images: item.preview_url ? [item.preview_url] : [] },
+      onDownload: downloadItem,
+      onClose: () => {
+        dialog = null;
+      },
+    });
+    const openedDialog = dialog;
     setActivity("读取详情");
     try {
       const detail = await client.requestJson("/ty-image-spider/detail", {
         method: "POST",
         body: { item },
       });
-      if (disposed) return;
-      dialog?.close();
-      dialog = openAssetDialog({
-        document,
-        detail,
-        onDownload: downloadItem,
-        onClose: () => {
-          dialog = null;
-        },
-      });
+      if (disposed || dialog !== openedDialog) return;
+      openedDialog.update(detail);
       setActivity("就绪");
     } catch (error) {
       setActivity(error.message || "详情读取失败", true);
@@ -301,6 +339,7 @@ function mountNode(node, { app, api, document }) {
     const filters = saved.filters && typeof saved.filters === "object" ? saved.filters : {};
     const items = provider === "xiaohongshu" || !Array.isArray(saved.items) ? [] : saved.items;
     state.set({ provider, filters, items, summary: saved.summary, nextCursor: null });
+    sessions.save(provider, state.get());
     if (providers.length) {
       renderControls();
       renderGallery();
@@ -330,6 +369,14 @@ function mountNode(node, { app, api, document }) {
     dialog?.close();
     document.removeEventListener("keydown", onKeyDown, true);
     root.remove();
+  }
+
+  function withDefaults(provider, filters = {}) {
+    const descriptor = providers.find((entry) => entry.provider.id === provider)?.provider;
+    const defaults = Object.fromEntries(
+      (descriptor?.filters || []).map((field) => [field.name, field.default]),
+    );
+    return { query: "", ...defaults, ...filters };
   }
 }
 

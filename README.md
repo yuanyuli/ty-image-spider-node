@@ -70,7 +70,14 @@ API Key 只通过 `Authorization` 请求头发送，不会放入 URL、缓存、
    opencli xiaohongshu whoami --format json
    ```
 
+也可以在节点切换到“小红书”后点击“一键连接 OpenCLI”。按钮会依次检查版本、重启
+OpenCLI 守护进程、等待 Chrome 扩展恢复连接并确认登录账号；它不会代替 Chrome 登录，
+也不会读取或保存 Cookie。
+
 关键词搜索会先调用 OpenCLI 官方 `xiaohongshu search` 适配器，再从同一个持久会话只读提取卡片封面。完整笔记链接必须包含 `xsec_token`；`xhslink.com` 短链接也会进入单篇流程。节点不会模拟点赞、收藏、评论或发布操作。
+
+如果 OpenCLI 的筛选选择器与当前小红书页面不兼容，节点会保留已打开的同关键词页面，
+以只读方式提取可见卡片，并在状态栏标明筛选可能未生效。此时可升级 OpenCLI 后再重试。
 
 ## 界面与下载
 
