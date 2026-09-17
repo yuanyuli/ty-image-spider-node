@@ -48,7 +48,7 @@ class ImageDownloader:
             url, headers={"User-Agent": "TY-Image-Spider/2.0", "Accept": "image/*"}
         )
         try:
-            with self._open_url(request, 60) as response:
+            with self._open_url(request, timeout=60) as response:
                 try:
                     require_https_host(response.geturl(), _is_civitai_host)
                 except SpiderError as exc:

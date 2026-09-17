@@ -24,8 +24,8 @@ class DownloadService:
         provider = self._providers.get(provider_id)
         if not provider.descriptor().capabilities.bulk_download:
             raise SpiderError("bulk_download_unsupported", "当前素材源不支持整页下载")
-        if len(raw_items) > 20:
-            raise SpiderError("bulk_download_limit", "一次最多下载 20 个素材")
+        if len(raw_items) > 24:
+            raise SpiderError("bulk_download_limit", "一次最多下载 24 个素材")
 
         items = tuple(AssetItem.from_untrusted(value) for value in raw_items)
         if any(item.provider != provider_id for item in items):

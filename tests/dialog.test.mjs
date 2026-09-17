@@ -78,3 +78,33 @@ test("小红书详情显示正文、图集和整篇下载操作", () => {
   assert.deepEqual(calls, ["101"]);
   view.close();
 });
+
+test("Wallhaven 详情显示统计、分类、标签和色板", () => {
+  const dom = new JSDOM("<!doctype html><body></body>", { url: "https://localhost/" });
+  const value = detail();
+  value.item = {
+    provider: "wallhaven",
+    id: "zp9vkg",
+    author: "wall-user",
+    source_url: "https://wallhaven.cc/w/zp9vkg",
+    width: 3840,
+    height: 2160,
+    stats: { views: 2390, favorites: 43 },
+    tags: ["mountains", "night"],
+    metadata: {
+      category: "general",
+      colors: ["#000000", "#ffffff"],
+      original_source: "https://example.com/original",
+    },
+  };
+
+  const view = openAssetDialog({ document: dom.window.document, detail: value });
+
+  assert.match(view.overlay.textContent, /2390 浏览/);
+  assert.match(view.overlay.textContent, /43 收藏/);
+  assert.match(view.overlay.textContent, /general/);
+  assert.match(view.overlay.textContent, /mountains/);
+  assert.equal(view.overlay.querySelectorAll(".tyis-color-swatch").length, 2);
+  assert.equal(view.overlay.querySelector(".tyis-dialog-source").textContent, "WALLHAVEN");
+  view.close();
+});

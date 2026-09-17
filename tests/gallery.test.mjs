@@ -80,3 +80,20 @@ test("加载、错误和空状态保持画廊稳定结构", () => {
   view.render([], {});
   assert.match(view.root.textContent, /没有找到素材/);
 });
+
+test("Wallhaven 卡片显示来源标记与收藏数据", () => {
+  const dom = new JSDOM("<!doctype html><body></body>");
+  const view = createGallery({ document: dom.window.document, provider: "wallhaven" });
+
+  view.render([
+    item({
+      provider: "wallhaven",
+      id: "zp9vkg",
+      author: "wall-user",
+      stats: { views: 2390, favorites: 43 },
+    }),
+  ]);
+
+  assert.equal(view.root.querySelector(".tyis-source-mark").textContent, "W");
+  assert.match(view.root.textContent, /43 收藏/);
+});

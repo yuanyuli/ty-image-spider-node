@@ -53,6 +53,7 @@ export function openAssetDialog(context) {
   const panel = element(document, "aside", "tyis-detail-panel");
   panel.append(renderFacts(document, item));
   if (item.provider === "civitai") panel.append(renderCivitai(document, item, detail, copyText));
+  else if (item.provider === "wallhaven") panel.append(renderWallhaven(document, item));
   else if (item.provider === "xiaohongshu") panel.append(renderXiaohongshu(document, item, detail));
   else panel.append(renderLocal(document, detail));
   const actionBar = element(document, "div", "tyis-detail-actions");
@@ -179,6 +180,45 @@ function renderXiaohongshu(document, item, detail) {
   return root;
 }
 
+function renderWallhaven(document, item) {
+  const root = document.createDocumentFragment();
+  const stats = element(document, "div", "tyis-stat-row");
+  if (item.stats?.views !== undefined) {
+    stats.append(element(document, "span", "", `${item.stats.views} 浏览`));
+  }
+  if (item.stats?.favorites !== undefined) {
+    stats.append(element(document, "span", "", `${item.stats.favorites} 收藏`));
+  }
+  if (item.metadata?.category) {
+    stats.append(element(document, "span", "", item.metadata.category));
+  }
+  if (stats.children.length) root.append(stats);
+
+  if (item.tags?.length) {
+    const section = sectionWithTitle(document, "标签");
+    const tags = element(document, "div", "tyis-resource-list");
+    for (const tag of item.tags) tags.append(element(document, "span", "tyis-resource", tag));
+    section.append(tags);
+    root.append(section);
+  }
+
+  const colors = (item.metadata?.colors || []).filter((value) => /^#[0-9a-f]{6}$/i.test(value));
+  if (colors.length) {
+    const section = sectionWithTitle(document, "色板");
+    const palette = element(document, "div", "tyis-color-palette");
+    for (const color of colors) {
+      const swatch = element(document, "span", "tyis-color-swatch");
+      swatch.style.backgroundColor = color;
+      swatch.title = color;
+      swatch.setAttribute("aria-label", color);
+      palette.append(swatch);
+    }
+    section.append(palette);
+    root.append(section);
+  }
+  return root;
+}
+
 function renderLocal(document, detail) {
   return codeSection(document, "图片 Metadata", detail.metadata || {});
 }
@@ -213,7 +253,14 @@ function fact(document, list, key, value) {
 }
 
 function sourceLabel(provider) {
-  return { civitai: "CIVITAI", xiaohongshu: "小红书", local: "本地历史" }[provider] || provider;
+  return (
+    {
+      civitai: "CIVITAI",
+      wallhaven: "WALLHAVEN",
+      xiaohongshu: "小红书",
+      local: "本地历史",
+    }[provider] || provider
+  );
 }
 
 async function defaultCopy(value, document) {

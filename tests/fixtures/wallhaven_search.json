@@ -1,0 +1,58 @@
+{
+  "data": [
+    {
+      "id": "zp9vkg",
+      "url": "https://wallhaven.cc/w/zp9vkg",
+      "views": 2381,
+      "favorites": 42,
+      "source": "https://example.com/original",
+      "purity": "sfw",
+      "category": "general",
+      "dimension_x": 3840,
+      "dimension_y": 2160,
+      "resolution": "3840x2160",
+      "ratio": "1.78",
+      "file_size": 2457600,
+      "file_type": "image/jpeg",
+      "created_at": "2026-09-01 12:00:00",
+      "colors": ["#000000", "#ffffff"],
+      "path": "https://w.wallhaven.cc/full/zp/wallhaven-zp9vkg.jpg",
+      "thumbs": {
+        "large": "https://th.wallhaven.cc/lg/zp/zp9vkg.jpg",
+        "original": "https://th.wallhaven.cc/orig/zp/zp9vkg.jpg",
+        "small": "https://th.wallhaven.cc/small/zp/zp9vkg.jpg"
+      }
+    },
+    {
+      "id": "abc123",
+      "url": "https://wallhaven.cc/w/abc123",
+      "views": 120,
+      "favorites": 3,
+      "source": "",
+      "purity": "sfw",
+      "category": "anime",
+      "dimension_x": 1440,
+      "dimension_y": 2560,
+      "resolution": "1440x2560",
+      "ratio": "0.56",
+      "file_size": 1024000,
+      "file_type": "image/png",
+      "created_at": "2026-08-20 08:30:00",
+      "colors": ["#424153"],
+      "path": "https://w.wallhaven.cc/full/ab/wallhaven-abc123.png",
+      "thumbs": {
+        "large": "https://th.wallhaven.cc/lg/ab/abc123.jpg",
+        "original": "https://th.wallhaven.cc/orig/ab/abc123.jpg",
+        "small": "https://th.wallhaven.cc/small/ab/abc123.jpg"
+      }
+    }
+  ],
+  "meta": {
+    "current_page": 1,
+    "last_page": 3,
+    "per_page": 24,
+    "total": 52,
+    "query": null,
+    "seed": null
+  }
+}

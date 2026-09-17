@@ -41,7 +41,13 @@ class Response:
 
 def test_image_downloader_writes_verified_image_inside_output(tmp_path):
     url = "https://image.civitai.com/assets/cat.png"
-    downloader = ImageDownloader(open_url=lambda *_: Response(png_bytes(), url))
+    timeouts = []
+
+    def open_url(request, *, timeout):
+        timeouts.append(timeout)
+        return Response(png_bytes(), request.full_url)
+
+    downloader = ImageDownloader(open_url=open_url)
 
     result = downloader.download(url, "101", tmp_path)
 
@@ -50,6 +56,7 @@ def test_image_downloader_writes_verified_image_inside_output(tmp_path):
     assert saved.is_file()
     with Image.open(saved) as image:
         assert image.size == (3, 2)
+    assert timeouts == [60]
 
 
 def test_image_downloader_rejects_untrusted_url_and_item_id(tmp_path):
@@ -62,7 +69,7 @@ def test_image_downloader_rejects_untrusted_url_and_item_id(tmp_path):
 
 def test_image_downloader_rejects_cross_domain_redirect(tmp_path):
     downloader = ImageDownloader(
-        open_url=lambda *_: Response(png_bytes(), "https://evil.example/a.png")
+        open_url=lambda *_, **__: Response(png_bytes(), "https://evil.example/a.png")
     )
     with pytest.raises(SpiderError, match="重定向"):
         downloader.download("https://image.civitai.com/a.png", "1", tmp_path)
@@ -70,7 +77,7 @@ def test_image_downloader_rejects_cross_domain_redirect(tmp_path):
 
 def test_image_downloader_cleans_temp_file_after_invalid_payload(tmp_path):
     url = "https://image.civitai.com/assets/not-image.png"
-    downloader = ImageDownloader(open_url=lambda *_: Response(b"not image", url))
+    downloader = ImageDownloader(open_url=lambda *_, **__: Response(b"not image", url))
 
     with pytest.raises(SpiderError, match="有效图片"):
         downloader.download(url, "1", tmp_path)

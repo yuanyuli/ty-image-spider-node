@@ -14,6 +14,9 @@ from .providers.civitai import CivitaiProvider
 from .providers.civitai_client import CivitaiClient
 from .providers.local import LocalProvider
 from .providers.registry import ProviderRegistry
+from .providers.wallhaven import WallhavenProvider
+from .providers.wallhaven_client import WallhavenClient
+from .providers.wallhaven_download import WallhavenDownloader
 from .providers.xiaohongshu import XiaohongshuProvider
 from .services.detail import DetailService
 from .services.download import DownloadService
@@ -40,6 +43,13 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
             CivitaiClient(api_key=os.environ.get("CIVITAI_API_KEY", "")),
             JsonCache(cache / "civitai"),
             ImageDownloader(),
+        )
+    )
+    providers.register(
+        WallhavenProvider(
+            WallhavenClient(),
+            JsonCache(cache / "wallhaven"),
+            WallhavenDownloader(),
         )
     )
     providers.register(

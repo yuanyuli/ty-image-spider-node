@@ -116,9 +116,14 @@ def test_download_page_caps_items_and_rejects_mixed_provider(tmp_path):
     civitai = RecordingProvider("civitai", bulk=True)
     service = DownloadService(registry_with(civitai), tmp_path)
 
-    with pytest.raises(SpiderError, match="最多下载 20"):
+    result = service.download_page(
+        "civitai", [item_dict("civitai", str(i)) for i in range(24)]
+    )
+    assert len(result.files) == 24
+
+    with pytest.raises(SpiderError, match="最多下载 24"):
         service.download_page(
-            "civitai", [item_dict("civitai", str(i)) for i in range(21)]
+            "civitai", [item_dict("civitai", str(i)) for i in range(25)]
         )
     with pytest.raises(SpiderError, match="来源不一致"):
         service.download_page("civitai", [item_dict("local")])

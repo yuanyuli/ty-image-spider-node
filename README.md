@@ -8,6 +8,7 @@ TY Image Spider 是一个零输出端口的 ComfyUI 素材浏览节点。它在�
 | --- | --- | --- | --- | --- |
 | `civitai.com` | 关键词、周期、排序、SFW、标签、提示词、游标分页 | 提示词、模型、LoRA、workflow、metadata | 单图与本页批量下载 | 可选 Civitai API Key |
 | `civitai.red` | 与 `civitai.com` 相同 | 与 `civitai.com` 相同 | 单图与本页批量下载 | 可选 Civitai API Key |
+| Wallhaven | 关键词、分类、排序、榜单范围、方向、最低分辨率、页码分页 | 作者、统计、标签、分类、色板、原始来源 | 单图与本页 24 张批量下载 | 无，仅访问公开 SFW API |
 | 小红书 | 关键词、排序、图文类型、发布时间；支持完整笔记链接 | 正文、互动数据、完整图集 | 一次下载整篇笔记的全部图片 | OpenCLI >= 1.8.8、Chrome 扩展、已登录的小红书会话 |
 | 本地历史 | 文件名或内嵌提示词、提示词筛选、分页 | 文件信息与图片 metadata | 文件已经位于本地，无需重复下载 | 无 |
 
@@ -73,9 +74,10 @@ API Key 只通过 `Authorization` 请求头发送，不会放入 URL、缓存、
 
 ## 界面与下载
 
-- 顶部来源控件切换 Civitai、小红书和本地历史；筛选项由各 Provider 的描述符动态生成。
+- 顶部来源控件切换 Civitai、Wallhaven、小红书和本地历史；筛选项由各 Provider 的描述符动态生成。
 - 画廊在窄节点中显示两列，在宽节点中显示三列；详情弹窗支持图集缩略图、提示词复制和来源跳转。
 - Civitai 图片保存到 `output/ty-image-spider/civitai/`。
+- Wallhaven 图片保存到 `output/ty-image-spider/wallhaven/`。
 - 小红书整篇图片保存到 `output/ty-image-spider/xiaohongshu/<note-id>/`。
 - 下载器校验来源域名、重定向、响应大小、输出路径和实际图片格式。
 
@@ -84,6 +86,8 @@ API Key 只通过 `Authorization` 请求头发送，不会放入 URL、缓存、
 小红书 Cookie 由 OpenCLI 与 Chrome Browser Bridge 管理，本节点不读取或保存 Cookie。带 `xsec_token` 的签名链接和小红书搜索结果不会写入工作流、节点持久属性或持久缓存，也不会写入 `localStorage`。工作流只保存当前来源、不含凭据的筛选条件与查询摘要。
 
 Civitai API Key 不会写入工作流。HTTP 错误响应会隐藏常见的 key、token、secret、cookie 和 authorization 值。
+
+Wallhaven 只调用 `https://wallhaven.cc/api/v1` 的公开接口，并固定发送 `purity=100`，不会请求 Sketchy 或 NSFW 内容。搜索与详情不需要账号或 API Key；原图下载只接受 `w.wallhaven.cc`，重定向到其他域名会被拒绝。
 
 ## 开发与测试
 
@@ -130,6 +134,7 @@ node --test tests/*.test.mjs
 ## 第三方许可
 
 - [OpenCLI](https://github.com/jackwener/opencli) 使用 Apache License 2.0。本项目只通过用户安装的 `opencli` 命令调用它，不打包其源码或浏览器扩展。
+- [Wallhaven API](https://wallhaven.cc/help/api) 用于访问公开 SFW 素材。图片版权与使用许可由原作者、上传者及原始来源决定，下载前请自行确认使用范围。
 - [Pillow](https://python-pillow.org/) 用于图片格式与 metadata 校验。
 - [Lucide](https://lucide.dev/) 图标路径用于界面按钮，遵循 ISC License。
 - `jsdom` 与 Prettier 仅用于前端开发和测试，不进入 ComfyUI 运行时。

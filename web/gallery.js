@@ -114,6 +114,8 @@ function renderCard(document, item, provider, onOpen, onDownload) {
     );
   } else if (provider === "xiaohongshu" && item.stats?.likes !== undefined) {
     meta.append(element(document, "span", "", `${item.stats.likes} 赞`));
+  } else if (provider === "wallhaven" && item.stats?.favorites !== undefined) {
+    meta.append(element(document, "span", "", `${item.stats.favorites} 收藏`));
   }
   footer.append(title, meta);
   card.append(media, footer);
@@ -121,7 +123,7 @@ function renderCard(document, item, provider, onOpen, onDownload) {
 }
 
 function sourceMark(document, provider) {
-  const labels = { civitai: "C", xiaohongshu: "RED", local: "LOCAL" };
+  const labels = { civitai: "C", wallhaven: "W", xiaohongshu: "RED", local: "LOCAL" };
   return element(document, "span", `tyis-source-mark is-${provider}`, labels[provider] || provider);
 }
 
