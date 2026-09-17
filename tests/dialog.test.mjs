@@ -48,9 +48,28 @@ test("详情弹窗切换图片、复制提示词并恢复先前焦点", async ()
   await Promise.resolve();
   assert.deepEqual(copied, ["cinematic cat"]);
 
+  view.mainImage.click();
+  assert.ok(document.querySelector(".tyis-image-viewer"));
+  assert.equal(document.querySelector(".tyis-image-viewer-image").src, view.mainImage.src);
+  document.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "Escape" }));
+  assert.equal(document.querySelector(".tyis-image-viewer"), null);
+
   document.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "Escape" }));
   assert.equal(document.body.contains(view.overlay), false);
   assert.equal(document.activeElement, prior);
+});
+
+test("Civitai 没有公开提示词时给出明确状态", () => {
+  const dom = new JSDOM("<!doctype html><body></body>", { url: "https://localhost/" });
+  const value = detail();
+  value.item.prompt = undefined;
+  value.item.negative_prompt = undefined;
+  value.item.has_prompt = false;
+
+  const view = openAssetDialog({ document: dom.window.document, detail: value });
+
+  assert.match(view.overlay.textContent, /该素材未提供公开提示词/);
+  view.close();
 });
 
 test("小红书详情显示正文、图集和整篇下载操作", () => {

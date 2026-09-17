@@ -69,7 +69,9 @@ function mountNode(node, { app, api, document }) {
   let gallery = null;
   let dialog = null;
   let disposed = false;
+  renderInitialState();
   const onKeyDown = (event) => {
+    if (document.querySelector(".tyis-image-viewer")) return;
     if (event.key === "Escape" && dialog) dialog.close();
   };
   document.addEventListener("keydown", onKeyDown, true);
@@ -98,7 +100,46 @@ function mountNode(node, { app, api, document }) {
       setActivity("就绪");
     } catch (error) {
       setActivity(error.message || "素材源读取失败", true);
+      renderProviderError(error);
     }
+  }
+
+  function renderInitialState() {
+    setActivity("正在加载素材源");
+    const controls = element(document, "section", "tyis-controls tyis-controls-loading");
+    const sourceBar = element(document, "div", "tyis-source-bar");
+    sourceBar.append(
+      element(document, "strong", "", "正在加载素材源"),
+      element(document, "span", "tyis-source-status", "连接中"),
+    );
+    const searchPlaceholder = element(document, "div", "tyis-search-placeholder");
+    controls.append(sourceBar, searchPlaceholder);
+    controlsHost.replaceChildren(controls);
+    gallery = createGallery({ document });
+    galleryHost.replaceChildren(gallery.root);
+    gallery.setLoading();
+  }
+
+  function renderProviderError(error) {
+    const controls = element(document, "section", "tyis-controls tyis-controls-error");
+    const message = element(
+      document,
+      "strong",
+      "tyis-provider-error-message",
+      error.message || "素材源读取失败",
+    );
+    const retry = element(document, "button", "tyis-subtle-button", "重新加载");
+    retry.type = "button";
+    retry.dataset.action = "retry-providers";
+    retry.addEventListener("click", () => {
+      renderInitialState();
+      controller.ready = loadProviders();
+    });
+    controls.append(message, retry);
+    controlsHost.replaceChildren(controls);
+    gallery = createGallery({ document });
+    galleryHost.replaceChildren(gallery.root);
+    gallery.setError(error.message || "素材源读取失败");
   }
 
   function renderControls() {
@@ -121,6 +162,10 @@ function mountNode(node, { app, api, document }) {
       onRefresh() {
         search(undefined, null, true);
       },
+      onCheck() {
+        setActivity("正在检查素材源");
+        controller.ready = loadProviders();
+      },
       onFilterChange(name, value) {
         state.set({ filters: { ...state.get().filters, [name]: value } });
         persist();
@@ -131,7 +176,8 @@ function mountNode(node, { app, api, document }) {
 
   function renderGallery() {
     const value = state.get();
-    const descriptor = providers.find((entry) => entry.provider.id === value.provider)?.provider;
+    const current = providers.find((entry) => entry.provider.id === value.provider);
+    const descriptor = current?.provider;
     gallery = createGallery({
       document,
       provider: value.provider,
@@ -142,11 +188,21 @@ function mountNode(node, { app, api, document }) {
       onNext: (cursor) => search(undefined, cursor),
     });
     galleryHost.replaceChildren(gallery.root);
-    gallery.render(value.items || [], { next_cursor: value.nextCursor });
+    if (current?.status?.available === false) {
+      gallery.setUnavailable(current.status.message, current.status.action);
+    } else {
+      gallery.render(value.items || [], { next_cursor: value.nextCursor });
+    }
   }
 
   async function search(queryOverride, cursor = null, refresh = false) {
     const current = state.get();
+    const source = providers.find((entry) => entry.provider.id === current.provider);
+    if (source?.status?.available === false) {
+      gallery?.setUnavailable(source.status.message, source.status.action);
+      setActivity(source.status.message || "素材源不可用", true);
+      return;
+    }
     const query = queryOverride === undefined ? current.filters.query || "" : queryOverride;
     if (queryOverride !== undefined) {
       state.set({ filters: { ...current.filters, query } });

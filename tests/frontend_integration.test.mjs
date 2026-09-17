@@ -105,6 +105,53 @@ test("重复 configure 不重复安装控件和监听器", async () => {
   assert.equal(document.listenerCount("keydown"), 0);
 });
 
+test("素材源响应前同步显示初始组件骨架", async () => {
+  let resolveProviders;
+  const fetchApi = (path) => {
+    if (path.endsWith("/providers")) {
+      return new Promise((resolve) => {
+        resolveProviders = resolve;
+      });
+    }
+    return response({ items: [] });
+  };
+  const { extension, NodeType } = harness(fetchApi);
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+
+  node.onNodeCreated();
+
+  const root = node.domWidgets[0].element;
+  assert.match(root.textContent, /正在加载素材源/);
+  assert.ok(root.querySelector(".tyis-controls-loading"));
+  assert.ok(root.querySelector(".tyis-gallery"));
+  assert.equal(root.querySelectorAll(".tyis-skeleton").length, 6);
+
+  resolveProviders(await response(providers));
+  await node.tyImageSpider.ready;
+});
+
+test("素材源列表读取失败时保留错误组件", async () => {
+  const { extension, NodeType } = harness(() =>
+    Promise.resolve({
+      ok: false,
+      status: 500,
+      async json() {
+        return { ok: false, error: { message: "素材源读取失败" } };
+      },
+    }),
+  );
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+
+  const root = node.domWidgets[0].element;
+  assert.match(root.textContent, /素材源读取失败/);
+  assert.ok(root.querySelector('[data-action="retry-providers"]'));
+});
+
 test("后发搜索结果不会被较慢的旧请求覆盖", async () => {
   const pending = [];
   const fetchApi = (path) => {

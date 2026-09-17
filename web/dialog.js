@@ -1,4 +1,5 @@
 import { createIcon, createIconButton } from "./icons.js";
+import { openImageViewer } from "./image_viewer.js";
 
 export function openAssetDialog(context) {
   const {
@@ -34,6 +35,8 @@ export function openAssetDialog(context) {
   const mainImage = element(document, "img", "tyis-detail-image");
   mainImage.alt = item.title || "素材大图";
   if (images[0]) mainImage.src = images[0];
+  mainImage.title = "全屏查看图片";
+  mainImage.tabIndex = 0;
   imageFrame.append(mainImage);
   const thumbs = element(document, "div", "tyis-thumbs");
   images.forEach((url, index) => {
@@ -84,6 +87,25 @@ export function openAssetDialog(context) {
   document.body.append(overlay);
 
   let closed = false;
+  let viewer = null;
+  mainImage.addEventListener("click", () => {
+    if (!mainImage.src) return;
+    viewer?.close();
+    viewer = openImageViewer({
+      document,
+      src: mainImage.src,
+      alt: mainImage.alt,
+      onClose: () => {
+        viewer = null;
+      },
+    });
+  });
+  mainImage.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      mainImage.click();
+    }
+  });
   function selectImage(index) {
     if (!images[index]) return;
     mainImage.src = images[index];
@@ -94,12 +116,14 @@ export function openAssetDialog(context) {
   function close() {
     if (closed) return;
     closed = true;
+    viewer?.close();
     document.removeEventListener("keydown", onKeyDown, true);
     overlay.remove();
     if (priorFocus?.isConnected) priorFocus.focus();
     onClose();
   }
   function onKeyDown(event) {
+    if (viewer) return;
     if (event.key === "Escape") {
       event.preventDefault();
       close();
@@ -143,6 +167,7 @@ function renderCivitai(document, item, detail, copyText) {
   const root = document.createDocumentFragment();
   if (item.prompt)
     root.append(textSection(document, "正向提示词", item.prompt, copyText, "copy-prompt"));
+  else root.append(element(document, "p", "tyis-prompt-unavailable", "该素材未提供公开提示词"));
   if (item.negative_prompt)
     root.append(textSection(document, "负向提示词", item.negative_prompt, copyText));
   const resources = [...(item.metadata?.models || []), ...(item.metadata?.loras || [])];

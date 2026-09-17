@@ -195,3 +195,13 @@ def test_wallhaven_provider_does_not_truncate_valid_large_page_number(tmp_path):
     )
 
     assert client.search_calls[0]["page"] == 10001
+
+
+def test_wallhaven_empty_query_uses_latest_sort_instead_of_empty_relevance(tmp_path):
+    client = FakeClient()
+
+    make_provider(tmp_path, client).search(
+        SearchRequest("wallhaven", "", {"sorting": "relevance"})
+    )
+
+    assert client.search_calls[0]["sorting"] == "date_added"

@@ -9,9 +9,11 @@ export function renderSourceControls(context) {
     onSourceChange = () => {},
     onSearch = () => {},
     onRefresh = () => {},
+    onCheck = () => {},
     onFilterChange = () => {},
   } = context;
   const current = providers.find((entry) => entry.provider.id === provider) || providers[0];
+  const unavailable = current?.status?.available === false;
   const root = element(document, "section", "tyis-controls");
 
   const sourceBar = element(document, "div", "tyis-source-bar");
@@ -45,6 +47,7 @@ export function renderSourceControls(context) {
   query.placeholder =
     current?.provider.id === "xiaohongshu" ? "搜索关键词或粘贴笔记链接" : "搜索素材";
   query.setAttribute("aria-label", "搜索素材");
+  query.disabled = unavailable;
   query.addEventListener("input", () => onFilterChange("query", query.value));
   query.addEventListener("keydown", (event) => {
     if (event.key === "Enter") onSearch(query.value.trim());
@@ -53,10 +56,12 @@ export function renderSourceControls(context) {
   const searchButton = element(document, "button", "tyis-search-button", "搜索");
   searchButton.type = "button";
   searchButton.dataset.action = "search";
+  searchButton.disabled = unavailable;
   searchButton.prepend(createIcon(document, "search", 16));
   searchButton.addEventListener("click", () => onSearch(query.value.trim()));
   const refresh = createIconButton(document, "refresh", "刷新结果");
   refresh.dataset.action = "refresh";
+  refresh.disabled = unavailable;
   refresh.addEventListener("click", onRefresh);
   searchRow.append(searchBox, searchButton, refresh);
 
@@ -65,6 +70,16 @@ export function renderSourceControls(context) {
     filterRow.append(renderField(document, field, filters[field.name], onFilterChange));
   }
   root.append(sourceBar, searchRow, filterRow);
+  if (unavailable && current.status.action) {
+    const action = element(document, "div", "tyis-source-action");
+    action.append(element(document, "span", "", current.status.action));
+    const check = element(document, "button", "tyis-subtle-button", "重新检查");
+    check.type = "button";
+    check.dataset.action = "check-provider";
+    check.addEventListener("click", onCheck);
+    action.append(check);
+    root.append(action);
+  }
   return { root, query, status, descriptor: current?.provider || null };
 }
 

@@ -43,7 +43,11 @@ const providers = [
       filters: [],
       capabilities: { bulk_download: false },
     },
-    status: { available: false, message: "未连接" },
+    status: {
+      available: false,
+      message: "未连接",
+      action: "安装并连接 OpenCLI Chrome 扩展",
+    },
   },
 ];
 
@@ -78,6 +82,26 @@ test("来源控件按描述符渲染并发出语义事件", () => {
     ["search", "cat"],
     ["refresh"],
   ]);
+});
+
+test("不可用来源禁用检索并显示恢复操作", () => {
+  const dom = new JSDOM("<!doctype html><body></body>");
+  let checked = 0;
+  const view = renderSourceControls({
+    document: dom.window.document,
+    providers,
+    provider: "xiaohongshu",
+    onCheck: () => {
+      checked += 1;
+    },
+  });
+
+  assert.equal(view.root.querySelector('[data-action="search"]').disabled, true);
+  assert.equal(view.query.disabled, true);
+  assert.match(view.root.textContent, /未连接/);
+  assert.match(view.root.textContent, /安装并连接 OpenCLI Chrome 扩展/);
+  view.root.querySelector('[data-action="check-provider"]').click();
+  assert.equal(checked, 1);
 });
 
 test("图标与图标按钮具备可访问标签且尺寸稳定", () => {

@@ -193,6 +193,8 @@ def _search_parameters(request: SearchRequest) -> dict[str, object]:
     filters = request.filters
     category = str(filters.get("category") or "all")
     sorting = str(filters.get("sorting") or "relevance")
+    if not request.query.strip() and sorting == "relevance":
+        sorting = "date_added"
     orientation = str(filters.get("orientation") or "all")
     page = _page_number(request.cursor)
     params: dict[str, object] = {

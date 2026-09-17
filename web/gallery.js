@@ -61,7 +61,22 @@ export function createGallery(context) {
     grid.replaceChildren(emptyState(document, message || "读取失败", "请检查素材源状态"));
   }
 
-  return { root, grid, bulkDownloadButton, nextButton, render, setLoading, setError };
+  function setUnavailable(message, action = "") {
+    count.textContent = "来源不可用";
+    nextButton.hidden = true;
+    grid.replaceChildren(emptyState(document, message || "当前素材源不可用", action));
+  }
+
+  return {
+    root,
+    grid,
+    bulkDownloadButton,
+    nextButton,
+    render,
+    setLoading,
+    setError,
+    setUnavailable,
+  };
 }
 
 function renderCard(document, item, provider, onOpen, onDownload) {
@@ -77,6 +92,16 @@ function renderCard(document, item, provider, onOpen, onDownload) {
   image.addEventListener("error", () => image.classList.add("is-error"));
   const top = element(document, "div", "tyis-card-topline");
   top.append(sourceMark(document, provider));
+  if (provider === "civitai") {
+    top.append(
+      element(
+        document,
+        "span",
+        `tyis-prompt-badge ${item.has_prompt ? "has-prompt" : "is-empty"}`,
+        item.has_prompt ? "提示词" : "无提示词",
+      ),
+    );
+  }
   if ((item.image_count || 1) > 1) {
     top.append(element(document, "span", "tyis-image-count", `${item.image_count} 张`));
   }
@@ -103,16 +128,7 @@ function renderCard(document, item, provider, onOpen, onDownload) {
   const meta = element(document, "div", "tyis-card-meta");
   const author = item.author || (provider === "local" ? "本地输出" : "未知作者");
   meta.append(element(document, "span", "", author));
-  if (provider === "civitai") {
-    meta.append(
-      element(
-        document,
-        "span",
-        item.has_prompt ? "has-prompt" : "",
-        item.has_prompt ? "有提示词" : "无提示词",
-      ),
-    );
-  } else if (provider === "xiaohongshu" && item.stats?.likes !== undefined) {
+  if (provider === "xiaohongshu" && item.stats?.likes !== undefined) {
     meta.append(element(document, "span", "", `${item.stats.likes} 赞`));
   } else if (provider === "wallhaven" && item.stats?.favorites !== undefined) {
     meta.append(element(document, "span", "", `${item.stats.favorites} 收藏`));
@@ -129,7 +145,8 @@ function sourceMark(document, provider) {
 
 function emptyState(document, title, note) {
   const root = element(document, "div", "tyis-empty");
-  root.append(element(document, "strong", "", title), element(document, "span", "", note));
+  root.append(element(document, "strong", "", title));
+  if (note) root.append(element(document, "span", "", note));
   return root;
 }
 

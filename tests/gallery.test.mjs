@@ -81,6 +81,18 @@ test("加载、错误和空状态保持画廊稳定结构", () => {
   assert.match(view.root.textContent, /没有找到素材/);
 });
 
+test("来源不可用状态不会伪装成空搜索结果", () => {
+  const dom = new JSDOM("<!doctype html><body></body>");
+  const view = createGallery({ document: dom.window.document, provider: "xiaohongshu" });
+
+  view.setUnavailable("OpenCLI Chrome 扩展未连接", "安装扩展后重新检查");
+
+  assert.match(view.root.textContent, /来源不可用/);
+  assert.match(view.root.textContent, /OpenCLI Chrome 扩展未连接/);
+  assert.match(view.root.textContent, /安装扩展后重新检查/);
+  assert.doesNotMatch(view.root.textContent, /没有找到素材/);
+});
+
 test("Wallhaven 卡片显示来源标记与收藏数据", () => {
   const dom = new JSDOM("<!doctype html><body></body>");
   const view = createGallery({ document: dom.window.document, provider: "wallhaven" });
@@ -96,4 +108,22 @@ test("Wallhaven 卡片显示来源标记与收藏数据", () => {
 
   assert.equal(view.root.querySelector(".tyis-source-mark").textContent, "W");
   assert.match(view.root.textContent, /43 收藏/);
+});
+
+test("Civitai 卡片在图片区域醒目标记提示词状态", () => {
+  const dom = new JSDOM("<!doctype html><body></body>");
+  const view = createGallery({ document: dom.window.document, provider: "civitai" });
+
+  view.render([
+    item({ provider: "civitai", id: "with", has_prompt: true }),
+    item({ provider: "civitai", id: "without", has_prompt: false }),
+  ]);
+
+  const badges = [...view.root.querySelectorAll(".tyis-prompt-badge")];
+  assert.deepEqual(
+    badges.map((badge) => badge.textContent),
+    ["提示词", "无提示词"],
+  );
+  assert.equal(badges[0].classList.contains("has-prompt"), true);
+  assert.equal(badges[1].classList.contains("is-empty"), true);
 });
