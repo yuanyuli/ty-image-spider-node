@@ -68,6 +68,26 @@ class FilterFailureRunner(FakeRunner):
         return self.responses.pop(0)
 
 
+class GenericFilterFailureRunner(FilterFailureRunner):
+    def run_json(self, args, timeout_seconds):
+        self.calls.append(Call(list(args), timeout_seconds))
+        if args[:2] == ["xiaohongshu", "search"]:
+            raise SpiderError(
+                "opencli_failed", "OpenCLI 执行失败（退出码 1）", status=502
+            )
+        return self.responses.pop(0)
+
+
+class EmptyBrowserFallbackRunner(FilterFailureRunner):
+    def run_json(self, args, timeout_seconds):
+        self.calls.append(Call(list(args), timeout_seconds))
+        if args[:2] == ["xiaohongshu", "search"]:
+            raise SpiderError(
+                "opencli_xiaohongshu_filter_changed", "筛选界面已变化", status=502
+            )
+        return self.responses.pop(0)
+
+
 def make_provider(tmp_path, runner=None):
     return XiaohongshuProvider(
         runner or FakeRunner([SEARCH, CARDS]),
@@ -164,6 +184,16 @@ def test_keyword_cache_never_persists_signed_urls(tmp_path):
     assert "signed-one" not in cache_text
 
 
+def test_repeating_same_keyword_reuses_recent_page_without_reopening_opencli(tmp_path):
+    runner = FakeRunner([SEARCH, CARDS])
+    provider = make_provider(tmp_path, runner)
+
+    provider.search(SearchRequest("xiaohongshu", "秋季穿搭"))
+    provider.search(SearchRequest("xiaohongshu", "秋季穿搭"))
+
+    assert len(runner.calls) == 2
+
+
 def test_detail_returns_ordered_images_and_content(tmp_path):
     runner = FakeRunner([DETAIL["rows"], DETAIL["browser"]])
     item = xhs_item(SEARCH[0]["url"])
@@ -226,3 +256,28 @@ def test_filter_layout_failure_falls_back_to_read_only_browser_cards(tmp_path):
     ]
     assert page.items[0].title == "秋季通勤穿搭"
     assert "只读" in page.message
+
+
+def test_generic_opencli_search_failure_also_uses_read_only_fallback(tmp_path):
+    runner = GenericFilterFailureRunner([SEARCH])
+
+    page = make_provider(tmp_path, runner).search(
+        SearchRequest("xiaohongshu", "秋季穿搭", {"count": 12})
+    )
+
+    assert page.items[0].title == "秋季通勤穿搭"
+    assert "只读" in page.message
+
+
+def test_filter_fallback_opens_search_url_when_existing_tab_has_no_cards(tmp_path):
+    runner = EmptyBrowserFallbackRunner([[], {}, SEARCH])
+
+    page = make_provider(tmp_path, runner).search(
+        SearchRequest("xiaohongshu", "秋季穿搭", {"count": 12})
+    )
+
+    assert page.items[0].title == "秋季通勤穿搭"
+    assert any(
+        call.args[:3] == ["browser", "site:xiaohongshu", "open"]
+        for call in runner.calls
+    )

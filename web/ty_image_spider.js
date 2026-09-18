@@ -76,6 +76,7 @@ function mountNode(node, { app, api, document }) {
   let gallery = null;
   let dialog = null;
   let disposed = false;
+  let restoreNeedsSearch = false;
   renderInitialState();
   const onKeyDown = (event) => {
     if (document.querySelector(".tyis-image-viewer")) return;
@@ -113,6 +114,10 @@ function mountNode(node, { app, api, document }) {
       sessions.save(current, state.get());
       renderControls();
       renderGallery();
+      if (restoreNeedsSearch) {
+        restoreNeedsSearch = false;
+        search();
+      }
       setActivity("就绪");
     } catch (error) {
       if (!providerGuard.isCurrent(ticket) || disposed) return;
@@ -309,6 +314,24 @@ function mountNode(node, { app, api, document }) {
         method: "POST",
         body: { item },
       });
+      const updatedItem = detail?.item;
+      const currentState = state.get();
+      if (updatedItem?.id && updatedItem.provider === currentState.provider) {
+        const updatedItems = currentState.items.map((candidate) =>
+          candidate.provider === updatedItem.provider && candidate.id === updatedItem.id
+            ? { ...candidate, ...updatedItem }
+            : candidate,
+        );
+        if (updatedItems.some((candidate, index) => candidate !== currentState.items[index])) {
+          state.set({ items: updatedItems });
+          sessions.save(state.get().provider, state.get());
+          gallery?.render(state.get().items, {
+            next_cursor: state.get().nextCursor,
+            has_previous: state.get().previousCursors.length > 0,
+          });
+          persist();
+        }
+      }
       if (disposed || dialog !== openedDialog) return;
       openedDialog.update(detail);
       setActivity("就绪");
@@ -324,7 +347,7 @@ function mountNode(node, { app, api, document }) {
         method: "POST",
         body: { item },
       });
-      setActivity(result.message || "下载完成");
+      setActivity(downloadResultMessage(result));
     } catch (error) {
       setActivity(error.message || "下载失败", true);
     }
@@ -337,7 +360,7 @@ function mountNode(node, { app, api, document }) {
         method: "POST",
         body: { provider: state.get().provider, items },
       });
-      setActivity(result.message || "下载完成");
+      setActivity(downloadResultMessage(result));
     } catch (error) {
       setActivity(error.message || "下载失败", true);
     }
@@ -354,19 +377,25 @@ function mountNode(node, { app, api, document }) {
     const provider = typeof saved.provider === "string" ? saved.provider : state.get().provider;
     const filters = saved.filters && typeof saved.filters === "object" ? saved.filters : {};
     const items = provider === "xiaohongshu" || !Array.isArray(saved.items) ? [] : saved.items;
+    const hasPagination = Object.prototype.hasOwnProperty.call(saved, "nextCursor");
+    restoreNeedsSearch = provider !== "xiaohongshu" && items.length > 0 && !hasPagination;
     state.set({
       provider,
       filters,
       items,
       summary: saved.summary,
-      nextCursor: null,
-      currentCursor: null,
-      previousCursors: [],
+      nextCursor: typeof saved.nextCursor === "string" ? saved.nextCursor : null,
+      currentCursor: typeof saved.currentCursor === "string" ? saved.currentCursor : null,
+      previousCursors: Array.isArray(saved.previousCursors) ? saved.previousCursors : [],
     });
     sessions.save(provider, state.get());
     if (providers.length) {
       renderControls();
       renderGallery();
+      if (restoreNeedsSearch) {
+        restoreNeedsSearch = false;
+        search();
+      }
     }
   }
 
@@ -383,6 +412,14 @@ function mountNode(node, { app, api, document }) {
     activity.textContent = message;
     activity.classList.toggle("is-error", error);
     activity.title = message;
+  }
+
+  function downloadResultMessage(result) {
+    const files = Array.isArray(result?.files) ? result.files.filter(Boolean) : [];
+    if (!files.length) return result?.message || "下载完成";
+    return `${result?.message || "下载完成"}：${files
+      .map((file) => `output/ty-node/${file}`)
+      .join("、")}`;
   }
 
   function dispose() {

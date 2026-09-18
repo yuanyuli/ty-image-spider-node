@@ -244,6 +244,45 @@ test("配置恢复普通来源结果并清理小红书持久结果", async () =>
   assert.deepEqual(node.tyImageSpider.state.get().items, []);
 });
 
+test("旧工作流恢复时重新检索以恢复提示词角标和分页游标", async () => {
+  let searches = 0;
+  const { extension, NodeType } = harness((path) => {
+    if (path.endsWith("/providers")) return response(providers);
+    if (path.endsWith("/search")) {
+      searches += 1;
+      return response({
+        items: [
+          {
+            provider: "civitai",
+            id: "22566974",
+            has_prompt: true,
+            prompt: "prompt from restored search",
+            preview_url: "https://image.civitai.com/22566974.png",
+          },
+        ],
+        next_cursor: "cursor-2",
+      });
+    }
+    return response({});
+  });
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.widgets[0].value = JSON.stringify({
+    provider: "civitai",
+    filters: { query: "" },
+    items: [{ provider: "civitai", id: "22566974", has_prompt: false }],
+  });
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+  node.onConfigure({});
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  const root = node.domWidgets[0].element;
+  assert.equal(searches, 1);
+  assert.match(root.querySelector(".tyis-prompt-badge").textContent, /提示词/);
+  assert.equal(root.querySelector('[aria-label="下一页"]').hidden, false);
+});
+
 test("切换来源后恢复各自已经加载的图片", async () => {
   const { extension, NodeType } = harness();
   await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
@@ -347,4 +386,82 @@ test("卡片立即打开预览，关闭后迟到详情不会重开", async () =>
   finishDetail(await response({ item: { provider: "civitai", id: "101", prompt: "late prompt" } }));
   await new Promise((resolve) => setTimeout(resolve, 0));
   assert.equal(document.querySelector(".tyis-dialog"), null);
+});
+
+test("详情返回提示词后同步更新当前缩略图角标", async () => {
+  let finishDetail;
+  const { extension, NodeType } = harness((path) => {
+    if (path.endsWith("/providers")) return response(providers);
+    if (path.endsWith("/search")) {
+      return response({
+        items: [
+          {
+            provider: "civitai",
+            id: "101",
+            has_prompt: false,
+            preview_url: "https://image.civitai.com/101.png",
+          },
+        ],
+      });
+    }
+    return new Promise((resolve) => {
+      finishDetail = resolve;
+    });
+  });
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+  await node.tyImageSpider.search();
+  const root = node.domWidgets[0].element;
+  root.querySelector(".tyis-card-media").click();
+  finishDetail(
+    await response({
+      item: {
+        provider: "civitai",
+        id: "101",
+        has_prompt: true,
+        prompt: "detail prompt",
+      },
+    }),
+  );
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(root.querySelector(".tyis-prompt-badge").textContent, "提示词");
+});
+
+test("下载完成状态显示 output/ty-node 下的实际相对路径", async () => {
+  const { extension, NodeType } = harness((path) => {
+    if (path.endsWith("/providers")) return response(providers);
+    if (path.endsWith("/search")) {
+      return response({
+        items: [
+          {
+            provider: "civitai",
+            id: "101",
+            preview_url: "https://image.civitai.com/101.png",
+            download_mode: "single",
+          },
+        ],
+      });
+    }
+    if (path.endsWith("/download")) {
+      return response({
+        files: ["ty-image-spider/civitai/101.png"],
+        message: "图片已下载",
+      });
+    }
+    return response({});
+  });
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+  await node.tyImageSpider.search();
+  const root = node.domWidgets[0].element;
+  root.querySelector('[data-action="download"]').click();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.match(root.querySelector(".tyis-activity").textContent, /output\/ty-node/);
+  assert.match(root.querySelector(".tyis-activity").textContent, /civitai\/101\.png/);
 });

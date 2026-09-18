@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import hashlib
 import re
+import time
 from contextlib import AbstractContextManager
 from dataclasses import replace
 from pathlib import Path
 from typing import Any, Mapping, Protocol
-from urllib.parse import urlparse, urlsplit, urlunsplit
+from urllib.parse import quote, urlparse, urlsplit, urlunsplit
 
 from PIL import Image
 
@@ -61,6 +62,7 @@ class XiaohongshuProvider:
         self._runner = runner
         self._cache = cache
         self._session_lock = session_lock
+        self._recent_pages: dict[str, tuple[float, SearchPage]] = {}
 
     def descriptor(self) -> ProviderDescriptor:
         return ProviderDescriptor(
@@ -184,6 +186,9 @@ class XiaohongshuProvider:
         note_type = str(filters.get("note_type") or "image")
         publish_time = str(filters.get("publish_time") or "anytime")
         cache_key = _cache_key(query, sort, note_type, publish_time, count)
+        recent = self._recent_pages.get(cache_key)
+        if not request.refresh and recent and time.monotonic() - recent[0] < 30:
+            return recent[1]
         args = [
             "xiaohongshu",
             "search",
@@ -210,6 +215,7 @@ class XiaohongshuProvider:
                 _search_item(value) for value in merge_search_rows(rows, cards)[:count]
             )
             page = SearchPage(items, message=message)
+            self._recent_pages[cache_key] = (time.monotonic(), page)
             self._cache.put(cache_key, _persistent_page(page))
             return page
         except SpiderError:
@@ -225,6 +231,7 @@ class XiaohongshuProvider:
             if exc.code not in {
                 "opencli_xiaohongshu_filter_changed",
                 "opencli_timeout",
+                "opencli_failed",
             }:
                 raise
             cards = self._runner.run_json(
@@ -233,11 +240,35 @@ class XiaohongshuProvider:
                     "site:xiaohongshu",
                     "eval",
                     build_search_extract_js(query),
-                    "--format",
-                    "json",
                 ],
                 timeout_seconds=30,
             )
+            if not merge_search_rows(cards, cards):
+                try:
+                    self._runner.run_json(
+                        [
+                            "browser",
+                            "site:xiaohongshu",
+                            "open",
+                            "https://www.xiaohongshu.com/search_result?keyword="
+                            + quote(query),
+                            "--window",
+                            "background",
+                        ],
+                        timeout_seconds=30,
+                    )
+                    time.sleep(2)
+                    cards = self._runner.run_json(
+                        [
+                            "browser",
+                            "site:xiaohongshu",
+                            "eval",
+                            build_search_extract_js(query),
+                        ],
+                        timeout_seconds=30,
+                    )
+                except SpiderError:
+                    raise exc
             if not merge_search_rows(cards, cards):
                 raise exc
             return (
@@ -251,8 +282,6 @@ class XiaohongshuProvider:
                 "site:xiaohongshu",
                 "eval",
                 build_card_extract_js(),
-                "--format",
-                "json",
             ],
             timeout_seconds=30,
         )
@@ -282,8 +311,6 @@ class XiaohongshuProvider:
                     "site:xiaohongshu",
                     "eval",
                     build_detail_extract_js(fallback_id),
-                    "--format",
-                    "json",
                 ],
                 timeout_seconds=30,
             )

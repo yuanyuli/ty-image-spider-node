@@ -74,6 +74,9 @@ export function serializeWorkflowState(state) {
     provider: state.provider,
     filters: state.filters,
     summary: state.summary,
+    nextCursor: state.nextCursor,
+    currentCursor: state.currentCursor,
+    previousCursors: state.previousCursors,
   };
   if (state.provider !== "xiaohongshu") value.items = state.items;
   return JSON.stringify(removeUndefined(stripSensitive(value)));
