@@ -249,7 +249,7 @@ function mountNode(node, { app, api, document }) {
       persist();
     }
     const ticket = guard.begin();
-    gallery?.setLoading();
+    gallery?.setLoading(cursor !== null);
     setActivity("检索中");
     const { query: _ignored, ...filters } = state.get().filters;
     try {

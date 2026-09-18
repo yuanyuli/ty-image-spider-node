@@ -69,7 +69,8 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
         providers=providers,
         search=SearchService(providers),
         detail=DetailService(providers),
-        download=DownloadService(providers, output),
+        # 下载统一落到 ComfyUI output/ty-node，便于和旧节点及用户工作流约定保持一致。
+        download=DownloadService(providers, output / "ty-node"),
         status=StatusService(providers),
         opencli_connect=OpenCliConnectService(opencli, session_lock=browser_lock),
     )

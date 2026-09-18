@@ -36,6 +36,7 @@ export function createGallery(context) {
     currentItems = [...items];
     nextCursor = page.next_cursor || null;
     count.textContent = `${currentItems.length} 项素材`;
+    nextButton.disabled = false;
     nextButton.hidden = !nextCursor;
     grid.replaceChildren();
     if (currentItems.length === 0) {
@@ -46,9 +47,10 @@ export function createGallery(context) {
       grid.append(renderCard(document, item, provider, onOpen, onDownload));
   }
 
-  function setLoading() {
+  function setLoading(preserveNext = false) {
     count.textContent = "正在检索";
-    nextButton.hidden = true;
+    nextButton.hidden = !preserveNext || !nextCursor;
+    nextButton.disabled = preserveNext && Boolean(nextCursor);
     grid.replaceChildren();
     for (let index = 0; index < 6; index += 1) {
       grid.append(element(document, "div", "tyis-skeleton"));
@@ -57,6 +59,7 @@ export function createGallery(context) {
 
   function setError(message) {
     count.textContent = "检索失败";
+    nextButton.disabled = false;
     nextButton.hidden = true;
     grid.replaceChildren(emptyState(document, message || "读取失败", "请检查素材源状态"));
   }
@@ -81,8 +84,9 @@ export function createGallery(context) {
 
 function renderCard(document, item, provider, onOpen, onDownload) {
   const card = element(document, "article", `tyis-card is-${provider}`);
-  const media = element(document, "button", "tyis-card-media");
-  media.type = "button";
+  const media = element(document, "div", "tyis-card-media");
+  media.setAttribute("role", "button");
+  media.tabIndex = 0;
   media.setAttribute("aria-label", `查看 ${item.title || "素材"}`);
   const image = element(document, "img", "tyis-card-image");
   image.alt = item.title || "素材预览";
@@ -120,6 +124,11 @@ function renderCard(document, item, provider, onOpen, onDownload) {
     hoverActions.append(download);
   }
   media.addEventListener("click", () => onOpen(item));
+  media.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    onOpen(item);
+  });
   media.append(image, top, hoverActions);
 
   const footer = element(document, "div", "tyis-card-footer");

@@ -69,6 +69,32 @@ test("画廊操作分别发出详情、单项下载、整页下载和下一页�
   ]);
 });
 
+test("下载按钮不嵌套在可点击媒体按钮中", () => {
+  const dom = new JSDOM("<!doctype html><body></body>");
+  const view = createGallery({
+    document: dom.window.document,
+    provider: "civitai",
+    capabilities: { bulk_download: true },
+  });
+  view.render([item({ provider: "civitai", id: "101" })]);
+
+  const media = view.root.querySelector(".tyis-card-media");
+  assert.equal(media.tagName, "DIV");
+  assert.equal(media.querySelector('[data-action="download"]').tagName, "BUTTON");
+});
+
+test("翻页加载时保留下一页入口并在结果返回后恢复可用", () => {
+  const dom = new JSDOM("<!doctype html><body></body>");
+  const view = createGallery({ document: dom.window.document, provider: "civitai" });
+  view.render([item({ id: "101" })], { next_cursor: "cursor-2" });
+  view.setLoading(true);
+  assert.equal(view.nextButton.hidden, false);
+  assert.equal(view.nextButton.disabled, true);
+  view.render([item({ id: "102" })], { next_cursor: "cursor-3" });
+  assert.equal(view.nextButton.disabled, false);
+  assert.equal(view.nextButton.hidden, false);
+});
+
 test("加载、错误和空状态保持画廊稳定结构", () => {
   const dom = new JSDOM("<!doctype html><body></body>");
   const view = createGallery({ document: dom.window.document, provider: "local" });

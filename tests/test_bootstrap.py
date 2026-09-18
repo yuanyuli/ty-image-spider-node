@@ -28,3 +28,9 @@ def test_build_services_creates_source_specific_cache_directories(tmp_path):
     assert (cache_root / "civitai").is_dir()
     assert (cache_root / "wallhaven").is_dir()
     assert (cache_root / "xiaohongshu").is_dir()
+
+
+def test_build_services_uses_legacy_ty_node_download_root(tmp_path):
+    services = build_services(tmp_path / "output", tmp_path / "cache")
+
+    assert services.download._output_root == (tmp_path / "output" / "ty-node")

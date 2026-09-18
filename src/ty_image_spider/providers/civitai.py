@@ -28,6 +28,7 @@ from .civitai_client import CivitaiClient
 
 _TAGS = {"Portrait": 1441}
 _MAX_PROMPT_SCAN_PAGES = 5
+_MAX_PROMPT_ENRICH_ITEMS = 24
 
 
 class CivitaiProvider:
@@ -109,13 +110,18 @@ class CivitaiProvider:
             items: list[AssetItem] = []
             item_ids: set[str] = set()
             seen_cursors: set[str] = set()
+            enriched_count = 0
             pages_scanned = 0
             while True:
                 pages_scanned += 1
                 for raw in raw_page.items:
                     item = self._normalize(raw, site)
-                    if only_with_prompt and not item.has_prompt:
-                        item = self._with_page_metadata(item, site)
+                    if (
+                        not item.has_prompt
+                        and enriched_count < _MAX_PROMPT_ENRICH_ITEMS
+                    ):
+                        item = self._with_page_metadata_safe(item, site)
+                        enriched_count += 1
                     if (
                         not only_with_prompt or item.has_prompt
                     ) and item.id not in item_ids:
@@ -169,6 +175,12 @@ class CivitaiProvider:
         metadata = dict(item.metadata)
         metadata.update(self._client.page_metadata(site, item.id))
         prompt, negative = extract_prompts(metadata)
+        if metadata.get("hasPositivePrompt") is False:
+            prompt, negative = "", ""
+            metadata.pop("prompt", None)
+            metadata.pop("negativePrompt", None)
+            metadata.pop("negative_prompt", None)
+        metadata["classification"] = _metadata_classification(prompt, metadata)
         return replace(
             item,
             prompt=prompt or None,
@@ -176,6 +188,13 @@ class CivitaiProvider:
             has_prompt=bool(prompt),
             metadata=metadata,
         )
+
+    def _with_page_metadata_safe(self, item: AssetItem, site: str) -> AssetItem:
+        """补全列表接口缺失的提示词；详情页失败时保留列表素材。"""
+        try:
+            return self._with_page_metadata(item, site)
+        except SpiderError:
+            return item
 
     def download(self, item: AssetItem, output_root: Path) -> DownloadResult:
         self._require_item(item)
@@ -228,6 +247,7 @@ class CivitaiProvider:
                     loras.append(normalized)
         metadata: dict[str, Any] = dict(meta)
         metadata.update({"site": site, "models": models, "loras": loras})
+        metadata["classification"] = _metadata_classification(prompt, meta)
         source_url = f"https://{site}/images/{item_id}" if item_id else None
         return AssetItem(
             provider="civitai",
@@ -280,3 +300,14 @@ class CivitaiProvider:
 
 def _integer_or_none(value: object) -> int | None:
     return value if isinstance(value, int) and not isinstance(value, bool) else None
+
+
+def _metadata_classification(prompt: str, metadata: Mapping[str, Any]) -> str:
+    """沿用旧节点 A/B/C 规则，同时忽略本节点附加的辅助字段。"""
+    if metadata.get("workflow"):
+        return "A"
+    if prompt or any(
+        key not in {"site", "models", "loras", "classification"} for key in metadata
+    ):
+        return "B"
+    return "C"
