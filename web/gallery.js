@@ -8,6 +8,7 @@ export function createGallery(context) {
     onOpen = () => {},
     onDownload = () => {},
     onDownloadPage = () => {},
+    onPrevious = () => {},
     onNext = () => {},
   } = context;
   const root = element(document, "section", "tyis-gallery");
@@ -18,24 +19,35 @@ export function createGallery(context) {
   bulkDownloadButton.type = "button";
   bulkDownloadButton.prepend(createIcon(document, "download", 15));
   bulkDownloadButton.hidden = capabilities.bulk_download !== true;
+  const previousButton = element(document, "button", "tyis-subtle-button", "上一页");
+  previousButton.type = "button";
+  previousButton.setAttribute("aria-label", "上一页");
+  previousButton.append(createIcon(document, "previous", 15));
+  previousButton.hidden = true;
   const nextButton = element(document, "button", "tyis-subtle-button", "下一页");
   nextButton.type = "button";
+  nextButton.setAttribute("aria-label", "下一页");
   nextButton.append(createIcon(document, "next", 15));
   nextButton.hidden = true;
-  actions.append(bulkDownloadButton, nextButton);
+  actions.append(bulkDownloadButton, previousButton, nextButton);
   toolbar.append(count, actions);
   const grid = element(document, "div", "tyis-grid");
   root.append(toolbar, grid);
 
   let currentItems = [];
+  let hasPrevious = false;
   let nextCursor = null;
   bulkDownloadButton.addEventListener("click", () => onDownloadPage(currentItems));
+  previousButton.addEventListener("click", () => onPrevious());
   nextButton.addEventListener("click", () => nextCursor && onNext(nextCursor));
 
   function render(items = [], page = {}) {
     currentItems = [...items];
+    hasPrevious = page.has_previous === true;
     nextCursor = page.next_cursor || null;
     count.textContent = `${currentItems.length} 项素材`;
+    previousButton.disabled = false;
+    previousButton.hidden = !hasPrevious;
     nextButton.disabled = false;
     nextButton.hidden = !nextCursor;
     grid.replaceChildren();
@@ -47,10 +59,12 @@ export function createGallery(context) {
       grid.append(renderCard(document, item, provider, onOpen, onDownload));
   }
 
-  function setLoading(preserveNext = false) {
+  function setLoading(preservePagination = false) {
     count.textContent = "正在检索";
-    nextButton.hidden = !preserveNext || !nextCursor;
-    nextButton.disabled = preserveNext && Boolean(nextCursor);
+    previousButton.hidden = !preservePagination || !hasPrevious;
+    previousButton.disabled = preservePagination && hasPrevious;
+    nextButton.hidden = !preservePagination || !nextCursor;
+    nextButton.disabled = preservePagination && Boolean(nextCursor);
     grid.replaceChildren();
     for (let index = 0; index < 6; index += 1) {
       grid.append(element(document, "div", "tyis-skeleton"));
@@ -59,6 +73,8 @@ export function createGallery(context) {
 
   function setError(message) {
     count.textContent = "检索失败";
+    previousButton.disabled = false;
+    previousButton.hidden = true;
     nextButton.disabled = false;
     nextButton.hidden = true;
     grid.replaceChildren(emptyState(document, message || "读取失败", "请检查素材源状态"));
@@ -66,6 +82,7 @@ export function createGallery(context) {
 
   function setUnavailable(message, action = "") {
     count.textContent = "来源不可用";
+    previousButton.hidden = true;
     nextButton.hidden = true;
     grid.replaceChildren(emptyState(document, message || "当前素材源不可用", action));
   }
@@ -74,6 +91,7 @@ export function createGallery(context) {
     root,
     grid,
     bulkDownloadButton,
+    previousButton,
     nextButton,
     render,
     setLoading,

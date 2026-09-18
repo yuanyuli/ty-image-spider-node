@@ -95,6 +95,21 @@ test("翻页加载时保留下一页入口并在结果返回后恢复可用", ()
   assert.equal(view.nextButton.hidden, false);
 });
 
+test("画廊显示并触发上一页", () => {
+  const dom = new JSDOM("<!doctype html><body></body>");
+  const calls = [];
+  const view = createGallery({
+    document: dom.window.document,
+    provider: "civitai",
+    onPrevious: () => calls.push("previous"),
+  });
+  view.render([item({ id: "102" })], { has_previous: true });
+
+  assert.equal(view.previousButton.hidden, false);
+  view.previousButton.click();
+  assert.deepEqual(calls, ["previous"]);
+});
+
 test("加载、错误和空状态保持画廊稳定结构", () => {
   const dom = new JSDOM("<!doctype html><body></body>");
   const view = createGallery({ document: dom.window.document, provider: "local" });

@@ -4,12 +4,19 @@ const DEFAULT_STATE = Object.freeze({
   items: [],
   summary: undefined,
   nextCursor: null,
+  currentCursor: null,
+  previousCursors: [],
   loading: false,
   error: null,
 });
 
 export function createSpiderState(initial = {}) {
-  let value = { ...DEFAULT_STATE, ...initial, filters: { ...(initial.filters || {}) } };
+  let value = {
+    ...DEFAULT_STATE,
+    ...initial,
+    filters: { ...(initial.filters || {}) },
+    previousCursors: [...(initial.previousCursors || [])],
+  };
   const listeners = new Set();
 
   return {
@@ -33,6 +40,8 @@ const EMPTY_SESSION = Object.freeze({
   items: [],
   summary: undefined,
   nextCursor: null,
+  currentCursor: null,
+  previousCursors: [],
   error: null,
 });
 
@@ -54,6 +63,8 @@ function cloneSession(value) {
     items: [...(value.items || EMPTY_SESSION.items)],
     summary: value.summary,
     nextCursor: value.nextCursor ?? null,
+    currentCursor: value.currentCursor ?? null,
+    previousCursors: [...(value.previousCursors || [])],
     error: value.error ?? null,
   };
 }

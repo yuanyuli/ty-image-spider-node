@@ -225,17 +225,24 @@ function mountNode(node, { app, api, document }) {
       onOpen: openDetail,
       onDownload: downloadItem,
       onDownloadPage: downloadPage,
-      onNext: (cursor) => search(undefined, cursor),
+      onPrevious: () => {
+        const previous = state.get().previousCursors;
+        search(undefined, previous.at(-1) ?? null, false, "previous");
+      },
+      onNext: (cursor) => search(undefined, cursor, false, "next"),
     });
     galleryHost.replaceChildren(gallery.root);
     if (current?.status?.available === false) {
       gallery.setUnavailable(current.status.message, current.status.action);
     } else {
-      gallery.render(value.items || [], { next_cursor: value.nextCursor });
+      gallery.render(value.items || [], {
+        next_cursor: value.nextCursor,
+        has_previous: value.previousCursors.length > 0,
+      });
     }
   }
 
-  async function search(queryOverride, cursor = null, refresh = false) {
+  async function search(queryOverride, cursor = null, refresh = false, navigation = "reset") {
     const current = state.get();
     const source = providers.find((entry) => entry.provider.id === current.provider);
     if (source?.status?.available === false) {
@@ -249,7 +256,11 @@ function mountNode(node, { app, api, document }) {
       persist();
     }
     const ticket = guard.begin();
-    gallery?.setLoading(cursor !== null);
+    const previousCursors = [...current.previousCursors];
+    if (navigation === "next") previousCursors.push(current.currentCursor ?? null);
+    else if (navigation === "previous") previousCursors.pop();
+    else previousCursors.length = 0;
+    gallery?.setLoading(navigation !== "reset");
     setActivity("检索中");
     const { query: _ignored, ...filters } = state.get().filters;
     try {
@@ -261,11 +272,16 @@ function mountNode(node, { app, api, document }) {
       state.set({
         items: page.items || [],
         nextCursor: page.next_cursor || null,
+        currentCursor: cursor,
+        previousCursors,
         summary: { query, count: page.items?.length || 0, stale: Boolean(page.stale) },
         error: null,
       });
       sessions.save(state.get().provider, state.get());
-      gallery?.render(state.get().items, { next_cursor: state.get().nextCursor });
+      gallery?.render(state.get().items, {
+        next_cursor: state.get().nextCursor,
+        has_previous: state.get().previousCursors.length > 0,
+      });
       setActivity(page.stale ? "缓存结果" : `${state.get().items.length} 项素材`);
       persist();
     } catch (error) {
@@ -338,7 +354,15 @@ function mountNode(node, { app, api, document }) {
     const provider = typeof saved.provider === "string" ? saved.provider : state.get().provider;
     const filters = saved.filters && typeof saved.filters === "object" ? saved.filters : {};
     const items = provider === "xiaohongshu" || !Array.isArray(saved.items) ? [] : saved.items;
-    state.set({ provider, filters, items, summary: saved.summary, nextCursor: null });
+    state.set({
+      provider,
+      filters,
+      items,
+      summary: saved.summary,
+      nextCursor: null,
+      currentCursor: null,
+      previousCursors: [],
+    });
     sessions.save(provider, state.get());
     if (providers.length) {
       renderControls();

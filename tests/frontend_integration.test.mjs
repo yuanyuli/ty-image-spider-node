@@ -285,6 +285,43 @@ test("改变非文本筛选项会立即发起新检索", async () => {
   assert.equal(searches, 1);
 });
 
+test("翻页控件支持返回上一页并恢复游标历史", async () => {
+  const requests = [];
+  const fetchApi = (path, options = {}) => {
+    if (path.endsWith("/providers")) return response(providers);
+    if (!path.endsWith("/search")) return response({});
+    const body = JSON.parse(options.body);
+    requests.push(body.cursor ?? null);
+    if (body.cursor === "cursor-2") {
+      return response({
+        items: [{ provider: "civitai", id: "page-2" }],
+        next_cursor: "cursor-3",
+      });
+    }
+    return response({
+      items: [{ provider: "civitai", id: "page-1" }],
+      next_cursor: "cursor-2",
+    });
+  };
+  const { extension, NodeType } = harness(fetchApi);
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+
+  await node.tyImageSpider.search();
+  const root = node.domWidgets[0].element;
+  root.querySelector(".tyis-gallery .tyis-subtle-button:last-child").click();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(node.tyImageSpider.state.get().items[0].id, "page-2");
+  assert.equal(root.querySelector('[aria-label="上一页"]')?.hidden, false);
+
+  root.querySelector('[aria-label="上一页"]').click();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(node.tyImageSpider.state.get().items[0].id, "page-1");
+  assert.deepEqual(requests, [null, "cursor-2", null]);
+});
+
 test("卡片立即打开预览，关闭后迟到详情不会重开", async () => {
   let finishDetail;
   const { extension, NodeType, document } = harness((path) => {

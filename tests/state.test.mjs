@@ -72,6 +72,8 @@ test("切换素材源时分别保留筛选、结果和分页位置", () => {
     items: [{ id: "c-1" }],
     summary: { count: 1 },
     nextCursor: "c-2",
+    currentCursor: null,
+    previousCursors: [],
     error: null,
   };
   sessions.save("civitai", civitai);
@@ -80,6 +82,8 @@ test("切换素材源时分别保留筛选、结果和分页位置", () => {
     items: [{ id: "w-1" }],
     summary: { count: 1 },
     nextCursor: "2",
+    currentCursor: null,
+    previousCursors: [],
     error: null,
   });
 
@@ -90,6 +94,8 @@ test("切换素材源时分别保留筛选、结果和分页位置", () => {
     items: [],
     summary: undefined,
     nextCursor: null,
+    currentCursor: null,
+    previousCursors: [],
     error: null,
   });
 });
