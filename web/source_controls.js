@@ -6,6 +6,7 @@ export function renderSourceControls(context) {
     providers = [],
     provider,
     filters = {},
+    getRecentQueries = () => [],
     onSourceChange = () => {},
     onSearch = () => {},
     onRefresh = () => {},
@@ -47,21 +48,61 @@ export function renderSourceControls(context) {
   }
 
   const searchRow = element(document, "div", "tyis-search-row");
+  const searchWrap = element(document, "div", "tyis-search-wrap");
   const searchBox = element(document, "label", "tyis-search-box");
   searchBox.append(createIcon(document, "search"));
   const query = element(document, "input", "tyis-query");
   query.name = "query";
-  query.type = "search";
+  query.type = "text";
+  query.autocomplete = "off";
+  query.inputMode = "search";
+  query.spellcheck = false;
   query.value = String(filters.query || "");
   query.placeholder =
     current?.provider.id === "xiaohongshu" ? "搜索关键词或粘贴笔记链接" : "搜索素材";
   query.setAttribute("aria-label", "搜索素材");
   query.disabled = unavailable;
-  query.addEventListener("input", () => onFilterChange("query", query.value));
+  const historyMenu = element(document, "div", "tyis-search-history");
+  historyMenu.setAttribute("role", "listbox");
+  historyMenu.hidden = true;
+  function updateHistory() {
+    historyMenu.replaceChildren();
+    if (query.disabled) return;
+    const typed = query.value.trim().toLocaleLowerCase();
+    const matches = getRecentQueries().filter((item) => item.toLocaleLowerCase().includes(typed));
+    for (const item of matches) {
+      const option = element(document, "button", "tyis-search-history-item", item);
+      option.type = "button";
+      option.dataset.recentQuery = item;
+      option.setAttribute("role", "option");
+      option.addEventListener("pointerdown", (event) => event.preventDefault());
+      option.addEventListener("click", () => {
+        query.value = item;
+        onFilterChange("query", item);
+        historyMenu.hidden = true;
+        onSearch(item);
+      });
+      historyMenu.append(option);
+    }
+    historyMenu.hidden = matches.length === 0;
+  }
+  query.addEventListener("focus", updateHistory);
+  query.addEventListener("input", () => {
+    onFilterChange("query", query.value);
+    updateHistory();
+  });
   query.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") onSearch(query.value.trim());
+    if (event.key === "Escape") historyMenu.hidden = true;
+    if (event.key === "Enter" && !event.isComposing) {
+      historyMenu.hidden = true;
+      onSearch(query.value.trim());
+    }
   });
   searchBox.append(query);
+  searchWrap.append(searchBox, historyMenu);
+  searchWrap.addEventListener("focusout", (event) => {
+    if (!searchWrap.contains(event.relatedTarget)) historyMenu.hidden = true;
+  });
   const searchButton = element(document, "button", "tyis-search-button", "搜索");
   searchButton.type = "button";
   searchButton.dataset.action = "search";
@@ -72,7 +113,7 @@ export function renderSourceControls(context) {
   refresh.dataset.action = "refresh";
   refresh.disabled = unavailable;
   refresh.addEventListener("click", onRefresh);
-  searchRow.append(searchBox, searchButton, refresh);
+  searchRow.append(searchWrap, searchButton, refresh);
 
   const filterRow = element(document, "div", "tyis-filter-row");
   for (const field of current?.provider.filters || []) {

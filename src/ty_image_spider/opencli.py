@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Callable, Sequence
 
 from .models import SpiderError
@@ -138,7 +139,9 @@ class OpenCliRunner:
         if os.name == "nt":
             options["creationflags"] = getattr(subprocess, "CREATE_NO_WINDOW", 0)
         try:
-            completed = self._run([executable, *arguments], **options)
+            completed = self._run(
+                [*self._command_prefix(executable), *arguments], **options
+            )
         except subprocess.TimeoutExpired as exc:
             raise SpiderError(
                 "opencli_timeout", "OpenCLI 执行超时", "请稍后重试", 504
@@ -158,6 +161,39 @@ class OpenCliRunner:
         if completed.returncode != 0:
             raise self._exit_error(completed.returncode, stdout, stderr)
         return result
+
+    @staticmethod
+    def _command_prefix(executable: str) -> list[str]:
+        """避免 Windows CMD shim 破坏包含 JavaScript 的参数。"""
+        if os.name != "nt":
+            return [executable]
+        path = Path(executable)
+        if path.suffix.casefold() not in {".cmd", ".bat"}:
+            return [executable]
+        node = path.with_name("node.exe")
+        entry = (
+            path.parent
+            / "node_modules"
+            / "@jackwener"
+            / "opencli"
+            / "dist"
+            / "src"
+            / "main.js"
+        )
+        if node.is_file() and entry.is_file():
+            return [str(node), str(entry)]
+        powershell = shutil.which("powershell.exe") or shutil.which("powershell")
+        script = path.with_suffix(".ps1")
+        if powershell and script.is_file():
+            return [
+                powershell,
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                str(script),
+            ]
+        return [executable]
 
     @staticmethod
     def _validate_args(args: Sequence[str]) -> list[str]:

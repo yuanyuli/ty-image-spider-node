@@ -42,6 +42,8 @@ from .xiaohongshu_extract import (
 _SAFE_NOTE_ID = re.compile(r"^[0-9a-zA-Z_-]{1,64}$")
 _NOTE_PATH = re.compile(r"^/(?:explore|search_result|note)/([0-9a-zA-Z_-]+)/*$")
 _IMAGE_EXTENSIONS = frozenset({".png", ".jpg", ".jpeg", ".webp", ".gif"})
+_BROWSER_FALLBACK_ATTEMPTS = 4
+_BROWSER_FALLBACK_DELAY_SECONDS = 0.75
 
 
 class SessionLock(Protocol):
@@ -234,43 +236,7 @@ class XiaohongshuProvider:
                 "opencli_failed",
             }:
                 raise
-            cards = self._runner.run_json(
-                [
-                    "browser",
-                    "site:xiaohongshu",
-                    "eval",
-                    build_search_extract_js(query),
-                ],
-                timeout_seconds=30,
-            )
-            if not merge_search_rows(cards, cards):
-                try:
-                    self._runner.run_json(
-                        [
-                            "browser",
-                            "site:xiaohongshu",
-                            "open",
-                            "https://www.xiaohongshu.com/search_result?keyword="
-                            + quote(query),
-                            "--window",
-                            "background",
-                        ],
-                        timeout_seconds=30,
-                    )
-                    time.sleep(2)
-                    cards = self._runner.run_json(
-                        [
-                            "browser",
-                            "site:xiaohongshu",
-                            "eval",
-                            build_search_extract_js(query),
-                        ],
-                        timeout_seconds=30,
-                    )
-                except SpiderError:
-                    raise exc
-            if not merge_search_rows(cards, cards):
-                raise exc
+            cards = self._read_browser_fallback(query, exc)
             return (
                 cards,
                 cards,
@@ -286,6 +252,46 @@ class XiaohongshuProvider:
             timeout_seconds=30,
         )
         return rows, cards, ""
+
+    def _read_browser_fallback(self, query: str, original_error: SpiderError) -> Any:
+        """等待 OpenCLI 页面完成跳转，再读取当前页面卡片。"""
+        opened = False
+        for attempt in range(_BROWSER_FALLBACK_ATTEMPTS):
+            try:
+                cards = self._runner.run_json(
+                    [
+                        "browser",
+                        "site:xiaohongshu",
+                        "eval",
+                        build_search_extract_js(query),
+                    ],
+                    timeout_seconds=30,
+                )
+                if merge_search_rows(cards, cards):
+                    return cards
+            except SpiderError:
+                pass
+
+            if not opened:
+                try:
+                    self._runner.run_json(
+                        [
+                            "browser",
+                            "site:xiaohongshu",
+                            "open",
+                            "https://www.xiaohongshu.com/search_result?keyword="
+                            + quote(query),
+                            "--window",
+                            "background",
+                        ],
+                        timeout_seconds=30,
+                    )
+                except SpiderError:
+                    pass
+                opened = True
+            if attempt + 1 < _BROWSER_FALLBACK_ATTEMPTS:
+                time.sleep(_BROWSER_FALLBACK_DELAY_SECONDS)
+        raise original_error
 
     def _read_note(
         self, url: str, fallback_id: str, base_item: AssetItem | None = None

@@ -324,6 +324,29 @@ test("改变非文本筛选项会立即发起新检索", async () => {
   assert.equal(searches, 1);
 });
 
+test("输入关键词时不反复写入 ComfyUI 工作流", async () => {
+  const { extension, NodeType, app, dom } = harness();
+  let graphChanges = 0;
+  app.graph.change = () => {
+    graphChanges += 1;
+  };
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+
+  const query = node.domWidgets[0].element.querySelector('[name="query"]');
+  query.value = "秋";
+  query.dispatchEvent(new dom.window.Event("input"));
+  query.value = "秋季穿搭";
+  query.dispatchEvent(new dom.window.Event("input"));
+
+  assert.equal(graphChanges, 0);
+  assert.equal(node.tyImageSpider.state.get().filters.query, "秋季穿搭");
+  await node.tyImageSpider.search("秋季穿搭");
+  assert.equal(graphChanges > 0, true);
+});
+
 test("翻页控件支持返回上一页并恢复游标历史", async () => {
   const requests = [];
   const fetchApi = (path, options = {}) => {
@@ -359,6 +382,45 @@ test("翻页控件支持返回上一页并恢复游标历史", async () => {
   await new Promise((resolve) => setTimeout(resolve, 0));
   assert.equal(node.tyImageSpider.state.get().items[0].id, "page-1");
   assert.deepEqual(requests, [null, "cursor-2", null]);
+});
+
+test("翻页请求失败时保留当前卡片和翻页入口", async () => {
+  let searches = 0;
+  const fetchApi = (path, options = {}) => {
+    if (path.endsWith("/providers")) return response(providers);
+    if (!path.endsWith("/search")) return response({});
+    searches += 1;
+    if (searches === 3) {
+      return Promise.resolve({
+        ok: false,
+        status: 500,
+        async json() {
+          return { ok: false, error: { message: "服务器处理请求时发生错误" } };
+        },
+      });
+    }
+    const cursor = JSON.parse(options.body).cursor;
+    return response({
+      items: [{ provider: "civitai", id: cursor ? "page-2" : "page-1" }],
+      next_cursor: cursor ? "cursor-3" : "cursor-2",
+    });
+  };
+  const { extension, NodeType } = harness(fetchApi);
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+  await node.tyImageSpider.search();
+  await node.tyImageSpider.search(undefined, "cursor-2", false, "next");
+
+  const root = node.domWidgets[0].element;
+  root.querySelector('[aria-label="上一页"]').click();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.match(root.textContent, /服务器处理请求时发生错误/);
+  assert.match(root.textContent, /page-2/);
+  assert.equal(root.querySelector('[aria-label="上一页"]').hidden, false);
+  assert.equal(root.querySelector('[aria-label="下一页"]').hidden, false);
 });
 
 test("卡片立即打开预览，关闭后迟到详情不会重开", async () => {
@@ -430,7 +492,7 @@ test("详情返回提示词后同步更新当前缩略图角标", async () => {
   assert.equal(root.querySelector(".tyis-prompt-badge").textContent, "提示词");
 });
 
-test("下载完成状态显示 output/ty-node 下的实际相对路径", async () => {
+test("下载完成后显示可见的绝对保存路径", async () => {
   const { extension, NodeType } = harness((path) => {
     if (path.endsWith("/providers")) return response(providers);
     if (path.endsWith("/search")) {
@@ -448,6 +510,7 @@ test("下载完成状态显示 output/ty-node 下的实际相对路径", async (
     if (path.endsWith("/download")) {
       return response({
         files: ["ty-image-spider/civitai/101.png"],
+        output_root: "C:\\path\\to\\ComfyUI\\output\\ty-node",
         message: "图片已下载",
       });
     }
@@ -462,6 +525,11 @@ test("下载完成状态显示 output/ty-node 下的实际相对路径", async (
   root.querySelector('[data-action="download"]').click();
   await new Promise((resolve) => setTimeout(resolve, 0));
 
-  assert.match(root.querySelector(".tyis-activity").textContent, /output\/ty-node/);
-  assert.match(root.querySelector(".tyis-activity").textContent, /civitai\/101\.png/);
+  const location = root.querySelector(".tyis-download-location");
+  assert.equal(location.hidden, false);
+  assert.match(root.querySelector(".tyis-activity").textContent, /图片已下载/);
+  assert.match(
+    location.textContent,
+    /C:\\path\\to\\ComfyUI\\output\\ty-node\\ty-image-spider\\civitai\\101\.png/,
+  );
 });

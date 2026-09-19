@@ -176,3 +176,33 @@ def test_command_failure_preserves_xiaohongshu_filter_diagnostic():
 
     assert caught.value.code == "opencli_xiaohongshu_filter_changed"
     assert "筛选" in caught.value.message
+
+
+def test_runner_invokes_windows_cmd_shim_through_node_for_browser_scripts(
+    tmp_path, monkeypatch
+):
+    cmd = tmp_path / "opencli.CMD"
+    ps1 = tmp_path / "opencli.ps1"
+    node = tmp_path / "node.exe"
+    entry = (
+        tmp_path
+        / "node_modules"
+        / "@jackwener"
+        / "opencli"
+        / "dist"
+        / "src"
+        / "main.js"
+    )
+    cmd.write_text("", encoding="utf-8")
+    ps1.write_text("", encoding="utf-8")
+    node.write_text("", encoding="utf-8")
+    entry.parent.mkdir(parents=True)
+    entry.write_text("", encoding="utf-8")
+    fake_run = FakeRun(completed(0, "[]"))
+    monkeypatch.setattr("ty_image_spider.opencli.os.name", "nt")
+    opencli = OpenCliRunner(run=fake_run, which=lambda _: str(cmd))
+
+    opencli.run_json(["browser", "site:xiaohongshu", "eval", "(() => [])()"], 30)
+
+    args = fake_run.calls[0][0]
+    assert args[:2] == [str(node), str(entry)]

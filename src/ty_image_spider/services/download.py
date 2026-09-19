@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 from typing import Mapping, Sequence
 
@@ -16,7 +17,9 @@ class DownloadService:
 
     def execute(self, payload: Mapping[str, object]) -> DownloadResult:
         item = AssetItem.from_untrusted(payload.get("item"))
-        return self._providers.get(item.provider).download(item, self._output_root)
+        return self._with_output_root(
+            self._providers.get(item.provider).download(item, self._output_root)
+        )
 
     def download_page(
         self, provider_id: str, raw_items: Sequence[object]
@@ -34,4 +37,9 @@ class DownloadService:
         files: list[str] = []
         for item in items:
             files.extend(provider.download(item, self._output_root).files)
-        return DownloadResult(tuple(files), f"已下载 {len(files)} 个文件")
+        return self._with_output_root(
+            DownloadResult(tuple(files), f"已下载 {len(files)} 个文件")
+        )
+
+    def _with_output_root(self, result: DownloadResult) -> DownloadResult:
+        return replace(result, output_root=str(self._output_root.resolve()))

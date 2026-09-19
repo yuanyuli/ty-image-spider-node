@@ -101,6 +101,7 @@ def test_download_service_uses_configured_output_root(tmp_path):
     )
 
     assert result.files == ("civitai/9.png",)
+    assert result.output_root == str(tmp_path.resolve())
     assert civitai.download_calls == 1
 
 

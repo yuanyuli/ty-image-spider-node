@@ -61,10 +61,12 @@ export function createGallery(context) {
 
   function setLoading(preservePagination = false) {
     count.textContent = "正在检索";
-    previousButton.hidden = !preservePagination || !hasPrevious;
-    previousButton.disabled = preservePagination && hasPrevious;
-    nextButton.hidden = !preservePagination || !nextCursor;
-    nextButton.disabled = preservePagination && Boolean(nextCursor);
+    const keepResults = currentItems.length > 0;
+    previousButton.hidden = !hasPrevious || (!preservePagination && !keepResults);
+    previousButton.disabled = true;
+    nextButton.hidden = !nextCursor || (!preservePagination && !keepResults);
+    nextButton.disabled = true;
+    if (keepResults) return;
     grid.replaceChildren();
     for (let index = 0; index < 6; index += 1) {
       grid.append(element(document, "div", "tyis-skeleton"));
@@ -72,11 +74,12 @@ export function createGallery(context) {
   }
 
   function setError(message) {
-    count.textContent = "检索失败";
+    count.textContent = currentItems.length ? "检索失败 · 显示上次结果" : "检索失败";
     previousButton.disabled = false;
-    previousButton.hidden = true;
+    previousButton.hidden = !currentItems.length || !hasPrevious;
     nextButton.disabled = false;
-    nextButton.hidden = true;
+    nextButton.hidden = !currentItems.length || !nextCursor;
+    if (currentItems.length) return;
     grid.replaceChildren(emptyState(document, message || "读取失败", "请检查素材源状态"));
   }
 

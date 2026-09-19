@@ -287,6 +287,13 @@ class SearchPage:
 class DownloadResult:
     files: tuple[str, ...] = ()
     message: str = ""
+    output_root: str = ""
 
     def to_dict(self) -> dict[str, JsonValue]:
-        return {"files": list(self.files), "message": self.message}
+        result: dict[str, JsonValue] = {
+            "files": list(self.files),
+            "message": self.message,
+        }
+        if self.output_root:
+            result["output_root"] = self.output_root
+        return result

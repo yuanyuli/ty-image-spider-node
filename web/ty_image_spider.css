@@ -99,6 +99,18 @@
   color: var(--tyis-danger);
 }
 
+.tyis-download-location {
+  max-height: 72px;
+  flex: 0 0 auto;
+  overflow: auto;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--tyis-line);
+  color: var(--tyis-green);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
 .tyis-controls {
   padding: 11px 12px 10px;
   border-bottom: 1px solid var(--tyis-line);
@@ -211,11 +223,17 @@
   margin-top: 9px;
 }
 
+.tyis-search-wrap {
+  position: relative;
+  min-width: 0;
+  flex: 1;
+}
+
 .tyis-search-box {
   display: flex;
   min-width: 0;
   height: 34px;
-  flex: 1;
+  width: 100%;
   align-items: center;
   gap: 7px;
   box-sizing: border-box;
@@ -224,6 +242,40 @@
   background: #111315;
   border: 1px solid var(--tyis-line-strong);
   border-radius: 6px;
+}
+
+.tyis-search-history {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  max-height: 180px;
+  overflow: auto;
+  padding: 4px;
+  background: var(--tyis-raised);
+  border: 1px solid var(--tyis-line-strong);
+  border-radius: 6px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.tyis-search-history-item {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  color: var(--tyis-text);
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tyis-search-history-item:hover,
+.tyis-search-history-item:focus-visible {
+  background: #36403a;
+  outline: none;
 }
 
 .tyis-search-box:focus-within {
@@ -387,6 +439,11 @@
 .tyis-controls-host,
 .tyis-gallery-toolbar {
   flex-shrink: 0;
+}
+
+.tyis-controls-host {
+  position: relative;
+  z-index: 2;
 }
 
 .tyis-grid {

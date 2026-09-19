@@ -1,6 +1,7 @@
 import { createApiClient } from "./api.js";
 import { openAssetDialog } from "./dialog.js";
 import { createGallery } from "./gallery.js";
+import { createSearchHistory } from "./search_history.js";
 import { renderSourceControls } from "./source_controls.js";
 import {
   createProviderSessions,
@@ -50,6 +51,7 @@ function mountNode(node, { app, api, document }) {
   hideWidget(stateWidget);
   const state = createSpiderState();
   const sessions = createProviderSessions();
+  const history = createSearchHistory(document.defaultView?.localStorage);
   const guard = createRequestGuard();
   const providerGuard = createRequestGuard();
   const client = createApiClient(api.fetchApi.bind(api));
@@ -62,9 +64,11 @@ function mountNode(node, { app, api, document }) {
   );
   const activity = element(document, "span", "tyis-activity", "待命");
   masthead.append(brand, activity);
+  const downloadLocation = element(document, "div", "tyis-download-location");
+  downloadLocation.hidden = true;
   const controlsHost = element(document, "div", "tyis-controls-host");
   const galleryHost = element(document, "div", "tyis-gallery-host");
-  root.append(masthead, controlsHost, galleryHost);
+  root.append(masthead, downloadLocation, controlsHost, galleryHost);
   node.addDOMWidget?.("ty_image_spider", "TY_IMAGE_SPIDER", root, {
     serialize: false,
     hideOnZoom: false,
@@ -171,6 +175,7 @@ function mountNode(node, { app, api, document }) {
       providers,
       provider: value.provider,
       filters: value.filters,
+      getRecentQueries: () => history.list(value.provider),
       onSourceChange(provider) {
         guard.invalidate();
         sessions.save(value.provider, state.get());
@@ -209,11 +214,10 @@ function mountNode(node, { app, api, document }) {
       onFilterChange(name, value) {
         state.set({ filters: { ...state.get().filters, [name]: value } });
         sessions.save(state.get().provider, state.get());
+        if (name === "query") return;
         persist();
-        if (name !== "query") {
-          renderControls();
-          search();
-        }
+        renderControls();
+        search();
       },
     });
     controlsHost.replaceChildren(controls.root);
@@ -282,6 +286,7 @@ function mountNode(node, { app, api, document }) {
         summary: { query, count: page.items?.length || 0, stale: Boolean(page.stale) },
         error: null,
       });
+      history.add(current.provider, query);
       sessions.save(state.get().provider, state.get());
       gallery?.render(state.get().items, {
         next_cursor: state.get().nextCursor,
@@ -341,26 +346,28 @@ function mountNode(node, { app, api, document }) {
   }
 
   async function downloadItem(item) {
+    downloadLocation.hidden = true;
     setActivity("下载中");
     try {
       const result = await client.requestJson("/ty-image-spider/download", {
         method: "POST",
         body: { item },
       });
-      setActivity(downloadResultMessage(result));
+      showDownloadResult(result);
     } catch (error) {
       setActivity(error.message || "下载失败", true);
     }
   }
 
   async function downloadPage(items) {
+    downloadLocation.hidden = true;
     setActivity("下载本页");
     try {
       const result = await client.requestJson("/ty-image-spider/download-page", {
         method: "POST",
         body: { provider: state.get().provider, items },
       });
-      setActivity(downloadResultMessage(result));
+      showDownloadResult(result);
     } catch (error) {
       setActivity(error.message || "下载失败", true);
     }
@@ -417,9 +424,21 @@ function mountNode(node, { app, api, document }) {
   function downloadResultMessage(result) {
     const files = Array.isArray(result?.files) ? result.files.filter(Boolean) : [];
     if (!files.length) return result?.message || "下载完成";
-    return `${result?.message || "下载完成"}：${files
-      .map((file) => `output/ty-node/${file}`)
-      .join("、")}`;
+    const outputRoot = typeof result?.output_root === "string" ? result.output_root.trim() : "";
+    const paths = files.map((file) => {
+      if (!outputRoot) return `output/ty-node/${file}`;
+      const normalizedRoot = outputRoot.replace(/[\\/]+$/, "");
+      const normalizedFile = String(file).replaceAll("/", "\\");
+      return `${normalizedRoot}\\${normalizedFile}`;
+    });
+    return `${result?.message || "下载完成"}：${paths.join("、")}`;
+  }
+
+  function showDownloadResult(result) {
+    setActivity(result?.message || "下载完成");
+    downloadLocation.textContent = downloadResultMessage(result);
+    downloadLocation.title = downloadLocation.textContent;
+    downloadLocation.hidden = false;
   }
 
   function dispose() {

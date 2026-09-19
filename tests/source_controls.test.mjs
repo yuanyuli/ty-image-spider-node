@@ -144,6 +144,30 @@ test("小红书来源提供一键连接操作", () => {
   assert.equal(connected, 1);
 });
 
+test("搜索框使用节点历史词而不触发浏览器原生自动填充", () => {
+  const dom = new JSDOM("<!doctype html><body></body>");
+  const available = structuredClone(providers);
+  available[1].status = { available: true, message: "已连接" };
+  const searches = [];
+  const view = renderSourceControls({
+    document: dom.window.document,
+    providers: available,
+    provider: "xiaohongshu",
+    getRecentQueries: () => ["秋季穿搭", "摄影"],
+    onSearch: (query) => searches.push(query),
+  });
+  dom.window.document.body.append(view.root);
+
+  assert.equal(view.query.autocomplete, "off");
+  view.query.dispatchEvent(new dom.window.Event("focus"));
+  const suggestion = view.root.querySelector('[data-recent-query="秋季穿搭"]');
+  assert.ok(suggestion);
+  suggestion.click();
+
+  assert.equal(view.query.value, "秋季穿搭");
+  assert.deepEqual(searches, ["秋季穿搭"]);
+});
+
 test("Wallhaven 榜单范围仅在热门榜排序时可用", () => {
   const dom = new JSDOM("<!doctype html><body></body>");
   const wallhaven = [

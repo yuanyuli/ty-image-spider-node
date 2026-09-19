@@ -88,6 +88,27 @@ class EmptyBrowserFallbackRunner(FilterFailureRunner):
         return self.responses.pop(0)
 
 
+class FlakyBrowserEvalRunner(FilterFailureRunner):
+    """模拟筛选命令失败后，浏览器页面仍在跳转的 OpenCLI。"""
+
+    def run_json(self, args, timeout_seconds):
+        self.calls.append(Call(list(args), timeout_seconds))
+        if args[:2] == ["xiaohongshu", "search"]:
+            raise SpiderError(
+                "opencli_failed", "OpenCLI 执行失败（退出码 1）", status=502
+            )
+        if args[:3] == ["browser", "site:xiaohongshu", "eval"]:
+            if not any(
+                call.args[:3] == ["browser", "site:xiaohongshu", "open"]
+                for call in self.calls
+            ):
+                raise SpiderError("opencli_failed", "浏览器页面正在跳转", status=502)
+            return self.responses.pop(0)
+        if args[:3] == ["browser", "site:xiaohongshu", "open"]:
+            return {}
+        return self.responses.pop(0)
+
+
 def make_provider(tmp_path, runner=None):
     return XiaohongshuProvider(
         runner or FakeRunner([SEARCH, CARDS]),
@@ -271,6 +292,20 @@ def test_generic_opencli_search_failure_also_uses_read_only_fallback(tmp_path):
 
 def test_filter_fallback_opens_search_url_when_existing_tab_has_no_cards(tmp_path):
     runner = EmptyBrowserFallbackRunner([[], {}, SEARCH])
+
+    page = make_provider(tmp_path, runner).search(
+        SearchRequest("xiaohongshu", "秋季穿搭", {"count": 12})
+    )
+
+    assert page.items[0].title == "秋季通勤穿搭"
+    assert any(
+        call.args[:3] == ["browser", "site:xiaohongshu", "open"]
+        for call in runner.calls
+    )
+
+
+def test_filter_fallback_retries_when_browser_eval_is_temporarily_unavailable(tmp_path):
+    runner = FlakyBrowserEvalRunner([SEARCH])
 
     page = make_provider(tmp_path, runner).search(
         SearchRequest("xiaohongshu", "秋季穿搭", {"count": 12})
