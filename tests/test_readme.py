@@ -12,7 +12,7 @@ def test_readme_documents_required_install_and_privacy_boundaries():
         "Chrome 扩展",
         "output/ty-image-spider",
         "不会写入工作流",
-        "uv run",
+        "CONTRIBUTING.md",
         "故障排查",
     ):
         assert required in text
