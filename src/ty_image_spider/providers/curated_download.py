@@ -6,6 +6,7 @@ import os
 import re
 import tempfile
 from pathlib import Path
+from http.client import HTTPException
 from typing import Any, Callable
 from urllib.error import URLError
 from urllib.parse import quote, urlsplit, urlunsplit
@@ -29,6 +30,9 @@ _HOSTS = {
     "artic": lambda host: host == "www.artic.edu",
     "vam": lambda host: host == "framemark.vam.ac.uk",
     "cleveland": lambda host: host == "openaccess-cdn.clevelandart.org",
+    "colossal": lambda host: host in {"www.thisiscolossal.com", "thisiscolossal.com"},
+    "designmilk": lambda host: host == "design-milk.com",
+    "arena": lambda host: host in {"images.are.na", "d2w9rnfcy7mm78.cloudfront.net"},
 }
 _SAFE_ID = re.compile(r"^[0-9]+(?:-[0-9]+)?$")
 
@@ -81,7 +85,7 @@ class CuratedDownloader:
                 payload = read_limited(response, 64 * 1024 * 1024)
         except SpiderError:
             raise
-        except (URLError, TimeoutError, OSError) as exc:
+        except (URLError, TimeoutError, OSError, HTTPException) as exc:
             raise SpiderError("download_failed", "图片下载失败", status=502) from exc
         descriptor, name = tempfile.mkstemp(suffix=".image")
         path = Path(name)
@@ -112,18 +116,35 @@ class CuratedDownloader:
         self, url: str, provider: str, item_id: str, output_root: Path
     ) -> DownloadResult:
         validate_asset_id(provider, item_id)
-        payload, extension = self.read(url, provider)
+        require_image_url(url, provider)
         directory = resolve_inside(output_root, Path("ty-image-spider") / provider)
-        directory.mkdir(parents=True, exist_ok=True)
-        target = directory / f"{item_id}{extension}"
-        if not target.exists():
-            descriptor, name = tempfile.mkstemp(dir=directory, prefix=".image-")
+        for suffix in (".jpg", ".png", ".webp", ".gif"):
+            existing = resolve_inside(
+                output_root, Path("ty-image-spider") / provider / f"{item_id}{suffix}"
+            )
+            if not existing.is_file():
+                continue
             try:
-                with os.fdopen(descriptor, "wb") as handle:
-                    handle.write(payload)
-                os.replace(name, target)
-            finally:
-                Path(name).unlink(missing_ok=True)
+                with Image.open(existing) as image:
+                    image.load()
+            except (OSError, ValueError, SyntaxError):
+                continue
+            return DownloadResult(
+                (existing.relative_to(output_root.resolve()).as_posix(),),
+                "图片已存在，已复用",
+            )
+        payload, extension = self.read(url, provider)
+        directory.mkdir(parents=True, exist_ok=True)
+        target = resolve_inside(
+            output_root, Path("ty-image-spider") / provider / f"{item_id}{extension}"
+        )
+        descriptor, name = tempfile.mkstemp(dir=directory, prefix=".image-")
+        try:
+            with os.fdopen(descriptor, "wb") as handle:
+                handle.write(payload)
+            os.replace(name, target)
+        finally:
+            Path(name).unlink(missing_ok=True)
         return DownloadResult(
             (target.relative_to(output_root.resolve()).as_posix(),), "图片已下载"
         )

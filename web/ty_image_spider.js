@@ -114,7 +114,8 @@ function mountNode(node, { app, api, document }) {
     try {
       const nextProviders = await client.requestJson("/ty-image-spider/providers");
       if (!providerGuard.isCurrent(ticket) || disposed) return;
-      providers = nextProviders;
+      // 小红书暂不开放入口；保留独立接入代码，方便后续恢复。
+      providers = nextProviders.filter((entry) => entry.provider.id !== "xiaohongshu");
       const current = providers.some((entry) => entry.provider.id === state.get().provider)
         ? state.get().provider
         : providers[0]?.provider.id || "civitai";
@@ -221,6 +222,9 @@ function mountNode(node, { app, api, document }) {
       },
       onFilterChange(name, value) {
         state.set({ filters: { ...state.get().filters, [name]: value } });
+        if (state.get().provider === "arena" && name === "category") {
+          state.set({ filters: { ...state.get().filters, query: "" } });
+        }
         sessions.save(state.get().provider, state.get());
         if (name === "query") return;
         persist();
@@ -459,6 +463,7 @@ function mountNode(node, { app, api, document }) {
       saved = {};
     }
     if (!saved || typeof saved !== "object") return;
+    if (saved.provider === "xiaohongshu") saved = { provider: "civitai", filters: {} };
     const provider = typeof saved.provider === "string" ? saved.provider : state.get().provider;
     const filters = saved.filters && typeof saved.filters === "object" ? saved.filters : {};
     const items = provider === "xiaohongshu" || !Array.isArray(saved.items) ? [] : saved.items;

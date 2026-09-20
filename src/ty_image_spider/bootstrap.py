@@ -18,6 +18,10 @@ from .providers.artic import ArticProvider
 from .providers.vam import VamProvider
 from .providers.cleveland import ClevelandProvider
 from .providers.museum_client import MuseumClient
+from .providers.public_json_client import PublicJsonClient
+from .providers.editorial import EditorialProvider
+from .providers.editorial_sources import COLOSSAL, DESIGN_MILK
+from .providers.arena import ArenaProvider
 from .providers.curated_client import BehanceClient, FilmGrabClient
 from .providers.curated_download import CuratedDownloader
 from .providers.filmgrab import FilmGrabProvider
@@ -75,6 +79,24 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
         )
     )
     providers.register(BehanceProvider(BehanceClient(), reader))
+    for source in (COLOSSAL, DESIGN_MILK):
+        providers.register(
+            EditorialProvider(
+                source,
+                PublicJsonClient(
+                    source.api_root, source.label, JsonCache(cache / source.id)
+                ),
+                reader,
+            )
+        )
+    providers.register(
+        ArenaProvider(
+            PublicJsonClient(
+                "https://api.are.na/v2/", "Are.na", JsonCache(cache / "arena")
+            ),
+            reader,
+        )
+    )
     filmgrab_client = FilmGrabClient()
     movies = MovieResolution(
         TmdbClient(

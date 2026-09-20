@@ -11,6 +11,13 @@ from ty_image_spider.providers.curated_download import CuratedDownloader
     "provider,item_id,url",
     [
         (
+            "colossal",
+            "42-1",
+            "https://www.thisiscolossal.com/wp-content/uploads/image.jpg",
+        ),
+        ("designmilk", "42-1", "https://design-milk.com/images/image.jpg"),
+        ("arena", "42", "https://d2w9rnfcy7mm78.cloudfront.net/42/image.jpg"),
+        (
             "artic",
             "27992",
             "https://www.artic.edu/iiif/2/image/full/843,/0/default.jpg",
@@ -51,6 +58,34 @@ class Response(BytesIO):
 
     def geturl(self):
         return self.url
+
+
+def test_existing_valid_image_is_reused_without_network(tmp_path):
+    target = tmp_path / "ty-image-spider" / "colossal" / "42-1.jpg"
+    target.parent.mkdir(parents=True)
+    Image.new("RGB", (16, 12)).save(target)
+
+    def unexpected(*args, **kwargs):
+        pytest.fail("已有有效图片不应重新联网")
+
+    saved = CuratedDownloader(unexpected).download(
+        "https://www.thisiscolossal.com/image.jpg", "colossal", "42-1", tmp_path
+    )
+    assert saved.files == ("ty-image-spider/colossal/42-1.jpg",)
+
+
+def test_corrupt_existing_image_is_replaced(tmp_path):
+    target = tmp_path / "ty-image-spider" / "colossal" / "42-1.jpg"
+    target.parent.mkdir(parents=True)
+    target.write_bytes(b"broken")
+    data = BytesIO()
+    Image.new("RGB", (16, 12)).save(data, "JPEG")
+    url = "https://www.thisiscolossal.com/image.jpg"
+    CuratedDownloader(lambda *a, **k: Response(data.getvalue(), url)).download(
+        url, "colossal", "42-1", tmp_path
+    )
+    with Image.open(target) as image:
+        assert image.size == (16, 12)
 
 
 def test_iiif_size_syntax_is_not_percent_encoded():

@@ -4,6 +4,36 @@ import { JSDOM } from "jsdom";
 
 import { openAssetDialog } from "../web/dialog.js";
 
+test("专题图集显示下载范围并更新说明和缩略图", () => {
+  const document = new JSDOM("<body></body>").window.document;
+  const item = {
+    provider: "colossal",
+    id: "42",
+    kind: "editorial",
+    download_mode: "gallery",
+    title: "摄影专题",
+    metadata: { description: "初始说明" },
+  };
+  let downloaded;
+  const view = openAssetDialog({
+    document,
+    detail: { item, images: ["https://www.thisiscolossal.com/one.jpg"] },
+    onDownload: (value) => (downloaded = value),
+  });
+  assert.equal(view.dialog.querySelector('[data-action="download"]').textContent, "下载图集");
+  view.update({
+    item,
+    content: "摄影师与作品介绍",
+    images: ["https://www.thisiscolossal.com/one.jpg", "https://www.thisiscolossal.com/two.jpg"],
+  });
+  assert.match(view.dialog.textContent, /摄影师与作品介绍/);
+  view.dialog.querySelector('[aria-label="查看第 2 张图片"]').click();
+  assert.match(view.dialog.querySelector(".tyis-detail-image").src, /two.jpg$/);
+  view.dialog.querySelector('[data-action="download"]').click();
+  assert.equal(downloaded, item);
+  view.close();
+});
+
 test("馆藏详情显示作品资料，迟到的说明更新不会被当作提示词", () => {
   const document = new JSDOM("<body></body>").window.document;
   const item = {

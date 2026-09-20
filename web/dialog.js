@@ -1,6 +1,7 @@
 import { createIcon, createIconButton } from "./icons.js";
 import { openImageViewer } from "./image_viewer.js";
 import { renderCollectionDetails } from "./collection_detail.js";
+import { renderEditorialDetails } from "./editorial_detail.js";
 
 export function openAssetDialog(context) {
   const {
@@ -64,6 +65,7 @@ export function openAssetDialog(context) {
   else if (item.provider === "wallhaven") panel.append(renderWallhaven(document, item));
   else if (item.provider === "xiaohongshu") panel.append(renderXiaohongshu(document, item, detail));
   else if (item.kind === "collection") panel.append(renderCollectionDetails(document, detail));
+  else if (item.kind === "editorial") panel.append(renderEditorialDetails(document, detail));
   else if (item.provider === "behance" || item.provider === "filmgrab") {
     if (detail.content) {
       const section = sectionWithTitle(document, "作品说明");
@@ -77,7 +79,11 @@ export function openAssetDialog(context) {
       document,
       "button",
       "tyis-primary-button",
-      item.provider === "xiaohongshu" ? "下载整篇" : "下载图片",
+      item.provider === "xiaohongshu"
+        ? "下载整篇"
+        : item.download_mode === "gallery"
+          ? "下载图集"
+          : "下载图片",
     );
     download.type = "button";
     download.dataset.action = "download";
@@ -140,6 +146,8 @@ export function openAssetDialog(context) {
     item = nextItem;
     const collection = panel.querySelector(".tyis-collection-info");
     if (collection) collection.replaceWith(renderCollectionDetails(document, nextDetail));
+    const editorial = panel.querySelector(".tyis-editorial-info");
+    if (editorial) editorial.replaceWith(renderEditorialDetails(document, nextDetail));
     if (nextDetail.images?.length) {
       images = [...nextDetail.images];
       mainImage.src = images[0];
@@ -318,6 +326,9 @@ function sourceLabel(provider) {
       wallhaven: "WALLHAVEN",
       behance: "BEHANCE",
       filmgrab: "FILMGRAB",
+      colossal: "COLOSSAL",
+      designmilk: "DESIGN MILK",
+      arena: "ARE.NA",
       vam: "V&A",
       artic: "芝加哥艺术博物馆",
       cleveland: "克利夫兰艺术博物馆",

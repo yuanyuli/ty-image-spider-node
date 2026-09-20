@@ -16,6 +16,15 @@ const providers = [
   },
   {
     provider: {
+      id: "wallhaven",
+      label: "Wallhaven",
+      filters: [],
+      capabilities: { bulk_download: true },
+    },
+    status: { available: false, message: "未连接" },
+  },
+  {
+    provider: {
       id: "xiaohongshu",
       label: "小红书",
       filters: [],
@@ -24,6 +33,48 @@ const providers = [
     status: { available: false, message: "未连接" },
   },
 ];
+
+test("Are.na 切换精选频道时清除自定义链接", async () => {
+  const entries = [
+    ...providers,
+    {
+      provider: {
+        id: "arena",
+        label: "Are.na",
+        filters: [
+          {
+            name: "category",
+            label: "精选频道",
+            kind: "select",
+            default: "graphic",
+            options: [
+              { value: "graphic", label: "平面设计" },
+              { value: "photography", label: "摄影" },
+            ],
+          },
+        ],
+        capabilities: {},
+      },
+      status: { available: true },
+    },
+  ];
+  const { extension, NodeType, document } = harness((path) =>
+    response(path.endsWith("/providers") ? entries : { items: [] }),
+  );
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+  const root = node.domWidgets[0].element;
+  root.querySelector('[data-provider="arena"]').click();
+  node.tyImageSpider.state.set({
+    filters: { query: "https://www.are.na/user/custom", category: "graphic" },
+  });
+  const field = root.querySelector('select[name="category"]');
+  field.value = "photography";
+  field.dispatchEvent(new document.defaultView.Event("change", { bubbles: true }));
+  assert.equal(node.tyImageSpider.state.get().filters.query, "");
+});
 
 function response(data) {
   return Promise.resolve({
@@ -177,8 +228,8 @@ test("后发素材源检查结果不会被较慢的旧请求覆盖", async () =>
   await Promise.all(pending.map(() => Promise.resolve()));
 
   await new Promise((resolve) => setTimeout(resolve, 0));
-  const xhs = node.domWidgets[0].element.querySelector('[data-provider="xiaohongshu"]');
-  xhs.click();
+  const source = node.domWidgets[0].element.querySelector('[data-provider="wallhaven"]');
+  source.click();
   assert.match(node.domWidgets[0].element.textContent, /已连接/);
   assert.equal(node.domWidgets[0].element.querySelector('[data-action="search"]').disabled, false);
 });
@@ -242,6 +293,8 @@ test("配置恢复普通来源结果并清理小红书持久结果", async () =>
   });
   node.onConfigure({});
   assert.deepEqual(node.tyImageSpider.state.get().items, []);
+  assert.equal(node.tyImageSpider.state.get().provider, "civitai");
+  assert.equal(node.domWidgets[0].element.querySelector('[data-provider="xiaohongshu"]'), null);
 });
 
 test("旧工作流恢复时重新检索以恢复提示词角标和分页游标", async () => {
@@ -295,7 +348,7 @@ test("切换来源后恢复各自已经加载的图片", async () => {
   });
   node.tyImageSpider.render();
 
-  node.domWidgets[0].element.querySelector('[data-provider="xiaohongshu"]').click();
+  node.domWidgets[0].element.querySelector('[data-provider="wallhaven"]').click();
   node.domWidgets[0].element.querySelector('[data-provider="civitai"]').click();
 
   assert.equal(node.tyImageSpider.state.get().items[0].id, "c-1");

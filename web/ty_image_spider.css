@@ -119,12 +119,14 @@
 
 .tyis-source-bar {
   min-height: 30px;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 8px;
 }
 
 .tyis-source-segments {
   display: flex;
+  flex-wrap: wrap;
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: thin;
@@ -544,6 +546,9 @@
 }
 
 .tyis-card.is-filmgrab .tyis-card-image,
+.tyis-card.is-colossal .tyis-card-image,
+.tyis-card.is-designmilk .tyis-card-image,
+.tyis-card.is-arena .tyis-card-image,
 .tyis-card.is-vam .tyis-card-image,
 .tyis-card.is-artic .tyis-card-image,
 .tyis-card.is-cleveland .tyis-card-image {
