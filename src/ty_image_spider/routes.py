@@ -20,8 +20,10 @@ from .diagnostics import log_failure
 
 _LOGGER = logging.getLogger(__name__)
 _SECRET_VALUE = re.compile(
-    r"(?i)\b(key|token|secret|cookie|authorization)\b\s*[:=]\s*[^\s,;]+"
+    r"(?i)\b((?:[a-z0-9]+[_-])*(?:key|token|secret)|cookie|authorization)\b"
+    r"\s*[:=]\s*(?:Bearer\s+)?[^\s,;&]+"
 )
+_BEARER_VALUE = re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/=-]+")
 _routes_registered = False
 _services: ApplicationServices | None = None
 _services_lock = threading.Lock()
@@ -194,7 +196,10 @@ def _unexpected_error() -> web.Response:
 
 
 def _safe_text(value: str) -> str:
-    return _SECRET_VALUE.sub(lambda match: f"{match.group(1)}=[已隐藏]", value)
+    return _BEARER_VALUE.sub(
+        "Bearer [已隐藏]",
+        _SECRET_VALUE.sub(lambda match: f"{match.group(1)}=[已隐藏]", value),
+    )
 
 
 ROUTES: tuple[

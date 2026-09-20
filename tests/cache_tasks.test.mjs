@@ -1,6 +1,44 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+test("同一来源不同条件独立启动、恢复进度和取消，相同条件不重复请求", async () => {
+  const { createCacheTasks } = await import("../web/cache_tasks.js");
+  const calls = [];
+  const jobs = new Map();
+  const view = createCacheTasks({
+    client: {
+      async requestJson(path, options) {
+        calls.push([path, options]);
+        if (path.endsWith("/start")) {
+          const job = {
+            id: String(jobs.size + 1),
+            provider: options.body.provider,
+            state: "running",
+          };
+          jobs.set(job.id, job);
+          return job;
+        }
+        const job = jobs.get(path.split("/")[3]);
+        return { ...job, state: "cancelled" };
+      },
+    },
+    schedule: () => 0,
+    unschedule: () => {},
+  });
+  const earth = { provider: "nasa", query: "earth", filters: { b: 2, a: 1 } };
+  const mars = { provider: "nasa", query: "mars", filters: {} };
+  await view.start(earth);
+  await view.start(mars);
+  await view.start({ ...earth, query: " earth ", filters: { a: 1, b: 2 } });
+  assert.equal(calls.length, 2);
+  assert.equal(view.get(earth).id, "1");
+  assert.equal(view.get(mars).id, "2");
+  await view.cancel(mars);
+  assert.equal(calls.at(-1)[0], "/ty-image-spider/cache/2/cancel");
+  assert.equal(view.get(earth).state, "running");
+  view.dispose();
+});
+
 test("切换来源仍保存各自的缓存任务，取消和轮询只作用于指定任务", async () => {
   const { createCacheTasks } = await import("../web/cache_tasks.js");
   const cancelled = [];

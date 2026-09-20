@@ -35,6 +35,40 @@ const providers = [
   },
 ];
 
+test("运行缓存时编辑关键词立即显示当前条件的任务状态", async () => {
+  const entries = [
+    { ...providers[0], provider: { ...providers[0].provider, capabilities: { cache: true } } },
+  ];
+  const { extension, NodeType, document } = harness((path) => {
+    if (path.endsWith("/providers")) return response(entries);
+    return response({ id: "earth-job", provider: "civitai", state: "running", cached: 5 });
+  });
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+  const root = node.domWidgets[0].element;
+  const field = root.querySelector('[name="query"]');
+  const change = (value) => {
+    field.value = value;
+    field.dispatchEvent(new document.defaultView.Event("input", { bubbles: true }));
+  };
+  try {
+    change("earth");
+    root.querySelector('[data-action="cache-100"]').click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(root.querySelector('[data-action="cache-100"]').disabled, true);
+    change("mars");
+    assert.equal(root.querySelector('[data-action="cache-100"]').disabled, false);
+    assert.equal(root.querySelector('[data-action="cancel-cache"]').hidden, true);
+    change("earth");
+    assert.equal(root.querySelector('[data-action="cache-100"]').disabled, true);
+    assert.match(root.querySelector('[data-action="cache-100"]').textContent, /5/);
+  } finally {
+    node.onRemoved();
+  }
+});
+
 test("Are.na 切换精选频道时清除自定义链接", async () => {
   const entries = [
     ...providers,

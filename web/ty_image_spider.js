@@ -1,4 +1,4 @@
-import { createCacheTasks } from "./cache_tasks.js";
+import { cacheTaskKey, createCacheTasks } from "./cache_tasks.js";
 import { normalizePresentation } from "./presentation.js";
 import { createApiClient } from "./api.js";
 import { openAssetDialog } from "./dialog.js";
@@ -103,13 +103,13 @@ function mountNode(node, { app, api, document }) {
   let restoreNeedsSearch = false;
   const cacheTasks = createCacheTasks({
     client,
-    onUpdate(job) {
-      if (job.provider !== state.get().provider) return;
+    onUpdate(job, key) {
+      if (key !== cacheTaskKey(cacheRequest())) return;
       gallery?.setCacheStatus(job);
       setActivity(job.message || `已缓存 ${job.cached || 0} 张`);
     },
-    onError(error, provider) {
-      if (provider === state.get().provider) setActivity(error.message || "缓存操作失败", true);
+    onError(error, key) {
+      if (key === cacheTaskKey(cacheRequest())) setActivity(error.message || "缓存操作失败", true);
     },
   });
   renderInitialState();
@@ -253,7 +253,12 @@ function mountNode(node, { app, api, document }) {
           state.set({ filters: { ...state.get().filters, query: "" } });
         }
         sessions.save(state.get().provider, state.get());
-        if (name === "query") return;
+        const currentJob = cacheTasks.get(cacheRequest());
+        gallery?.setCacheStatus(currentJob);
+        if (name === "query") {
+          setActivity(currentJob?.message || "条件已更新");
+          return;
+        }
         persist();
         renderControls();
         search();
@@ -291,18 +296,22 @@ function mountNode(node, { app, api, document }) {
         has_previous: value.previousCursors.length > 0,
       });
     }
-    gallery.setCacheStatus(cacheTasks.get(value.provider));
+    gallery.setCacheStatus(cacheTasks.get(cacheRequest()));
+  }
+
+  function cacheRequest() {
+    const current = state.get();
+    const { query = "", ...filters } = current.filters;
+    return { provider: current.provider, query, filters };
   }
 
   async function startCache() {
-    const current = state.get();
-    const { query = "", ...filters } = current.filters;
     setActivity("正在启动后台缓存");
-    await cacheTasks.start({ provider: current.provider, query, filters });
+    await cacheTasks.start(cacheRequest());
   }
 
   async function cancelCache() {
-    await cacheTasks.cancel(state.get().provider);
+    await cacheTasks.cancel(cacheRequest());
   }
 
   async function search(

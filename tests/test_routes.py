@@ -31,6 +31,17 @@ def test_error_details_preserve_job_id_and_redact_nested_credentials():
     assert details["nested"][0]["access_token"] == "secret"
 
 
+def test_error_response_redacts_prefixed_keys_and_bearer_values():
+    response = routes._error(
+        SpiderError(
+            "test",
+            "access_token=private-token Authorization: Bearer private-bearer",
+            details={"note": "https://example.invalid/?api_key=private-key"},
+        )
+    )
+    assert "private-" not in response.text
+
+
 from ty_image_spider.routes import (
     get_providers,
     post_detail,

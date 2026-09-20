@@ -1,4 +1,26 @@
-// 每个节点独立跟踪各来源任务；关闭节点只清理轮询，不取消服务器工作。
+// 每个节点按来源、查询和筛选独立跟踪任务。
+export function cacheTaskKey(payload) {
+  if (typeof payload === "string") payload = { provider: payload };
+  function sorted(value) {
+    if (Array.isArray(value)) return value.map(sorted);
+    if (value && typeof value === "object")
+      return Object.fromEntries(
+        Object.keys(value)
+          .sort()
+          .map((key) => [key, sorted(value[key])]),
+      );
+    return value;
+  }
+  return JSON.stringify(
+    sorted({
+      provider: payload.provider,
+      query: (payload.query || "").trim(),
+      filters: payload.filters || {},
+    }),
+  );
+}
+
+// 关闭节点只清理轮询，不取消服务器工作。
 export function createCacheTasks({
   client,
   onUpdate = () => {},
@@ -12,7 +34,7 @@ export function createCacheTasks({
   function publish(slot, job) {
     if (disposed) return;
     slot.job = job;
-    onUpdate(job);
+    onUpdate(job, slot.key);
     if (job.state === "running") queue(slot);
   }
 
@@ -28,7 +50,7 @@ export function createCacheTasks({
       publish(slot, await client.requestJson(`/ty-image-spider/cache/${slot.job.id}`));
     } catch (error) {
       if (disposed) return;
-      onError(error, slot.provider);
+      onError(error, slot.key);
       if (error.status === 404)
         publish(slot, { ...slot.job, state: "failed", message: "缓存任务已过期，请重新启动" });
       else queue(slot);
@@ -36,15 +58,16 @@ export function createCacheTasks({
   }
 
   return {
-    get(provider) {
-      return slots.get(provider)?.job || null;
+    get(payload) {
+      return slots.get(cacheTaskKey(payload))?.job || null;
     },
     async start(payload) {
       if (disposed) return;
-      let slot = slots.get(payload.provider);
+      const key = cacheTaskKey(payload);
+      let slot = slots.get(key);
       if (slot?.pending || slot?.job?.state === "running") return;
-      slot = { provider: payload.provider, pending: true, job: null, timer: null };
-      slots.set(payload.provider, slot);
+      slot = { key, pending: true, job: null, timer: null };
+      slots.set(key, slot);
       try {
         let job;
         try {
@@ -59,13 +82,13 @@ export function createCacheTasks({
         }
         publish(slot, job);
       } catch (error) {
-        if (!disposed) onError(error, payload.provider);
+        if (!disposed) onError(error, key);
       } finally {
         slot.pending = false;
       }
     },
-    async cancel(provider) {
-      const slot = slots.get(provider);
+    async cancel(payload) {
+      const slot = slots.get(cacheTaskKey(payload));
       if (disposed || slot?.job?.state !== "running") return;
       try {
         publish(
@@ -75,7 +98,7 @@ export function createCacheTasks({
           }),
         );
       } catch (error) {
-        if (!disposed) onError(error, provider);
+        if (!disposed) onError(error, slot.key);
       }
     },
     dispose() {
