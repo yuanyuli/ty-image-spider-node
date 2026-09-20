@@ -33,6 +33,7 @@ from .providers.loc import LocProvider
 from .providers.nasa import NasaProvider
 from .providers.curated_client import BehanceClient, FilmGrabClient
 from .providers.curated_download import CuratedDownloader
+from .providers.image_readers import ImageReaderRegistry
 from .providers.filmgrab import FilmGrabProvider
 from .providers.local import LocalProvider
 from .providers.registry import ProviderRegistry
@@ -70,7 +71,7 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
     cache = Path(cache_root)
     providers = ProviderRegistry()
     index = AssetIndex(output)
-    reader = CuratedDownloader()
+    reader = ImageReaderRegistry()
 
     providers.register(
         CivitaiProvider(
@@ -87,7 +88,7 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
             WallhavenDownloader(),
         )
     )
-    providers.register(BehanceProvider(BehanceClient(), reader))
+    providers.register(BehanceProvider(BehanceClient()))
     for source in (
         COLOSSAL,
         DESIGN_MILK,
@@ -102,7 +103,6 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
                 PublicJsonClient(
                     source.api_root, source.label, JsonCache(cache / source.id)
                 ),
-                reader,
             )
         )
     providers.register(
@@ -110,7 +110,6 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
             PublicJsonClient(
                 "https://api.are.na/v2/", "Are.na", JsonCache(cache / "arena")
             ),
-            reader,
         )
     )
     providers.register(
@@ -120,7 +119,6 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
                 "美国国会图书馆",
                 JsonCache(cache / "loc"),
             ),
-            reader,
         )
     )
     providers.register(
@@ -130,7 +128,6 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
                 "NASA",
                 JsonCache(cache / "nasa"),
             ),
-            reader,
         )
     )
     filmgrab_client = FilmGrabClient()
@@ -145,18 +142,14 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
         MovieMappingStore(cache / "movie-mappings.sqlite3"),
     )
     providers.register(
-        FilmGrabProvider(filmgrab_client, reader, JsonCache(cache / "filmgrab"), movies)
-    )
-    providers.register(
-        VamProvider(MuseumClient("vam", JsonCache(cache / "vam")), reader)
-    )
-    providers.register(
-        ArticProvider(MuseumClient("artic", JsonCache(cache / "artic")), reader)
-    )
-    providers.register(
-        ClevelandProvider(
-            MuseumClient("cleveland", JsonCache(cache / "cleveland")), reader
+        FilmGrabProvider(
+            filmgrab_client, cache=JsonCache(cache / "filmgrab"), movies=movies
         )
+    )
+    providers.register(VamProvider(MuseumClient("vam", JsonCache(cache / "vam"))))
+    providers.register(ArticProvider(MuseumClient("artic", JsonCache(cache / "artic"))))
+    providers.register(
+        ClevelandProvider(MuseumClient("cleveland", JsonCache(cache / "cleveland")))
     )
     opencli = OpenCliRunner()
     browser_lock = threading.Lock()
@@ -168,6 +161,11 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
         )
     )
     providers.register(LocalProvider(output))
+
+    for provider in providers.all():
+        policy = provider.image_policy
+        if policy is not None and provider.descriptor().capabilities.cache:
+            reader.register(provider.id, CuratedDownloader(policy))
 
     search = SearchService(providers, index)
     detail = DetailService(providers, index)

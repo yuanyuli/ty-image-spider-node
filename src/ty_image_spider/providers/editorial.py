@@ -44,8 +44,9 @@ class EditorialProvider:
     ) -> None:
         self._source = source
         self.id = source.id
+        self.image_policy = source.download_policy
         self._client = client
-        self._downloader = downloader or CuratedDownloader()
+        self._downloader = downloader or CuratedDownloader(self.image_policy)
 
     def descriptor(self) -> ProviderDescriptor:
         return ProviderDescriptor(
@@ -101,21 +102,23 @@ class EditorialProvider:
     def _item(self, row: Mapping[str, Any]) -> AssetItem | None:
         item_id = integer(row.get("id"))
         markup = object_data(row.get("content")).get("rendered")
-        images = article_images(markup if isinstance(markup, str) else "", self.id)
+        images = article_images(
+            markup if isinstance(markup, str) else "", self.image_policy
+        )
         embedded = object_data(row.get("_embedded"))
         media = embedded.get("wp:featuredmedia")
         cover = object_data(media[0]) if isinstance(media, list) and media else {}
-        original = image_url(cover.get("source_url"), self.id)
+        original = image_url(cover.get("source_url"), self.image_policy)
         if original:
             images = (original,) + tuple(url for url in images if url != original)
         if not item_id or not images:
             return None
         sizes = object_data(object_data(cover.get("media_details")).get("sizes"))
         content_previews = article_images(
-            markup if isinstance(markup, str) else "", self.id, max_width=800
+            markup if isinstance(markup, str) else "", self.image_policy, max_width=800
         )
         medium_preview = image_url(
-            object_data(sizes.get("medium_large")).get("source_url"), self.id
+            object_data(sizes.get("medium_large")).get("source_url"), self.image_policy
         )
         preferred = original if self._source.prefer_original_preview else medium_preview
         preview = preferred or (content_previews[0] if content_previews else images[0])
@@ -154,11 +157,11 @@ class EditorialProvider:
         )
 
     def detail(self, item: AssetItem) -> AssetDetail:
-        require_item(item, self.id)
+        require_item(item, self.image_policy)
         raw = item.metadata.get("images")
         if not isinstance(raw, list) or not 1 <= len(raw) <= 60:
             raise SpiderError("invalid_asset", "专题图集数据无效")
-        images = tuple(image_url(value, self.id) for value in raw)
+        images = tuple(image_url(value, self.image_policy) for value in raw)
         if not all(images):
             raise SpiderError("invalid_asset", "专题图片地址无效")
         return AssetDetail(
@@ -173,7 +176,7 @@ class EditorialProvider:
             try:
                 files.extend(
                     self._downloader.download(
-                        url, self.id, f"{item.id}-{index}", output_root
+                        url, f"{item.id}-{index}", output_root
                     ).files
                 )
             except SpiderError:

@@ -14,7 +14,7 @@ from ..models import (
     SearchRequest,
     SpiderError,
 )
-from .curated_download import require_image_url, validate_asset_id
+from .download_policy import DownloadPolicy
 
 
 def page_number(request: SearchRequest) -> int:
@@ -81,23 +81,23 @@ def plain_text(value: object) -> str:
     return " ".join(" ".join(parser.parts).split())
 
 
-def image_url(value: object, source: str) -> str:
+def image_url(value: object, source: DownloadPolicy) -> str:
     if not isinstance(value, str) or not value:
         return ""
     try:
-        require_image_url(value, source)
+        source.validate_url(value)
     except SpiderError:
         return ""
     return value
 
 
-def require_item(item: AssetItem, source: str) -> None:
-    if item.provider != source:
+def require_item(item: AssetItem, source: DownloadPolicy) -> None:
+    if item.provider != source.provider_id:
         raise SpiderError("invalid_asset", "素材来源与馆藏不一致")
-    validate_asset_id(source, item.id)
+    source.validate_asset_id(item.id)
 
 
-def collection_detail(item: AssetItem, source: str) -> AssetDetail:
+def collection_detail(item: AssetItem, source: DownloadPolicy) -> AssetDetail:
     require_item(item, source)
     original = image_url(item.metadata.get("original_url"), source)
     if not original:

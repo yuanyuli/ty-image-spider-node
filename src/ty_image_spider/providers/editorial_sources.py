@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Mapping
 
 from ..models import ProviderPresentation
+from .download_policy import DownloadPolicy, HostDownloadPolicy
 
 
 @dataclass(frozen=True)
@@ -13,6 +14,7 @@ class EditorialSource:
     api_root: str
     categories: Mapping[str, tuple[str, str, int]]
     default: str
+    download_policy: DownloadPolicy
     presentation: ProviderPresentation
     page_size: int = 24
     prefer_original_preview: bool = False
@@ -32,6 +34,10 @@ COLOSSAL = EditorialSource(
         "all": ("全部专题", "", 0),
     },
     "photography",
+    HostDownloadPolicy(
+        "colossal",
+        lambda host: host in {"www.thisiscolossal.com", "thisiscolossal.com"},
+    ),
     ProviderPresentation(
         "editorial",
         "摄影与设计",
@@ -57,6 +63,7 @@ DESIGN_MILK = EditorialSource(
         "all": ("全部专题", "", 0),
     },
     "graphic",
+    HostDownloadPolicy("designmilk", lambda host: host == "design-milk.com"),
     ProviderPresentation(
         "editorial",
         "摄影与设计",
@@ -83,6 +90,9 @@ FEATURE_SHOOT = EditorialSource(
         "all": ("全部专题", "", 0),
     },
     "fine_art",
+    HostDownloadPolicy(
+        "featureshoot", lambda host: host in {"www.featureshoot.com", "i0.wp.com"}
+    ),
     ProviderPresentation(
         "editorial",
         "摄影与设计",
@@ -110,6 +120,7 @@ MY_MODERN_MET = EditorialSource(
         "all": ("全部专题", "", 0),
     },
     "art",
+    HostDownloadPolicy("mymodernmet", lambda host: host == "mymodernmet.com"),
     ProviderPresentation(
         "editorial",
         "摄影与设计",
@@ -136,6 +147,7 @@ APERTURE = EditorialSource(
         "all": ("全部专题", "", 0),
     },
     "portfolios",
+    HostDownloadPolicy("aperture", lambda host: host == "aperture.org"),
     ProviderPresentation(
         "editorial",
         "摄影与设计",
@@ -163,6 +175,7 @@ PRINT_MAGAZINE = EditorialSource(
         "all": ("全部专题", "", 0),
     },
     "graphic",
+    HostDownloadPolicy("printmag", lambda host: host == "www.printmag.com"),
     ProviderPresentation(
         "editorial",
         "摄影与设计",

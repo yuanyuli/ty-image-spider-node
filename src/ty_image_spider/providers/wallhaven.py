@@ -37,12 +37,22 @@ _ORIENTATIONS = {
 }
 
 
+from .download_policy import HostDownloadPolicy
+
+IMAGE_POLICY = HostDownloadPolicy(
+    "wallhaven",
+    lambda host: host in {"th.wallhaven.cc", "w.wallhaven.cc"},
+    id_pattern="[a-z0-9]{6}",
+)
+
+
 class Downloader(Protocol):
     def download(self, url: str, item_id: str, output_root: Path) -> DownloadResult: ...
 
 
 class WallhavenProvider:
     id = "wallhaven"
+    image_policy = IMAGE_POLICY
 
     def __init__(
         self, client: WallhavenClient, cache: JsonCache, downloader: Downloader

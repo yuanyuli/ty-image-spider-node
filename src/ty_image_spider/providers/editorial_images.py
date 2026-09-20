@@ -6,10 +6,11 @@ from html.parser import HTMLParser
 from urllib.parse import urlsplit
 
 from .museum_assets import image_url
+from .download_policy import DownloadPolicy
 
 
 def article_images(
-    markup: str, source: str, *, max_width: int | None = None
+    markup: str, source: DownloadPolicy, *, max_width: int | None = None
 ) -> tuple[str, ...]:
     class Images(HTMLParser):
         def __init__(self) -> None:

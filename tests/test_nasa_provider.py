@@ -107,9 +107,9 @@ def test_nasa_detail_and_download_keep_official_metadata(tmp_path):
         def __init__(self):
             self.call = None
 
-        def download(self, url, source, item_id, output_root):
-            self.call = (url, source, item_id, output_root)
-            return DownloadResult((f"ty-image-spider/{source}/{item_id}.png",))
+        def download(self, url, item_id, output_root):
+            self.call = (url, item_id, output_root)
+            return DownloadResult((f"ty-image-spider/nasa/{item_id}.png",))
 
     downloader = Downloader()
     payload = {
@@ -129,7 +129,7 @@ def test_nasa_detail_and_download_keep_official_metadata(tmp_path):
     assert detail.content == "Full color identity for the Apollo anniversary."
     assert item.metadata["collection"] == "NASA Image and Video Library"
     assert item.metadata["rights"] == "使用条件见 NASA 来源页面"
-    assert downloader.call == (detail.images[0], "nasa", item.id, tmp_path)
+    assert downloader.call == (detail.images[0], item.id, tmp_path)
     assert saved.files[0].endswith("AS11-40-5903.png")
 
 

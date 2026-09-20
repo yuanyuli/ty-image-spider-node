@@ -24,14 +24,22 @@ from .curated_client import BehanceClient
 from .curated_download import CuratedDownloader
 
 
+from .download_policy import HostDownloadPolicy
+
+IMAGE_POLICY = HostDownloadPolicy(
+    "behance", lambda host: host.startswith("mir-") and host.endswith(".behance.net")
+)
+
+
 class BehanceProvider:
     id = "behance"
+    image_policy = IMAGE_POLICY
 
     def __init__(
         self, client: BehanceClient, downloader: CuratedDownloader | None = None
     ) -> None:
         self._client = client
-        self._downloader = downloader or CuratedDownloader()
+        self._downloader = downloader or CuratedDownloader(self.image_policy)
 
     def descriptor(self) -> ProviderDescriptor:
         return ProviderDescriptor(
@@ -90,7 +98,7 @@ class BehanceProvider:
     def download(self, item: AssetItem, output_root: Path) -> DownloadResult:
         _require(item)
         image = self.detail(item).images[0]
-        return self._downloader.download(image, "behance", item.id, output_root)
+        return self._downloader.download(image, item.id, output_root)
 
 
 def _project(raw: Mapping[str, Any]) -> AssetItem | None:

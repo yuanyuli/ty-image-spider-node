@@ -49,14 +49,24 @@ _SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 _IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png", ".webp")
 
 
+from .download_policy import HostDownloadPolicy
+
+IMAGE_POLICY = HostDownloadPolicy(
+    "nasa",
+    lambda host: host == "images-assets.nasa.gov",
+    id_pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,127}",
+)
+
+
 class NasaProvider:
     id = "nasa"
+    image_policy = IMAGE_POLICY
 
     def __init__(
         self, client: PublicJsonClient, downloader: CuratedDownloader | None = None
     ) -> None:
         self._client = client
-        self._downloader = downloader or CuratedDownloader()
+        self._downloader = downloader or CuratedDownloader(self.image_policy)
 
     def descriptor(self) -> ProviderDescriptor:
         return ProviderDescriptor(
@@ -159,11 +169,11 @@ class NasaProvider:
         )
 
     def detail(self, item: AssetItem) -> AssetDetail:
-        return collection_detail(item, self.id)
+        return collection_detail(item, self.image_policy)
 
     def download(self, item: AssetItem, output_root: Path) -> DownloadResult:
         return self._downloader.download(
-            self.detail(item).images[0], self.id, item.id, output_root
+            self.detail(item).images[0], item.id, output_root
         )
 
 
@@ -202,7 +212,7 @@ def _image_variants(value: object) -> list[tuple[int, int, int, str, str]]:
     for link in _rows(value):
         if plain_text(link.get("render")) != "image":
             continue
-        url = image_url(link.get("href"), "nasa")
+        url = image_url(link.get("href"), IMAGE_POLICY)
         if not url or not urlsplit(url).path.lower().endswith(_IMAGE_SUFFIXES):
             continue
         width = integer(link.get("width"))

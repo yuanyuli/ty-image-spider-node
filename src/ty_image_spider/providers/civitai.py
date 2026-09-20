@@ -32,8 +32,21 @@ _MAX_PROMPT_SCAN_PAGES = 5
 _MAX_PROMPT_ENRICH_ITEMS = 24
 
 
+from .download_policy import HostDownloadPolicy
+
+IMAGE_POLICY = HostDownloadPolicy(
+    "civitai",
+    lambda host: (
+        host in {"civitai.com", "civitai.red"}
+        or host.endswith(".civitai.com")
+        or host.endswith(".civitai.red")
+    ),
+)
+
+
 class CivitaiProvider:
     id = "civitai"
+    image_policy = IMAGE_POLICY
 
     def __init__(
         self,

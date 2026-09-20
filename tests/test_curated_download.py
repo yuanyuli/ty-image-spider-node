@@ -5,6 +5,19 @@ from PIL import Image
 
 from ty_image_spider.models import SpiderError
 from ty_image_spider.providers.curated_download import CuratedDownloader
+from ty_image_spider.bootstrap import build_services
+from tempfile import TemporaryDirectory
+from pathlib import Path
+
+
+def policy_for(provider):
+    with TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        return (
+            build_services(root / "out", root / "cache")
+            .providers.get(provider)
+            .image_policy
+        )
 
 
 @pytest.mark.parametrize(
@@ -61,14 +74,16 @@ def test_museum_download_saves_valid_image_under_its_own_source(
 ):
     data = BytesIO()
     Image.new("RGB", (12, 8)).save(data, "JPEG")
-    downloader = CuratedDownloader(lambda *a, **k: Response(data.getvalue(), url))
-    result = downloader.download(url, provider, item_id, tmp_path)
+    downloader = CuratedDownloader(
+        policy_for(provider), lambda *a, **k: Response(data.getvalue(), url)
+    )
+    result = downloader.download(url, item_id, tmp_path)
     assert result.files == (f"ty-image-spider/{provider}/{item_id}.jpg",)
     assert (tmp_path / result.files[0]).is_file()
     with pytest.raises(SpiderError):
-        downloader.download(url, provider, "../../secret", tmp_path)
+        downloader.download(url, "../../secret", tmp_path)
     with pytest.raises(SpiderError):
-        downloader.read("https://example.com/image.jpg", provider)
+        downloader.read("https://example.com/image.jpg")
 
 
 class Response(BytesIO):
@@ -90,8 +105,8 @@ def test_existing_valid_image_is_reused_without_network(tmp_path):
     def unexpected(*args, **kwargs):
         pytest.fail("已有有效图片不应重新联网")
 
-    saved = CuratedDownloader(unexpected).download(
-        "https://www.thisiscolossal.com/image.jpg", "colossal", "42-1", tmp_path
+    saved = CuratedDownloader(policy_for("colossal"), unexpected).download(
+        "https://www.thisiscolossal.com/image.jpg", "42-1", tmp_path
     )
     assert saved.files == ("ty-image-spider/colossal/42-1.jpg",)
 
@@ -103,9 +118,9 @@ def test_corrupt_existing_image_is_replaced(tmp_path):
     data = BytesIO()
     Image.new("RGB", (16, 12)).save(data, "JPEG")
     url = "https://www.thisiscolossal.com/image.jpg"
-    CuratedDownloader(lambda *a, **k: Response(data.getvalue(), url)).download(
-        url, "colossal", "42-1", tmp_path
-    )
+    CuratedDownloader(
+        policy_for("colossal"), lambda *a, **k: Response(data.getvalue(), url)
+    ).download(url, "42-1", tmp_path)
     with Image.open(target) as image:
         assert image.size == (16, 12)
 
@@ -119,7 +134,7 @@ def test_iiif_size_syntax_is_not_percent_encoded():
         assert request.full_url == url
         return Response(image.getvalue(), url)
 
-    CuratedDownloader(read).read(url, "artic")
+    CuratedDownloader(policy_for("artic"), read).read(url)
 
 
 def test_curated_download_verifies_actual_image_and_saves_under_source(tmp_path):
@@ -127,9 +142,9 @@ def test_curated_download_verifies_actual_image_and_saves_under_source(tmp_path)
     Image.new("RGB", (12, 8)).save(data, "PNG")
     url = "https://film-grab.com/wp-content/uploads/photo-gallery/test.jpg"
     downloader = CuratedDownloader(
-        lambda *args, **kwargs: Response(data.getvalue(), url)
+        policy_for("filmgrab"), lambda *args, **kwargs: Response(data.getvalue(), url)
     )
-    result = downloader.download(url, "filmgrab", "12-77", tmp_path)
+    result = downloader.download(url, "12-77", tmp_path)
     assert result.files == ("ty-image-spider/filmgrab/12-77.png",)
     with Image.open(tmp_path / result.files[0]) as image:
         assert image.size == (12, 8)
@@ -139,23 +154,25 @@ def test_curated_download_rejects_untrusted_urls_before_fetching():
     def unexpected(*args, **kwargs):
         raise AssertionError("不应请求不受信任的域名")
 
-    downloader = CuratedDownloader(unexpected)
+    downloader = CuratedDownloader(policy_for("behance"), unexpected)
     with pytest.raises(SpiderError):
-        downloader.read("https://example.com/test.jpg", "behance")
+        downloader.read("https://example.com/test.jpg")
 
 
 def test_curated_download_rejects_html_and_cross_site_redirect():
     url = "https://film-grab.com/test.jpg"
     downloader = CuratedDownloader(
-        lambda *args, **kwargs: Response(b"<html>blocked</html>", url)
+        policy_for("filmgrab"),
+        lambda *args, **kwargs: Response(b"<html>blocked</html>", url),
     )
     with pytest.raises(SpiderError, match="有效图片"):
-        downloader.read(url, "filmgrab")
+        downloader.read(url)
     downloader = CuratedDownloader(
-        lambda *args, **kwargs: Response(b"image", "https://example.com/test.jpg")
+        policy_for("filmgrab"),
+        lambda *args, **kwargs: Response(b"image", "https://example.com/test.jpg"),
     )
     with pytest.raises(SpiderError):
-        downloader.read(url, "filmgrab")
+        downloader.read(url)
 
 
 def test_curated_download_encodes_old_filmgrab_filenames_without_double_encoding():
@@ -167,8 +184,7 @@ def test_curated_download_encodes_old_filmgrab_filenames_without_double_encoding
         assert request.full_url == expected
         return Response(image.getvalue(), expected)
 
-    downloader = CuratedDownloader(open_url)
+    downloader = CuratedDownloader(policy_for("filmgrab"), open_url)
     downloader.read(
         "https://film-grab.com/wp-content/uploads/photo-gallery/01 (155) é.jpg?bwg=12%203",
-        "filmgrab",
     )

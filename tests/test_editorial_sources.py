@@ -72,10 +72,12 @@ def test_editorial_image_parser_can_choose_lightweight_preview_from_srcset():
         f'{root}photo-1600.jpg 1600w">'
     )
 
-    assert article_images(markup, "mymodernmet")[0].endswith("photo-1600.jpg")
-    assert article_images(markup, "mymodernmet", max_width=800)[0].endswith(
-        "photo-768.jpg"
+    assert article_images(markup, MY_MODERN_MET.download_policy)[0].endswith(
+        "photo-1600.jpg"
     )
+    assert article_images(markup, MY_MODERN_MET.download_policy, max_width=800)[
+        0
+    ].endswith("photo-768.jpg")
 
 
 def test_editorial_real_category_pagination_and_deduplicated_gallery():
@@ -235,10 +237,10 @@ def test_v24_editorial_sources_map_categories_and_return_downloadable_galleries(
 
 def test_editorial_partial_download_reports_saved_files(tmp_path):
     class Downloader:
-        def download(self, url, provider, item_id, output):
+        def download(self, url, item_id, output):
             if url.endswith("b.jpg"):
                 raise SpiderError("download_failed", "失败")
-            return DownloadResult((f"ty-image-spider/{provider}/{item_id}.jpg",))
+            return DownloadResult((f"ty-image-spider/colossal/{item_id}.jpg",))
 
     provider = EditorialProvider(
         COLOSSAL, client(COLOSSAL.api_root, [[post()]], []), Downloader()

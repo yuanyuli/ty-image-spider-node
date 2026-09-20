@@ -31,6 +31,11 @@ from .film_catalog import display_film_title, film_presets, resolve_film_query
 _FRAME_ID = re.compile(r"^[0-9]+-[0-9]+$")
 
 
+from .download_policy import HostDownloadPolicy
+
+IMAGE_POLICY = HostDownloadPolicy("filmgrab", lambda host: host == "film-grab.com")
+
+
 class _FrameParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
@@ -60,6 +65,7 @@ class _FrameParser(HTMLParser):
 
 class FilmGrabProvider:
     id = "filmgrab"
+    image_policy = IMAGE_POLICY
 
     def __init__(
         self,
@@ -69,7 +75,7 @@ class FilmGrabProvider:
         movies: MovieResolution | None = None,
     ) -> None:
         self._articles = FilmGrabArticles(client, cache)
-        self._downloader = downloader or CuratedDownloader()
+        self._downloader = downloader or CuratedDownloader(self.image_policy)
         self._movies = movies
 
     def descriptor(self) -> ProviderDescriptor:
@@ -168,7 +174,7 @@ class FilmGrabProvider:
     def download(self, item: AssetItem, output_root: Path) -> DownloadResult:
         _require(item)
         return self._downloader.download(
-            self.detail(item).images[0], "filmgrab", item.id, output_root
+            self.detail(item).images[0], item.id, output_root
         )
 
 

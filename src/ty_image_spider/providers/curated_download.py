@@ -5,92 +5,35 @@ from __future__ import annotations
 from ..version import USER_AGENT
 
 import os
-import re
 import tempfile
 from pathlib import Path
 from http.client import HTTPException
 from typing import Any, Callable
 from urllib.error import URLError
-from urllib.parse import quote, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 
 from PIL import Image
 
 from ..models import DownloadResult, SpiderError
-from ..security import read_limited, require_https_host, resolve_inside
+from ..security import read_limited, resolve_inside
 
 
-_HOSTS = {
-    "behance": lambda host: host.endswith(".behance.net") and host.startswith("mir-"),
-    "filmgrab": lambda host: host == "film-grab.com",
-    "civitai": lambda host: (
-        host in {"civitai.com", "civitai.red"}
-        or host.endswith(".civitai.com")
-        or host.endswith(".civitai.red")
-    ),
-    "wallhaven": lambda host: host in {"th.wallhaven.cc", "w.wallhaven.cc"},
-    "artic": lambda host: host == "www.artic.edu",
-    "vam": lambda host: host == "framemark.vam.ac.uk",
-    "cleveland": lambda host: host == "openaccess-cdn.clevelandart.org",
-    "colossal": lambda host: host in {"www.thisiscolossal.com", "thisiscolossal.com"},
-    "designmilk": lambda host: host == "design-milk.com",
-    "featureshoot": lambda host: host in {"www.featureshoot.com", "i0.wp.com"},
-    "mymodernmet": lambda host: host == "mymodernmet.com",
-    "aperture": lambda host: host == "aperture.org",
-    "printmag": lambda host: host == "www.printmag.com",
-    "nasa": lambda host: host == "images-assets.nasa.gov",
-    "loc": lambda host: host == "tile.loc.gov",
-    "arena": lambda host: host in {"images.are.na", "d2w9rnfcy7mm78.cloudfront.net"},
-}
-_SAFE_ID = re.compile(r"^[0-9]+(?:-[0-9]+)?$")
-_SAFE_LOC_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
-
-
-def validate_asset_id(provider: str, item_id: str) -> None:
-    valid = (
-        re.fullmatch(r"O[0-9]+", item_id)
-        if provider == "vam"
-        else _SAFE_LOC_ID.fullmatch(item_id)
-        if provider in {"loc", "nasa"}
-        else _SAFE_ID.fullmatch(item_id)
-    )
-    if not valid:
-        raise SpiderError("invalid_asset", "素材 ID 无效")
-
-
-def require_image_url(url: str, provider: str) -> None:
-    allowed = _HOSTS.get(provider)
-    if allowed is None:
-        raise SpiderError("invalid_provider", "不支持此来源的图片下载")
-    require_https_host(url, allowed)
+from .download_policy import DownloadPolicy
 
 
 class CuratedDownloader:
-    def __init__(self, open_url: Callable[..., Any] = urlopen) -> None:
+    def __init__(
+        self, policy: DownloadPolicy, open_url: Callable[..., Any] = urlopen
+    ) -> None:
+        self._policy = policy
         self._open_url = open_url
 
-    def read(self, url: str, provider: str) -> tuple[bytes, str]:
-        allowed = _HOSTS.get(provider)
-        if allowed is None:
-            raise SpiderError("invalid_provider", "不支持此来源的图片下载")
-        require_https_host(url, allowed)
-        parts = urlsplit(url)
-        url = urlunsplit(
-            (
-                parts.scheme,
-                parts.netloc,
-                # IIIF 尺寸中的逗号、感叹号是协议语法，AIC 不接受转义后的逗号。
-                quote(
-                    parts.path, safe="/%,!" if provider in {"artic", "vam"} else "/%"
-                ),
-                quote(parts.query, safe="=&%+/:,?"),
-                "",
-            )
-        )
+    def read(self, url: str) -> tuple[bytes, str]:
+        url = self._policy.normalize_url(url)
         request = Request(url, headers={"User-Agent": USER_AGENT, "Accept": "image/*"})
         try:
             with self._open_url(request, timeout=60) as response:
-                require_https_host(response.geturl(), allowed)
+                self._policy.validate_url(response.geturl())
                 payload = read_limited(response, 64 * 1024 * 1024)
         except SpiderError:
             raise
@@ -121,11 +64,10 @@ class CuratedDownloader:
         finally:
             path.unlink(missing_ok=True)
 
-    def download(
-        self, url: str, provider: str, item_id: str, output_root: Path
-    ) -> DownloadResult:
-        validate_asset_id(provider, item_id)
-        require_image_url(url, provider)
+    def download(self, url: str, item_id: str, output_root: Path) -> DownloadResult:
+        provider = self._policy.provider_id
+        self._policy.validate_asset_id(item_id)
+        self._policy.validate_url(url)
         directory = resolve_inside(output_root, Path("ty-image-spider") / provider)
         for suffix in (".jpg", ".png", ".webp", ".gif"):
             existing = resolve_inside(
@@ -142,7 +84,7 @@ class CuratedDownloader:
                 (existing.relative_to(output_root.resolve()).as_posix(),),
                 "图片已存在，已复用",
             )
-        payload, extension = self.read(url, provider)
+        payload, extension = self.read(url)
         directory.mkdir(parents=True, exist_ok=True)
         target = resolve_inside(
             output_root, Path("ty-image-spider") / provider / f"{item_id}{extension}"

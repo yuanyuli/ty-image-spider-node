@@ -51,14 +51,24 @@ _CATEGORIES = {
 _SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
 
+from .download_policy import HostDownloadPolicy
+
+IMAGE_POLICY = HostDownloadPolicy(
+    "loc",
+    lambda host: host == "tile.loc.gov",
+    id_pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,127}",
+)
+
+
 class LocProvider:
     id = "loc"
+    image_policy = IMAGE_POLICY
 
     def __init__(
         self, client: PublicJsonClient, downloader: CuratedDownloader | None = None
     ) -> None:
         self._client = client
-        self._downloader = downloader or CuratedDownloader()
+        self._downloader = downloader or CuratedDownloader(self.image_policy)
 
     def descriptor(self) -> ProviderDescriptor:
         return ProviderDescriptor(
@@ -165,11 +175,11 @@ class LocProvider:
         )
 
     def detail(self, item: AssetItem) -> AssetDetail:
-        return collection_detail(item, self.id)
+        return collection_detail(item, self.image_policy)
 
     def download(self, item: AssetItem, output_root: Path) -> DownloadResult:
         return self._downloader.download(
-            self.detail(item).images[0], self.id, item.id, output_root
+            self.detail(item).images[0], item.id, output_root
         )
 
 
@@ -185,7 +195,7 @@ def _image_urls(value: object) -> list[tuple[tuple[int, int], str]]:
         return []
     found: list[tuple[tuple[int, int], str]] = []
     for entry in value:
-        url = image_url(entry, "loc")
+        url = image_url(entry, IMAGE_POLICY)
         if not url or not urlsplit(url).path.lower().endswith(
             (".jpg", ".jpeg", ".png", ".webp")
         ):

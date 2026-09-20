@@ -46,14 +46,25 @@ _CATEGORIES = {
 }
 
 
+from .download_policy import HostDownloadPolicy
+
+IMAGE_POLICY = HostDownloadPolicy(
+    "vam",
+    lambda host: host == "framemark.vam.ac.uk",
+    id_pattern="O[0-9]+",
+    safe_path_chars="/%,!",
+)
+
+
 class VamProvider:
     id = "vam"
+    image_policy = IMAGE_POLICY
 
     def __init__(
         self, client: MuseumClient, downloader: CuratedDownloader | None = None
     ) -> None:
         self._client = client
-        self._downloader = downloader or CuratedDownloader()
+        self._downloader = downloader or CuratedDownloader(self.image_policy)
 
     def descriptor(self) -> ProviderDescriptor:
         return ProviderDescriptor(
@@ -98,7 +109,7 @@ class VamProvider:
         return SearchPage(items, str(page + 1) if page < last else None)
 
     def detail(self, item: AssetItem) -> AssetDetail:
-        require_item(item, self.id)
+        require_item(item, self.image_policy)
         data = self._client.get(f"museumobject/{item.id}", {})
         record = object_data(data.get("record"))
         if not record or record.get("systemNumber", item.id) != item.id:
@@ -124,12 +135,12 @@ class VamProvider:
             item,
             metadata={**item.metadata, "description": description, "medium": medium},
         )
-        return collection_detail(enriched, self.id)
+        return collection_detail(enriched, self.image_policy)
 
     def download(self, item: AssetItem, output_root: Path) -> DownloadResult:
         # 搜索结果已含主图地址；下载不依赖作品文字详情接口。
         return self._downloader.download(
-            collection_detail(item, self.id).images[0], self.id, item.id, output_root
+            collection_detail(item, self.image_policy).images[0], item.id, output_root
         )
 
 

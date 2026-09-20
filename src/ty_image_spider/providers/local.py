@@ -29,6 +29,7 @@ _IMAGE_EXTENSIONS = frozenset({".png", ".jpg", ".jpeg", ".webp"})
 
 class LocalProvider:
     id = "local"
+    image_policy = None
 
     def __init__(self, output_root: Path) -> None:
         self._output_root = Path(output_root).resolve()

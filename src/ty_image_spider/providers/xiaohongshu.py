@@ -52,6 +52,7 @@ SessionLock = AbstractContextManager[object]
 
 class XiaohongshuProvider:
     id = "xiaohongshu"
+    image_policy = None
 
     def __init__(
         self,

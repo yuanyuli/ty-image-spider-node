@@ -43,14 +43,22 @@ _CATEGORIES = {
 }
 
 
+from .download_policy import HostDownloadPolicy
+
+IMAGE_POLICY = HostDownloadPolicy(
+    "cleveland", lambda host: host == "openaccess-cdn.clevelandart.org"
+)
+
+
 class ClevelandProvider:
     id = "cleveland"
+    image_policy = IMAGE_POLICY
 
     def __init__(
         self, client: MuseumClient, downloader: CuratedDownloader | None = None
     ) -> None:
         self._client = client
-        self._downloader = downloader or CuratedDownloader()
+        self._downloader = downloader or CuratedDownloader(self.image_policy)
 
     def descriptor(self) -> ProviderDescriptor:
         return ProviderDescriptor(
@@ -99,20 +107,20 @@ class ClevelandProvider:
         )
 
     def detail(self, item: AssetItem) -> AssetDetail:
-        return collection_detail(item, self.id)
+        return collection_detail(item, self.image_policy)
 
     def download(self, item: AssetItem, output_root: Path) -> DownloadResult:
         return self._downloader.download(
-            self.detail(item).images[0], self.id, item.id, output_root
+            self.detail(item).images[0], item.id, output_root
         )
 
 
 def _artwork(raw: Mapping[str, Any]) -> AssetItem | None:
     item_id = integer(raw.get("id"))
     images = object_data(raw.get("images"))
-    preview = image_url(object_data(images.get("web")).get("url"), "cleveland")
+    preview = image_url(object_data(images.get("web")).get("url"), IMAGE_POLICY)
     original = (
-        image_url(object_data(images.get("print")).get("url"), "cleveland") or preview
+        image_url(object_data(images.get("print")).get("url"), IMAGE_POLICY) or preview
     )
     if not item_id or not preview:
         return None

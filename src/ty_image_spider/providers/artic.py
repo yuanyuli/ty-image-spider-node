@@ -47,14 +47,22 @@ _CATEGORIES = {
 _FIELDS = "id,title,image_id,artist_display,date_display,medium_display,dimensions,description,is_public_domain,copyright_notice,artwork_type_title,department_title"
 
 
+from .download_policy import HostDownloadPolicy
+
+IMAGE_POLICY = HostDownloadPolicy(
+    "artic", lambda host: host == "www.artic.edu", safe_path_chars="/%,!"
+)
+
+
 class ArticProvider:
     id = "artic"
+    image_policy = IMAGE_POLICY
 
     def __init__(
         self, client: MuseumClient, downloader: CuratedDownloader | None = None
     ) -> None:
         self._client = client
-        self._downloader = downloader or CuratedDownloader()
+        self._downloader = downloader or CuratedDownloader(self.image_policy)
 
     def descriptor(self) -> ProviderDescriptor:
         return ProviderDescriptor(
@@ -111,11 +119,11 @@ class ArticProvider:
         return SearchPage(items, str(page + 1) if page < total_pages else None)
 
     def detail(self, item: AssetItem) -> AssetDetail:
-        return collection_detail(item, self.id)
+        return collection_detail(item, self.image_policy)
 
     def download(self, item: AssetItem, output_root: Path) -> DownloadResult:
         return self._downloader.download(
-            self.detail(item).images[0], self.id, item.id, output_root
+            self.detail(item).images[0], item.id, output_root
         )
 
 

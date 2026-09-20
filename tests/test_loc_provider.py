@@ -80,8 +80,8 @@ def test_loc_uses_official_facets_pagination_and_largest_safe_image():
 
 def test_loc_download_supports_safe_alphanumeric_ids(tmp_path):
     class Downloader:
-        def download(self, url, provider, item_id, output):
-            assert provider == "loc" and item_id == "afc1937002_001"
+        def download(self, url, item_id, output):
+            assert item_id == "afc1937002_001"
             assert url.startswith("https://tile.loc.gov/")
             return DownloadResult(("ty-image-spider/loc/afc1937002_001.jpg",))
 

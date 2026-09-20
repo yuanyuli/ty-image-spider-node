@@ -42,14 +42,22 @@ _CHANNELS = {
 }
 
 
+from .download_policy import HostDownloadPolicy
+
+IMAGE_POLICY = HostDownloadPolicy(
+    "arena", lambda host: host in {"images.are.na", "d2w9rnfcy7mm78.cloudfront.net"}
+)
+
+
 class ArenaProvider:
     id = "arena"
+    image_policy = IMAGE_POLICY
 
     def __init__(
         self, client: PublicJsonClient, downloader: CuratedDownloader | None = None
     ) -> None:
         self._client = client
-        self._downloader = downloader or CuratedDownloader()
+        self._downloader = downloader or CuratedDownloader(self.image_policy)
 
     def descriptor(self) -> ProviderDescriptor:
         return ProviderDescriptor(
@@ -115,8 +123,8 @@ class ArenaProvider:
         )
 
     def detail(self, item: AssetItem) -> AssetDetail:
-        require_item(item, self.id)
-        original = image_url(item.metadata.get("original_url"), self.id)
+        require_item(item, self.image_policy)
+        original = image_url(item.metadata.get("original_url"), self.image_policy)
         if not original:
             raise SpiderError("invalid_asset", "Are.na 图片地址无效")
         return AssetDetail(
@@ -127,7 +135,7 @@ class ArenaProvider:
 
     def download(self, item: AssetItem, output_root: Path) -> DownloadResult:
         return self._downloader.download(
-            self.detail(item).images[0], self.id, item.id, output_root
+            self.detail(item).images[0], item.id, output_root
         )
 
 
@@ -159,9 +167,9 @@ def _item(row: Mapping[str, Any]) -> AssetItem | None:
         return None
     item_id = integer(row.get("id"))
     images = object_data(row.get("image"))
-    original = image_url(object_data(images.get("original")).get("url"), "arena")
+    original = image_url(object_data(images.get("original")).get("url"), IMAGE_POLICY)
     preview = (
-        image_url(object_data(images.get("thumb")).get("url"), "arena") or original
+        image_url(object_data(images.get("thumb")).get("url"), IMAGE_POLICY) or original
     )
     if not item_id or not original:
         return None
