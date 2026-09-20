@@ -14,6 +14,7 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from ..cache import JsonCache
 from ..models import SpiderError
+from ..network_retry import retry_call
 from ..security import read_limited
 from .credentials import TmdbCredentials
 
@@ -123,9 +124,14 @@ class TmdbClient:
                 "User-Agent": USER_AGENT,
             },
         )
-        try:
+
+        def fetch() -> Any:
             with self._open_url(request, timeout=20) as response:
                 data = json.loads(read_limited(response, 4 * 1024 * 1024))
+            return data
+
+        try:
+            data = retry_call(fetch)
             if not isinstance(data, dict):
                 raise ValueError("invalid object")
         except HTTPError as exc:

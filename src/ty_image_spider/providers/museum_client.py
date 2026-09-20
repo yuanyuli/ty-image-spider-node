@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ..version import USER_AGENT
+from ..network_retry import retry_call
 
 import json
 import re
@@ -54,7 +55,8 @@ class MuseumClient:
             url,
             headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
         )
-        try:
+
+        def fetch() -> dict[str, Any]:
             with self._open_url(request, timeout=25) as response:
                 require_https_host(
                     response.geturl(),
@@ -63,6 +65,10 @@ class MuseumClient:
                 data = json.loads(read_limited(response, 8 * 1024 * 1024))
             if not isinstance(data, dict):
                 raise ValueError("expected JSON object")
+            return data
+
+        try:
+            data = retry_call(fetch)
         except HTTPError as exc:
             message = (
                 "请求过于频繁，请稍后重试"

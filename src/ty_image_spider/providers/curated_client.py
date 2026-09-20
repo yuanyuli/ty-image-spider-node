@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 from ..version import USER_AGENT
+from ..network_retry import retry_call
 
 import json
 import re
 from html.parser import HTMLParser
-from http.client import HTTPException, IncompleteRead
+from http.client import HTTPException
 from typing import Any, Callable, Mapping
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -40,14 +41,19 @@ class BehanceClient:
 
     def _read(self, url: str) -> bytes:
         request = Request(
-            url, headers={"User-Agent": "Mozilla/5.0", "Accept": "text/html"}
+            url,
+            headers={"User-Agent": "Mozilla/5.0 " + USER_AGENT, "Accept": "text/html"},
         )
-        try:
+
+        def fetch() -> bytes:
             with self._open_url(request, timeout=30) as response:
                 require_https_host(
                     response.geturl(), lambda host: host == "www.behance.net"
                 )
                 return read_limited(response, 12 * 1024 * 1024)
+
+        try:
+            return retry_call(fetch)
         except (HTTPError, URLError, TimeoutError, OSError, HTTPException) as exc:
             raise SpiderError(
                 "behance_unavailable", "Behance 暂时无法访问", status=502
@@ -89,30 +95,28 @@ class FilmGrabClient:
             url,
             headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
         )
-        for attempt in range(2):
-            try:
-                with self._open_url(request, timeout=30) as response:
-                    require_https_host(
-                        response.geturl(), lambda host: host == "film-grab.com"
-                    )
-                    last_page = int(response.headers.get("X-WP-TotalPages", "1"))
-                    data = json.loads(read_limited(response, 4 * 1024 * 1024))
-                    if not isinstance(data, list):
-                        raise ValueError("posts is not a list")
-                    return [
-                        post for post in data if isinstance(post, Mapping)
-                    ], last_page
-            except (HTTPError, URLError, TimeoutError, OSError, HTTPException) as exc:
-                if isinstance(exc, IncompleteRead) and attempt == 0:
-                    continue
-                raise SpiderError(
-                    "filmgrab_unavailable", "FilmGrab 暂时无法访问", status=502
-                ) from exc
-            except (ValueError, json.JSONDecodeError) as exc:
-                raise SpiderError(
-                    "filmgrab_invalid_response", "FilmGrab 返回数据无效", status=502
-                ) from exc
-        raise AssertionError("unreachable")
+
+        def fetch() -> tuple[list[Mapping[str, Any]], int]:
+            with self._open_url(request, timeout=30) as response:
+                require_https_host(
+                    response.geturl(), lambda host: host == "film-grab.com"
+                )
+                last_page = int(response.headers.get("X-WP-TotalPages", "1"))
+                data = json.loads(read_limited(response, 4 * 1024 * 1024))
+                if not isinstance(data, list):
+                    raise ValueError("posts is not a list")
+                return [post for post in data if isinstance(post, Mapping)], last_page
+
+        try:
+            return retry_call(fetch)
+        except (HTTPError, URLError, TimeoutError, OSError, HTTPException) as exc:
+            raise SpiderError(
+                "filmgrab_unavailable", "FilmGrab 暂时无法访问，请稍后重试", status=502
+            ) from exc
+        except (ValueError, UnicodeError) as exc:
+            raise SpiderError(
+                "filmgrab_invalid_response", "FilmGrab 返回数据无效", status=502
+            ) from exc
 
 
 def parse_project_images(markup: str, item_id: str) -> tuple[str, ...]:

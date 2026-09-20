@@ -142,6 +142,25 @@ def test_routes_cover_malformed_json_status_and_download_page():
     asyncio.run(_assert_routes_cover_malformed_json_status_and_download_page())
 
 
+def test_unexpected_exception_log_never_contains_remote_credentials(caplog):
+    async def run():
+        services = fake_services()
+        services.search.error = RuntimeError(
+            "Bearer private-value https://example.invalid/?access_token=private-value"
+        )
+        client = await make_client(services)
+        try:
+            response = await client.post("/search", json={"provider": "local"})
+            assert response.status == 500
+            assert "private-value" not in await response.text()
+        finally:
+            await client.close()
+
+    asyncio.run(run())
+    assert "RuntimeError" in caplog.text
+    assert "private-value" not in caplog.text
+
+
 async def _assert_routes_cover_malformed_json_status_and_download_page():
     services = fake_services()
     client = await make_client(services)

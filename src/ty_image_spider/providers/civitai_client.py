@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ..version import USER_AGENT
+from ..network_retry import retry_delay as _retry_delay
 
 import json
 import re
@@ -80,7 +81,7 @@ class CivitaiClient:
                 f"https://{page_site}/images/{image_id}",
                 headers={
                     "Accept": "text/html",
-                    "User-Agent": "Mozilla/5.0",
+                    "User-Agent": "Mozilla/5.0 " + USER_AGENT,
                     "Referer": "https://civitai.com/",
                 },
             )
@@ -178,16 +179,6 @@ class CivitaiClient:
         ):
             return SpiderError("civitai_timeout", "Civitai 请求超时", status=504)
         return SpiderError("civitai_unavailable", "无法连接 Civitai", status=502)
-
-
-def _retry_delay(error: HTTPError, attempt: int) -> float:
-    raw = error.headers.get("Retry-After") if error.headers else None
-    try:
-        return (
-            max(0.0, min(float(raw), 30.0)) if raw is not None else float(attempt + 1)
-        )
-    except (TypeError, ValueError):
-        return float(attempt + 1)
 
 
 def _extract_page_metadata(html: str) -> dict[str, Any]:

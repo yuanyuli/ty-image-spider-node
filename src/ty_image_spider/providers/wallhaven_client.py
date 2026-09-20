@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from ..version import USER_AGENT
+from ..network_retry import retry_delay as _retry_delay
 
 import json
 import re
@@ -148,13 +149,3 @@ def _positive_int(value: object, field: str) -> int:
             status=502,
         )
     return value
-
-
-def _retry_delay(error: HTTPError, attempt: int) -> float:
-    raw = error.headers.get("Retry-After") if error.headers else None
-    try:
-        return (
-            max(0.0, min(float(raw), 30.0)) if raw is not None else float(attempt + 1)
-        )
-    except (TypeError, ValueError):
-        return float(attempt + 1)

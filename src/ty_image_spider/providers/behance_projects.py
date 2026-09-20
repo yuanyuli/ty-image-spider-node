@@ -10,6 +10,8 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from ..models import SpiderError
+from ..network_retry import retry_call
+from ..version import USER_AGENT
 from ..security import read_limited, require_https_host
 
 
@@ -52,19 +54,24 @@ class BehanceProjects:
             ).encode(),
             headers={
                 "Content-Type": "application/json",
-                "User-Agent": "Mozilla/5.0",
+                "User-Agent": "Mozilla/5.0 " + USER_AGENT,
                 "Referer": "https://www.behance.net/",
                 "X-Requested-With": "XMLHttpRequest",
                 "X-BCP": csrf,
                 "Cookie": f"bcp={csrf}",
             },
         )
-        try:
+
+        def fetch() -> Any:
             with self._open_url(request, timeout=30) as response:
                 require_https_host(
                     response.geturl(), lambda host: host == "www.behance.net"
                 )
                 payload = json.loads(read_limited(response, 4 * 1024 * 1024))
+            return payload
+
+        try:
+            payload = retry_call(fetch)
             if payload.get("errors"):
                 raise ValueError("GraphQL response contains errors")
             data = payload["data"]

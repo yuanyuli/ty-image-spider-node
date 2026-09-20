@@ -352,7 +352,7 @@ def test_public_client_retries_one_transient_connection_failure():
     assert calls == 2
 
 
-def test_public_client_retries_one_truncated_json_response():
+def test_public_client_does_not_retry_malformed_json():
     calls = 0
 
     def read(request, timeout):
@@ -368,5 +368,7 @@ def test_public_client_retries_one_truncated_json_response():
 
     api = PublicJsonClient(COLOSSAL.api_root, "Colossal", open_url=read)
 
-    assert api.get("posts", {}).data == []
-    assert calls == 2
+    with pytest.raises(SpiderError) as caught:
+        api.get("posts", {})
+    assert caught.value.code == "source_invalid_response"
+    assert calls == 1

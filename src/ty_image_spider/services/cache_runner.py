@@ -7,6 +7,7 @@ import threading
 from typing import Mapping, Protocol, Callable
 
 from ..asset_index import AssetIndex
+from ..diagnostics import log_failure
 from ..models import AssetDetail, SearchPage, SpiderError
 from .cache_progress import CacheProgress
 from .cache_request import CacheRequest
@@ -79,6 +80,9 @@ class CacheJobRunner:
                     seen.add(key)
                     try:
                         with self._assets.hold(item):
+                            if cancel.is_set():
+                                consumed = False
+                                break
                             if self._index.contains(item):
                                 skipped += 1
                             else:
@@ -94,11 +98,9 @@ class CacheJobRunner:
                                     break
                                 self._index.store(detail, image, extension)
                                 cached += 1
-                    except Exception:
+                    except Exception as exc:
                         failed += 1
-                        _LOGGER.warning(
-                            "缓存素材失败: %s/%s", item.provider, item.id, exc_info=True
-                        )
+                        log_failure(_LOGGER, "缓存素材失败", exc)
                     update(
                         cached=cached,
                         failed=failed,
@@ -130,12 +132,12 @@ class CacheJobRunner:
                 message=f"{prefix}：新增 {cached} 张，跳过已有 {skipped} 张，失败 {failed} 张{suffix}",
             )
         except SpiderError as exc:
-            _LOGGER.warning("批量缓存任务失败 [%s]: %s", exc.code, exc.message)
+            log_failure(_LOGGER, "批量缓存任务失败", exc)
             update(
                 state="failed",
                 code=exc.code,
                 message=f"缓存中断：{exc.message}（本次新增 {cached} 张）",
             )
         except Exception as exc:
-            _LOGGER.exception("批量缓存任务失败 [%s]: %s", type(exc).__name__, exc)
+            log_failure(_LOGGER, "批量缓存任务失败", exc)
             update(state="failed", message="缓存任务中断，请查看 ComfyUI 日志")

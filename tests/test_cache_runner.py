@@ -7,6 +7,23 @@ from ty_image_spider.services.cache_request import CacheRequest
 from ty_image_spider.services.cache_runner import CacheJobRunner
 
 
+def test_cache_failure_log_omits_exception_payload(tmp_path, caplog):
+    class Search:
+        def execute(self, payload):
+            raise RuntimeError("Bearer private-value")
+
+    runner = CacheJobRunner(Search(), None, AssetIndex(tmp_path), None)
+    result = {}
+    runner.run(
+        CacheRequest.from_payload({"provider": "filmgrab"}),
+        threading.Event(),
+        lambda **values: result.update(values),
+    )
+    assert result["state"] == "failed"
+    assert "RuntimeError" in caplog.text
+    assert "private-value" not in caplog.text
+
+
 def test_concurrent_queries_count_shared_asset_only_once(tmp_path):
     entered = threading.Barrier(2)
     reading = threading.Event()

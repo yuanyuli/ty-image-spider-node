@@ -15,6 +15,7 @@ from aiohttp import web
 from .bootstrap import ApplicationServices, build_services
 from .models import SpiderError, JsonValue
 from .http_json import JsonBodyReader
+from .diagnostics import log_failure
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -84,8 +85,8 @@ async def post_download_page(
         return _success(result)
     except SpiderError as exc:
         return _error(exc)
-    except Exception:
-        _LOGGER.exception("整页下载路由执行失败")
+    except Exception as exc:
+        log_failure(_LOGGER, "整页下载路由执行失败", exc)
         return _unexpected_error()
 
 
@@ -135,8 +136,8 @@ async def _execute_payload(
         return _success(result)
     except SpiderError as exc:
         return _error(exc)
-    except Exception:
-        _LOGGER.exception("图片素材路由执行失败")
+    except Exception as exc:
+        log_failure(_LOGGER, "图片素材路由执行失败", exc)
         return _unexpected_error()
 
 
@@ -153,8 +154,8 @@ async def _respond(call: Callable[[], object]) -> web.Response:
         return _success(result)
     except SpiderError as exc:
         return _error(exc)
-    except Exception:
-        _LOGGER.exception("图片素材状态路由执行失败")
+    except Exception as exc:
+        log_failure(_LOGGER, "图片素材状态路由执行失败", exc)
         return _unexpected_error()
 
 

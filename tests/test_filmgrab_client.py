@@ -47,4 +47,4 @@ def test_persistent_truncation_becomes_domain_error_for_cache_fallback():
 
     with pytest.raises(SpiderError, match="暂时无法访问"):
         FilmGrabClient(open_url).posts("Her", 1)
-    assert len(calls) == 2
+    assert len(calls) == 3
