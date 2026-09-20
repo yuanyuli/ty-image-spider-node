@@ -1,3 +1,4 @@
+import { normalizePresentation } from "./presentation.js";
 import { createApiClient } from "./api.js";
 import { openAssetDialog } from "./dialog.js";
 import { createGallery } from "./gallery.js";
@@ -130,8 +131,8 @@ function mountNode(node, { app, api, document }) {
     try {
       const nextProviders = await client.requestJson("/ty-image-spider/providers");
       if (!providerGuard.isCurrent(ticket) || disposed) return;
-      // 小红书暂不开放入口；保留独立接入代码，方便后续恢复。
-      providers = nextProviders.filter((entry) => entry.provider.id !== "xiaohongshu");
+      // 是否开放入口由来源描述符决定。
+      providers = nextProviders.filter((entry) => normalizePresentation(entry.provider).visible);
       const current = providers.some((entry) => entry.provider.id === state.get().provider)
         ? state.get().provider
         : providers[0]?.provider.id || "civitai";
@@ -258,6 +259,7 @@ function mountNode(node, { app, api, document }) {
     gallery = createGallery({
       document,
       provider: value.provider,
+      descriptor,
       capabilities: descriptor?.capabilities || {},
       onOpen: openDetail,
       onDownload: downloadItem,
@@ -404,6 +406,7 @@ function mountNode(node, { app, api, document }) {
     dialog?.close();
     dialog = openAssetDialog({
       document,
+      descriptor: providers.find((entry) => entry.provider.id === item.provider)?.provider,
       detail: { item, images: item.preview_url ? [item.preview_url] : [] },
       onDownload: downloadItem,
       onClose: () => {

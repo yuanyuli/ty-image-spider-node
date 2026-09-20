@@ -1,0 +1,1388 @@
+{
+  "civitai": {
+    "id": "civitai",
+    "label": "Civitai",
+    "description": "浏览 civitai.com 与 civitai.red 的公开图片",
+    "presentation": {
+      "group_id": "inspiration",
+      "group_label": "AI 与壁纸",
+      "short_label": "C",
+      "detail_label": "CIVITAI",
+      "group_order": 10,
+      "source_order": 10,
+      "cache_description": "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "site",
+        "label": "站点",
+        "kind": "select",
+        "default": "civitai.com",
+        "options": [
+          {
+            "value": "civitai.com",
+            "label": "civitai.com"
+          },
+          {
+            "value": "civitai.red",
+            "label": "civitai.red"
+          }
+        ]
+      },
+      {
+        "name": "period",
+        "label": "时间范围",
+        "kind": "select",
+        "default": "AllTime",
+        "options": [
+          {
+            "value": "AllTime",
+            "label": "AllTime"
+          },
+          {
+            "value": "Year",
+            "label": "Year"
+          },
+          {
+            "value": "Month",
+            "label": "Month"
+          },
+          {
+            "value": "Week",
+            "label": "Week"
+          },
+          {
+            "value": "Day",
+            "label": "Day"
+          }
+        ]
+      },
+      {
+        "name": "sort",
+        "label": "排序",
+        "kind": "select",
+        "default": "Most Reactions",
+        "options": [
+          {
+            "value": "Most Reactions",
+            "label": "Most Reactions"
+          },
+          {
+            "value": "Most Comments",
+            "label": "Most Comments"
+          },
+          {
+            "value": "Most Collected",
+            "label": "Most Collected"
+          },
+          {
+            "value": "Newest",
+            "label": "Newest"
+          },
+          {
+            "value": "Oldest",
+            "label": "Oldest"
+          }
+        ]
+      },
+      {
+        "name": "sfw",
+        "label": "仅 SFW",
+        "kind": "toggle",
+        "default": true,
+        "options": []
+      },
+      {
+        "name": "tag",
+        "label": "标签",
+        "kind": "select",
+        "default": "",
+        "options": [
+          {
+            "value": "",
+            "label": "全部"
+          },
+          {
+            "value": "Portrait",
+            "label": "Portrait"
+          }
+        ]
+      },
+      {
+        "name": "only_with_prompt",
+        "label": "仅含提示词",
+        "kind": "toggle",
+        "default": false,
+        "options": []
+      },
+      {
+        "name": "count",
+        "label": "数量",
+        "kind": "number",
+        "default": 12,
+        "options": [],
+        "minimum": 1,
+        "maximum": 100
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": true,
+      "pagination": "cursor",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": ""
+  },
+  "wallhaven": {
+    "id": "wallhaven",
+    "label": "Wallhaven",
+    "description": "浏览 Wallhaven 的公开 SFW 壁纸与摄影素材",
+    "presentation": {
+      "group_id": "inspiration",
+      "group_label": "AI 与壁纸",
+      "short_label": "W",
+      "detail_label": "WALLHAVEN",
+      "group_order": 10,
+      "source_order": 20,
+      "cache_description": "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "分类",
+        "kind": "select",
+        "default": "all",
+        "options": [
+          {
+            "value": "all",
+            "label": "全部"
+          },
+          {
+            "value": "general",
+            "label": "综合"
+          },
+          {
+            "value": "anime",
+            "label": "动漫"
+          },
+          {
+            "value": "people",
+            "label": "人物"
+          }
+        ]
+      },
+      {
+        "name": "sorting",
+        "label": "排序",
+        "kind": "select",
+        "default": "relevance",
+        "options": [
+          {
+            "value": "relevance",
+            "label": "相关度"
+          },
+          {
+            "value": "date_added",
+            "label": "最新"
+          },
+          {
+            "value": "views",
+            "label": "浏览量"
+          },
+          {
+            "value": "favorites",
+            "label": "收藏量"
+          },
+          {
+            "value": "toplist",
+            "label": "热门榜"
+          }
+        ]
+      },
+      {
+        "name": "top_range",
+        "label": "榜单范围",
+        "kind": "select",
+        "default": "1M",
+        "options": [
+          {
+            "value": "1d",
+            "label": "一天"
+          },
+          {
+            "value": "1w",
+            "label": "一周"
+          },
+          {
+            "value": "1M",
+            "label": "一月"
+          },
+          {
+            "value": "3M",
+            "label": "三月"
+          },
+          {
+            "value": "1y",
+            "label": "一年"
+          }
+        ]
+      },
+      {
+        "name": "orientation",
+        "label": "方向",
+        "kind": "select",
+        "default": "all",
+        "options": [
+          {
+            "value": "all",
+            "label": "不限"
+          },
+          {
+            "value": "landscape",
+            "label": "横向"
+          },
+          {
+            "value": "portrait",
+            "label": "纵向"
+          },
+          {
+            "value": "square",
+            "label": "方形"
+          }
+        ]
+      },
+      {
+        "name": "atleast",
+        "label": "最低分辨率",
+        "kind": "select",
+        "default": "",
+        "options": [
+          {
+            "value": "",
+            "label": "不限"
+          },
+          {
+            "value": "1920x1080",
+            "label": "1920 x 1080"
+          },
+          {
+            "value": "2560x1440",
+            "label": "2560 x 1440"
+          },
+          {
+            "value": "3840x2160",
+            "label": "3840 x 2160"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": true,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": ""
+  },
+  "behance": {
+    "id": "behance",
+    "label": "Behance",
+    "description": "设计与摄影项目画廊",
+    "presentation": {
+      "group_id": "editorial",
+      "group_label": "摄影与设计",
+      "short_label": "B",
+      "detail_label": "BEHANCE",
+      "group_order": 20,
+      "source_order": 10,
+      "cache_description": "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "精选画廊（留空关键词时）",
+        "kind": "select",
+        "default": "graphic-design",
+        "options": [
+          {
+            "value": "graphic-design",
+            "label": "平面设计"
+          },
+          {
+            "value": "photography",
+            "label": "摄影"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": false,
+      "pagination": "cursor",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": ""
+  },
+  "colossal": {
+    "id": "colossal",
+    "label": "Colossal",
+    "description": "摄影与设计专题图集",
+    "presentation": {
+      "group_id": "editorial",
+      "group_label": "摄影与设计",
+      "short_label": "COLO",
+      "detail_label": "COLOSSAL",
+      "group_order": 20,
+      "source_order": 20,
+      "cache_description": "新增最多100个专题封面及图集资料；图集高清图片按需下载，已有缓存跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "专题分类",
+        "kind": "select",
+        "default": "photography",
+        "options": [
+          {
+            "value": "photography",
+            "label": "当代摄影"
+          },
+          {
+            "value": "design",
+            "label": "设计"
+          },
+          {
+            "value": "illustration",
+            "label": "插画"
+          },
+          {
+            "value": "art",
+            "label": "当代艺术"
+          },
+          {
+            "value": "craft",
+            "label": "手工与材质"
+          },
+          {
+            "value": "books",
+            "label": "艺术书籍"
+          },
+          {
+            "value": "all",
+            "label": "全部专题"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": false,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "可留空浏览中文分类；关键词建议使用英文"
+  },
+  "designmilk": {
+    "id": "designmilk",
+    "label": "Design Milk",
+    "description": "摄影与设计专题图集",
+    "presentation": {
+      "group_id": "editorial",
+      "group_label": "摄影与设计",
+      "short_label": "DM",
+      "detail_label": "DESIGN MILK",
+      "group_order": 20,
+      "source_order": 30,
+      "cache_description": "新增最多100个专题封面及图集资料；图集高清图片按需下载，已有缓存跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "专题分类",
+        "kind": "select",
+        "default": "graphic",
+        "options": [
+          {
+            "value": "graphic",
+            "label": "平面设计"
+          },
+          {
+            "value": "photography",
+            "label": "摄影"
+          },
+          {
+            "value": "art",
+            "label": "视觉艺术"
+          },
+          {
+            "value": "fashion",
+            "label": "时尚与配饰"
+          },
+          {
+            "value": "interior",
+            "label": "空间设计"
+          },
+          {
+            "value": "furniture",
+            "label": "家具与产品"
+          },
+          {
+            "value": "all",
+            "label": "全部专题"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": false,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "可留空浏览中文分类；关键词建议使用英文"
+  },
+  "featureshoot": {
+    "id": "featureshoot",
+    "label": "Feature Shoot",
+    "description": "摄影与设计专题图集",
+    "presentation": {
+      "group_id": "editorial",
+      "group_label": "摄影与设计",
+      "short_label": "FS",
+      "detail_label": "FEATURE SHOOT",
+      "group_order": 20,
+      "source_order": 40,
+      "cache_description": "新增最多100个专题封面及图集资料；图集高清图片按需下载，已有缓存跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "专题分类",
+        "kind": "select",
+        "default": "fine_art",
+        "options": [
+          {
+            "value": "fine_art",
+            "label": "艺术摄影"
+          },
+          {
+            "value": "documentary",
+            "label": "纪实摄影"
+          },
+          {
+            "value": "portraits",
+            "label": "人像"
+          },
+          {
+            "value": "nature",
+            "label": "自然"
+          },
+          {
+            "value": "landscape",
+            "label": "风景"
+          },
+          {
+            "value": "street",
+            "label": "街头"
+          },
+          {
+            "value": "still_life",
+            "label": "静物"
+          },
+          {
+            "value": "all",
+            "label": "全部专题"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": false,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "可留空浏览中文分类；关键词建议使用英文"
+  },
+  "mymodernmet": {
+    "id": "mymodernmet",
+    "label": "My Modern Met",
+    "description": "摄影与设计专题图集",
+    "presentation": {
+      "group_id": "editorial",
+      "group_label": "摄影与设计",
+      "short_label": "MMM",
+      "detail_label": "MY MODERN MET",
+      "group_order": 20,
+      "source_order": 50,
+      "cache_description": "新增最多100个专题封面及图集资料；图集高清图片按需下载，已有缓存跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "专题分类",
+        "kind": "select",
+        "default": "art",
+        "options": [
+          {
+            "value": "art",
+            "label": "当代艺术"
+          },
+          {
+            "value": "photography",
+            "label": "摄影"
+          },
+          {
+            "value": "design",
+            "label": "设计"
+          },
+          {
+            "value": "architecture",
+            "label": "建筑"
+          },
+          {
+            "value": "sculpture",
+            "label": "雕塑"
+          },
+          {
+            "value": "installation",
+            "label": "装置艺术"
+          },
+          {
+            "value": "painting",
+            "label": "绘画"
+          },
+          {
+            "value": "all",
+            "label": "全部专题"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": false,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "可留空浏览中文分类；关键词建议使用英文"
+  },
+  "aperture": {
+    "id": "aperture",
+    "label": "Aperture",
+    "description": "摄影与设计专题图集",
+    "presentation": {
+      "group_id": "editorial",
+      "group_label": "摄影与设计",
+      "short_label": "APT",
+      "detail_label": "APERTURE",
+      "group_order": 20,
+      "source_order": 70,
+      "cache_description": "新增最多100个专题封面及图集资料；图集高清图片按需下载，已有缓存跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "专题分类",
+        "kind": "select",
+        "default": "portfolios",
+        "options": [
+          {
+            "value": "portfolios",
+            "label": "摄影作品集"
+          },
+          {
+            "value": "photobooks",
+            "label": "摄影书"
+          },
+          {
+            "value": "archive",
+            "label": "经典档案"
+          },
+          {
+            "value": "interviews",
+            "label": "摄影师访谈"
+          },
+          {
+            "value": "essays",
+            "label": "摄影评论"
+          },
+          {
+            "value": "reviews",
+            "label": "展览与书评"
+          },
+          {
+            "value": "all",
+            "label": "全部专题"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": false,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "可留空浏览中文分类；关键词建议使用英文"
+  },
+  "printmag": {
+    "id": "printmag",
+    "label": "PRINT",
+    "description": "摄影与设计专题图集",
+    "presentation": {
+      "group_id": "editorial",
+      "group_label": "摄影与设计",
+      "short_label": "PRINT",
+      "detail_label": "PRINT MAGAZINE",
+      "group_order": 20,
+      "source_order": 80,
+      "cache_description": "新增最多100个专题封面及图集资料；图集高清图片按需下载，已有缓存跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "专题分类",
+        "kind": "select",
+        "default": "graphic",
+        "options": [
+          {
+            "value": "graphic",
+            "label": "平面设计"
+          },
+          {
+            "value": "branding",
+            "label": "品牌与标识"
+          },
+          {
+            "value": "typography",
+            "label": "字体与排版"
+          },
+          {
+            "value": "illustration",
+            "label": "插画"
+          },
+          {
+            "value": "packaging",
+            "label": "包装设计"
+          },
+          {
+            "value": "posters",
+            "label": "海报设计"
+          },
+          {
+            "value": "history",
+            "label": "设计史"
+          },
+          {
+            "value": "all",
+            "label": "全部专题"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": false,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "可留空浏览中文分类；关键词建议使用英文"
+  },
+  "arena": {
+    "id": "arena",
+    "label": "Are.na",
+    "description": "设计师公开收藏频道",
+    "presentation": {
+      "group_id": "editorial",
+      "group_label": "摄影与设计",
+      "short_label": "ARE.NA",
+      "detail_label": "ARE.NA",
+      "group_order": 20,
+      "source_order": 60,
+      "cache_description": "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "精选频道",
+        "kind": "select",
+        "default": "graphic",
+        "options": [
+          {
+            "value": "graphic",
+            "label": "平面设计"
+          },
+          {
+            "value": "photography",
+            "label": "当代摄影"
+          },
+          {
+            "value": "typography",
+            "label": "字体与排版"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": true,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "留空浏览精选；或粘贴公开 Are.na 频道链接（非关键词搜索）"
+  },
+  "loc": {
+    "id": "loc",
+    "label": "美国国会图书馆",
+    "description": "历史摄影、海报与视觉档案",
+    "presentation": {
+      "group_id": "collections",
+      "group_label": "艺术馆藏",
+      "short_label": "LOC",
+      "detail_label": "LIBRARY OF CONGRESS",
+      "group_order": 30,
+      "source_order": 10,
+      "cache_description": "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "馆藏分类",
+        "kind": "select",
+        "default": "documentary",
+        "options": [
+          {
+            "value": "documentary",
+            "label": "纪实摄影"
+          },
+          {
+            "value": "posters",
+            "label": "经典海报"
+          },
+          {
+            "value": "portraits",
+            "label": "历史人像"
+          },
+          {
+            "value": "architecture",
+            "label": "建筑档案"
+          },
+          {
+            "value": "travel",
+            "label": "旅行海报"
+          },
+          {
+            "value": "fashion",
+            "label": "时尚摄影"
+          },
+          {
+            "value": "japanese",
+            "label": "日本版画"
+          },
+          {
+            "value": "all",
+            "label": "全部图片"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": true,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "可留空浏览中文分类；人名和主题建议用英文"
+  },
+  "nasa": {
+    "id": "nasa",
+    "label": "NASA",
+    "description": "太空、地球与航天历史影像",
+    "presentation": {
+      "group_id": "collections",
+      "group_label": "艺术馆藏",
+      "short_label": "NASA",
+      "detail_label": "NASA IMAGE LIBRARY",
+      "group_order": 30,
+      "source_order": 20,
+      "cache_description": "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "影像分类",
+        "kind": "select",
+        "default": "space",
+        "options": [
+          {
+            "value": "space",
+            "label": "太空影像"
+          },
+          {
+            "value": "earth",
+            "label": "地球观测"
+          },
+          {
+            "value": "moon",
+            "label": "月球"
+          },
+          {
+            "value": "mars",
+            "label": "火星"
+          },
+          {
+            "value": "apollo",
+            "label": "阿波罗计划"
+          },
+          {
+            "value": "telescopes",
+            "label": "太空望远镜"
+          },
+          {
+            "value": "astronauts",
+            "label": "宇航员"
+          },
+          {
+            "value": "posters",
+            "label": "NASA 海报"
+          },
+          {
+            "value": "all",
+            "label": "全部图片"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": true,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "可留空浏览分类；任务、天体和人物建议使用英文"
+  },
+  "filmgrab": {
+    "id": "filmgrab",
+    "label": "FilmGrab",
+    "description": "电影静帧画廊",
+    "presentation": {
+      "group_id": "cinema",
+      "group_label": "电影",
+      "short_label": "FILM",
+      "detail_label": "FILMGRAB",
+      "group_order": 40,
+      "source_order": 10,
+      "cache_description": "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+      "visible": true
+    },
+    "filters": [],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": true,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": true
+    },
+    "search_presets": [
+      {
+        "value": "银翼杀手",
+        "label": "银翼杀手 · 霓虹与科幻"
+      },
+      {
+        "value": "银翼杀手2049",
+        "label": "银翼杀手2049 · 霓虹与科幻"
+      },
+      {
+        "value": "花样年华",
+        "label": "花样年华 · 东方色彩"
+      },
+      {
+        "value": "重庆森林",
+        "label": "重庆森林 · 都市夜色"
+      },
+      {
+        "value": "堕落天使",
+        "label": "堕落天使 · 都市夜色"
+      },
+      {
+        "value": "布达佩斯大饭店",
+        "label": "布达佩斯大饭店 · 对称与配色"
+      },
+      {
+        "value": "月升王国",
+        "label": "月升王国 · 复古童话"
+      },
+      {
+        "value": "天使爱美丽",
+        "label": "天使爱美丽 · 法式色彩"
+      },
+      {
+        "value": "爱乐之城",
+        "label": "爱乐之城 · 歌舞与色彩"
+      },
+      {
+        "value": "她",
+        "label": "她 · 柔和未来"
+      },
+      {
+        "value": "沙丘",
+        "label": "沙丘 · 2021 · 沙漠与尺度"
+      },
+      {
+        "value": "沙丘2",
+        "label": "沙丘2 · 沙漠与尺度"
+      },
+      {
+        "value": "星际穿越",
+        "label": "星际穿越 · 宇宙与自然"
+      },
+      {
+        "value": "盗梦空间",
+        "label": "盗梦空间 · 空间与建筑"
+      },
+      {
+        "value": "2001太空漫游",
+        "label": "2001太空漫游 · 经典科幻"
+      },
+      {
+        "value": "巴黎德州",
+        "label": "巴黎德州 · 公路与孤独"
+      },
+      {
+        "value": "潜行者",
+        "label": "潜行者 · 废墟与自然"
+      },
+      {
+        "value": "生命之树",
+        "label": "生命之树 · 自然光"
+      },
+      {
+        "value": "荒野猎人",
+        "label": "荒野猎人 · 自然光"
+      },
+      {
+        "value": "疯狂的麦克斯狂暴之路",
+        "label": "疯狂的麦克斯狂暴之路 · 荒漠与动作"
+      },
+      {
+        "value": "英雄",
+        "label": "英雄 · 东方色彩"
+      },
+      {
+        "value": "卧虎藏龙",
+        "label": "卧虎藏龙 · 山水与武侠"
+      },
+      {
+        "value": "刺客聂隐娘",
+        "label": "刺客聂隐娘 · 东方构图"
+      },
+      {
+        "value": "千与千寻",
+        "label": "千与千寻 · 动画与幻想"
+      }
+    ],
+    "search_placeholder": "中文片名，如花样年华；留空浏览全部电影"
+  },
+  "vam": {
+    "id": "vam",
+    "label": "V&A",
+    "description": "V&A 博物馆 · 摄影、时装与设计",
+    "presentation": {
+      "group_id": "collections",
+      "group_label": "艺术馆藏",
+      "short_label": "V&A",
+      "detail_label": "V&A MUSEUM",
+      "group_order": 30,
+      "source_order": 30,
+      "cache_description": "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "馆藏分类",
+        "kind": "select",
+        "default": "photography",
+        "options": [
+          {
+            "value": "all",
+            "label": "全部有图馆藏"
+          },
+          {
+            "value": "photography",
+            "label": "摄影"
+          },
+          {
+            "value": "fashion",
+            "label": "时装"
+          },
+          {
+            "value": "posters",
+            "label": "海报"
+          },
+          {
+            "value": "design",
+            "label": "设计"
+          },
+          {
+            "value": "textile",
+            "label": "纺织与纹样"
+          },
+          {
+            "value": "architecture",
+            "label": "建筑"
+          },
+          {
+            "value": "ceramics",
+            "label": "陶瓷"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": true,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "可留空浏览分类；作品名或作者建议用英文"
+  },
+  "artic": {
+    "id": "artic",
+    "label": "芝加哥艺术",
+    "description": "芝加哥艺术博物馆 · 绘画、摄影与设计",
+    "presentation": {
+      "group_id": "collections",
+      "group_label": "艺术馆藏",
+      "short_label": "AIC",
+      "detail_label": "ART INSTITUTE OF CHICAGO",
+      "group_order": 30,
+      "source_order": 40,
+      "cache_description": "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "馆藏分类",
+        "kind": "select",
+        "default": "painting",
+        "options": [
+          {
+            "value": "all",
+            "label": "全部有图馆藏"
+          },
+          {
+            "value": "painting",
+            "label": "绘画"
+          },
+          {
+            "value": "photography",
+            "label": "摄影"
+          },
+          {
+            "value": "design",
+            "label": "设计"
+          },
+          {
+            "value": "graphic",
+            "label": "平面设计"
+          },
+          {
+            "value": "architecture",
+            "label": "建筑图纸"
+          },
+          {
+            "value": "sculpture",
+            "label": "雕塑"
+          },
+          {
+            "value": "textile",
+            "label": "纺织"
+          },
+          {
+            "value": "fashion",
+            "label": "服装与配饰"
+          },
+          {
+            "value": "prints",
+            "label": "版画"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": true,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "可留空浏览分类；作品名或作者建议用英文"
+  },
+  "cleveland": {
+    "id": "cleveland",
+    "label": "克利夫兰",
+    "description": "克利夫兰艺术博物馆 · 经典摄影与艺术",
+    "presentation": {
+      "group_id": "collections",
+      "group_label": "艺术馆藏",
+      "short_label": "CMA",
+      "detail_label": "CLEVELAND MUSEUM OF ART",
+      "group_order": 30,
+      "source_order": 50,
+      "cache_description": "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "馆藏分类",
+        "kind": "select",
+        "default": "photography",
+        "options": [
+          {
+            "value": "all",
+            "label": "全部有图馆藏"
+          },
+          {
+            "value": "photography",
+            "label": "摄影"
+          },
+          {
+            "value": "painting",
+            "label": "绘画"
+          },
+          {
+            "value": "sculpture",
+            "label": "雕塑"
+          },
+          {
+            "value": "drawing",
+            "label": "素描"
+          },
+          {
+            "value": "prints",
+            "label": "版画"
+          },
+          {
+            "value": "textile",
+            "label": "纺织"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": true,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "可留空浏览分类；作品名或作者建议用英文"
+  },
+  "xiaohongshu": {
+    "id": "xiaohongshu",
+    "label": "小红书",
+    "description": "通过 OpenCLI 与已登录的 Chrome 浏览公开笔记图片",
+    "presentation": {
+      "group_id": "inspiration",
+      "group_label": "AI 与壁纸",
+      "short_label": "RED",
+      "detail_label": "小红书",
+      "group_order": 10,
+      "source_order": 30,
+      "cache_description": "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+      "visible": false
+    },
+    "filters": [
+      {
+        "name": "sort",
+        "label": "排序",
+        "kind": "select",
+        "default": "comprehensive",
+        "options": [
+          {
+            "value": "comprehensive",
+            "label": "综合"
+          },
+          {
+            "value": "latest",
+            "label": "最新"
+          },
+          {
+            "value": "most-liked",
+            "label": "最多点赞"
+          },
+          {
+            "value": "most-commented",
+            "label": "最多评论"
+          },
+          {
+            "value": "most-collected",
+            "label": "最多收藏"
+          }
+        ]
+      },
+      {
+        "name": "note_type",
+        "label": "笔记类型",
+        "kind": "select",
+        "default": "image",
+        "options": [
+          {
+            "value": "image",
+            "label": "图文"
+          },
+          {
+            "value": "all",
+            "label": "不限"
+          }
+        ]
+      },
+      {
+        "name": "publish_time",
+        "label": "发布时间",
+        "kind": "select",
+        "default": "anytime",
+        "options": [
+          {
+            "value": "anytime",
+            "label": "不限"
+          },
+          {
+            "value": "day",
+            "label": "一天内"
+          },
+          {
+            "value": "week",
+            "label": "一周内"
+          },
+          {
+            "value": "half-year",
+            "label": "半年内"
+          }
+        ]
+      },
+      {
+        "name": "count",
+        "label": "数量",
+        "kind": "number",
+        "default": 12,
+        "options": [],
+        "minimum": 1,
+        "maximum": 50
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": false,
+      "pagination": "none",
+      "cache": false,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": ""
+  },
+  "local": {
+    "id": "local",
+    "label": "本地历史",
+    "description": "浏览 TY Image Spider 与旧节点下载的本地图片",
+    "presentation": {
+      "group_id": "local",
+      "group_label": "本地",
+      "short_label": "LOCAL",
+      "detail_label": "本地历史",
+      "group_order": 50,
+      "source_order": 10,
+      "cache_description": "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "only_with_prompt",
+        "label": "仅含提示词",
+        "kind": "toggle",
+        "default": false,
+        "options": []
+      },
+      {
+        "name": "count",
+        "label": "数量",
+        "kind": "number",
+        "default": 24,
+        "options": [],
+        "minimum": 1,
+        "maximum": 100
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": false,
+      "bulk_download": false,
+      "pagination": "cursor",
+      "cache": false,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": ""
+  }
+}

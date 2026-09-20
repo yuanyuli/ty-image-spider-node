@@ -1,26 +1,7 @@
 import { createIcon, createIconButton } from "./icons.js";
 import { renderTmdbHelp } from "./tmdb_help.js";
 
-const SOURCE_GROUPS = [
-  { id: "inspiration", label: "AI 与壁纸", providers: ["civitai", "wallhaven", "xiaohongshu"] },
-  {
-    id: "editorial",
-    label: "摄影与设计",
-    providers: [
-      "behance",
-      "colossal",
-      "designmilk",
-      "featureshoot",
-      "mymodernmet",
-      "arena",
-      "aperture",
-      "printmag",
-    ],
-  },
-  { id: "collections", label: "艺术馆藏", providers: ["loc", "nasa", "vam", "artic", "cleveland"] },
-  { id: "cinema", label: "电影", providers: ["filmgrab"] },
-  { id: "local", label: "本地", providers: ["local"] },
-];
+import { normalizePresentation, visibleSources, sourceGroups } from "./presentation.js";
 
 export function renderSourceControls(context) {
   const {
@@ -37,7 +18,8 @@ export function renderSourceControls(context) {
     onFilterChange = () => {},
     onMovieLookup = () => {},
   } = context;
-  const current = providers.find((entry) => entry.provider.id === provider) || providers[0];
+  const visible = visibleSources(providers);
+  const current = visible.find((entry) => entry.provider.id === provider) || visible[0];
   const unavailable = current?.status?.available === false;
   const root = element(document, "section", "tyis-controls");
 
@@ -55,13 +37,13 @@ export function renderSourceControls(context) {
     `tyis-source-status${current?.status?.available === false ? " is-unavailable" : ""}`,
     current?.status?.message || (current?.status?.available === false ? "不可用" : "就绪"),
   );
-  const grouped = availableSourceGroups(providers);
-  let activeGroup = sourceGroup(current?.provider.id);
+  const grouped = sourceGroups(visible);
+  let activeGroup = normalizePresentation(current?.provider).groupId;
   if (!grouped.some((entry) => entry.id === activeGroup)) activeGroup = grouped[0]?.id || "other";
   function renderSources() {
     segments.replaceChildren();
-    for (const entry of providers.filter(
-      (entry) => sourceGroup(entry.provider.id) === activeGroup,
+    for (const entry of visible.filter(
+      (entry) => normalizePresentation(entry.provider).groupId === activeGroup,
     )) {
       const button = element(document, "button", "tyis-source-tab", entry.provider.label);
       button.type = "button";
@@ -239,17 +221,6 @@ export function renderSourceControls(context) {
     root.append(action);
   }
   return { root, query, status, descriptor: current?.provider || null };
-}
-
-function sourceGroup(provider) {
-  return SOURCE_GROUPS.find((group) => group.providers.includes(provider))?.id || "other";
-}
-
-function availableSourceGroups(providers) {
-  const ids = new Set(providers.map((entry) => sourceGroup(entry.provider.id)));
-  const groups = SOURCE_GROUPS.filter((group) => ids.has(group.id));
-  if (ids.has("other")) groups.push({ id: "other", label: "其他", providers: [] });
-  return groups;
 }
 
 function renderField(document, field, supplied, onFilterChange, options = {}) {

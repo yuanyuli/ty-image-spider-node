@@ -1,3 +1,4 @@
+import { sourceDescriptor } from "./provider-fixtures.mjs";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -155,7 +156,11 @@ test("来源不可用状态不会伪装成空搜索结果", () => {
 
 test("Wallhaven 卡片显示来源标记与收藏数据", () => {
   const dom = new JSDOM("<!doctype html><body></body>");
-  const view = createGallery({ document: dom.window.document, provider: "wallhaven" });
+  const view = createGallery({
+    document: dom.window.document,
+    provider: "wallhaven",
+    descriptor: sourceDescriptor("wallhaven"),
+  });
 
   view.render([
     item({
@@ -181,7 +186,11 @@ test("新增摄影与档案来源显示简短来源标记", () => {
   };
   for (const [provider, label] of Object.entries(expected)) {
     const dom = new JSDOM("<!doctype html><body></body>");
-    const view = createGallery({ document: dom.window.document, provider });
+    const view = createGallery({
+      document: dom.window.document,
+      provider,
+      descriptor: sourceDescriptor(provider),
+    });
     view.render([item({ provider, id: "101" })]);
     assert.equal(view.root.querySelector(".tyis-source-mark").textContent, label);
   }
@@ -193,6 +202,7 @@ test("新增专题来源使用专题缓存说明", () => {
     const view = createGallery({
       document: dom.window.document,
       provider,
+      descriptor: sourceDescriptor(provider),
       capabilities: { cache: true },
     });
 

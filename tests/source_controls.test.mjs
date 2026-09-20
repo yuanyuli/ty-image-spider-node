@@ -1,3 +1,4 @@
+import { sourceDescriptor } from "./provider-fixtures.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
@@ -118,7 +119,7 @@ test("来源导航按用途分组且切换分类不会提前切换来源", () =>
     ["filmgrab", "FilmGrab"],
     ["local", "本地历史"],
   ].map(([id, label]) => ({
-    provider: { id, label, filters: [], capabilities: {} },
+    provider: { ...sourceDescriptor(id), label, filters: [], capabilities: {} },
     status: { available: true },
   }));
   const view = renderSourceControls({

@@ -1,3 +1,4 @@
+import { normalizePresentation } from "./presentation.js";
 import { createIcon, createIconButton } from "./icons.js";
 
 export function createGallery(context) {
@@ -5,6 +6,7 @@ export function createGallery(context) {
     document,
     provider = "civitai",
     capabilities = {},
+    descriptor = { id: provider },
     onOpen = () => {},
     onDownload = () => {},
     onDownloadPage = () => {},
@@ -22,14 +24,7 @@ export function createGallery(context) {
   bulkDownloadButton.prepend(createIcon(document, "download", 15));
   bulkDownloadButton.hidden = capabilities.bulk_download !== true;
   const cacheButton = element(document, "button", "tyis-subtle-button", "新增缓存100张");
-  cacheButton.title = "按当前搜索条件续存最多100张新素材，跳过已有缓存；不足时按实际数量完成";
-  if (
-    ["colossal", "designmilk", "featureshoot", "mymodernmet", "aperture", "printmag"].includes(
-      provider,
-    )
-  ) {
-    cacheButton.title = "新增最多100个专题封面及图集资料；图集高清图片按需下载，已有缓存跳过";
-  }
+  cacheButton.title = normalizePresentation(descriptor).cacheDescription;
   cacheButton.type = "button";
   cacheButton.dataset.action = "cache-100";
   cacheButton.hidden = capabilities.cache !== true;
@@ -76,7 +71,7 @@ export function createGallery(context) {
       return;
     }
     for (const item of currentItems)
-      grid.append(renderCard(document, item, provider, onOpen, onDownload));
+      grid.append(renderCard(document, item, provider, onOpen, onDownload, descriptor));
   }
 
   function setLoading(preservePagination = false) {
@@ -136,7 +131,7 @@ export function createGallery(context) {
   };
 }
 
-function renderCard(document, item, provider, onOpen, onDownload) {
+function renderCard(document, item, provider, onOpen, onDownload, descriptor) {
   const card = element(document, "article", `tyis-card is-${provider}`);
   const media = element(document, "div", "tyis-card-media");
   media.setAttribute("role", "button");
@@ -149,7 +144,14 @@ function renderCard(document, item, provider, onOpen, onDownload) {
   else image.classList.add("is-empty");
   image.addEventListener("error", () => image.classList.add("is-error"));
   const top = element(document, "div", "tyis-card-topline");
-  top.append(sourceMark(document, provider));
+  top.append(
+    element(
+      document,
+      "span",
+      `tyis-source-mark is-${provider}`,
+      normalizePresentation(descriptor).shortLabel,
+    ),
+  );
   if (provider === "civitai") {
     top.append(
       element(
@@ -203,30 +205,6 @@ function renderCard(document, item, provider, onOpen, onDownload) {
   footer.append(title, meta);
   card.append(media, footer);
   return card;
-}
-
-function sourceMark(document, provider) {
-  const labels = {
-    civitai: "C",
-    wallhaven: "W",
-    behance: "B",
-    filmgrab: "FILM",
-    colossal: "COLO",
-    designmilk: "DM",
-    featureshoot: "FS",
-    mymodernmet: "MMM",
-    aperture: "APT",
-    printmag: "PRINT",
-    nasa: "NASA",
-    arena: "ARE.NA",
-    loc: "LOC",
-    vam: "V&A",
-    artic: "AIC",
-    cleveland: "CMA",
-    xiaohongshu: "RED",
-    local: "LOCAL",
-  };
-  return element(document, "span", `tyis-source-mark is-${provider}`, labels[provider] || provider);
 }
 
 function emptyState(document, title, note) {

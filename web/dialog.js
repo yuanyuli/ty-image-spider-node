@@ -1,3 +1,4 @@
+import { normalizePresentation } from "./presentation.js";
 import { createIcon, createIconButton } from "./icons.js";
 import { openImageViewer } from "./image_viewer.js";
 import { renderCollectionDetails } from "./collection_detail.js";
@@ -25,7 +26,12 @@ export function openAssetDialog(context) {
   const header = element(document, "header", "tyis-dialog-header");
   const heading = element(document, "div", "tyis-dialog-heading");
   heading.append(
-    element(document, "span", `tyis-dialog-source is-${item.provider}`, sourceLabel(item.provider)),
+    element(
+      document,
+      "span",
+      `tyis-dialog-source is-${item.provider}`,
+      normalizePresentation(context.descriptor || { id: item.provider }).detailLabel,
+    ),
     element(document, "h2", "", item.title || `素材 ${item.id}`),
   );
   const closeButton = createIconButton(document, "close", "关闭详情");
@@ -317,31 +323,6 @@ function sectionWithTitle(document, title) {
 
 function fact(document, list, key, value) {
   list.append(element(document, "dt", "", key), element(document, "dd", "", value));
-}
-
-function sourceLabel(provider) {
-  return (
-    {
-      civitai: "CIVITAI",
-      wallhaven: "WALLHAVEN",
-      behance: "BEHANCE",
-      filmgrab: "FILMGRAB",
-      colossal: "COLOSSAL",
-      designmilk: "DESIGN MILK",
-      featureshoot: "FEATURE SHOOT",
-      mymodernmet: "MY MODERN MET",
-      aperture: "APERTURE",
-      printmag: "PRINT MAGAZINE",
-      nasa: "NASA IMAGE LIBRARY",
-      arena: "ARE.NA",
-      loc: "LIBRARY OF CONGRESS",
-      vam: "V&A",
-      artic: "芝加哥艺术博物馆",
-      cleveland: "克利夫兰艺术博物馆",
-      xiaohongshu: "小红书",
-      local: "本地历史",
-    }[provider] || provider
-  );
 }
 
 async function defaultCopy(value, document) {

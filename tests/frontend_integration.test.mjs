@@ -1,3 +1,4 @@
+import { sourceDescriptor } from "./provider-fixtures.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
@@ -78,6 +79,12 @@ test("Are.na 切换精选频道时清除自定义链接", async () => {
 });
 
 function response(data) {
+  if (Array.isArray(data))
+    data = data.map((entry) =>
+      entry.provider
+        ? { ...entry, provider: { ...sourceDescriptor(entry.provider.id), ...entry.provider } }
+        : entry,
+    );
   return Promise.resolve({
     ok: true,
     status: 200,

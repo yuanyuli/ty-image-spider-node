@@ -1,3 +1,4 @@
+import { sourceDescriptor } from "./provider-fixtures.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
@@ -125,7 +126,11 @@ test("Civitai 没有公开提示词时给出明确状态", () => {
   value.item.negative_prompt = undefined;
   value.item.has_prompt = false;
 
-  const view = openAssetDialog({ document: dom.window.document, detail: value });
+  const view = openAssetDialog({
+    document: dom.window.document,
+    detail: value,
+    descriptor: sourceDescriptor(value.item.provider),
+  });
 
   assert.match(view.overlay.textContent, /该素材未提供公开提示词/);
   view.close();
@@ -176,7 +181,11 @@ test("Wallhaven 详情显示统计、分类、标签和色板", () => {
     },
   };
 
-  const view = openAssetDialog({ document: dom.window.document, detail: value });
+  const view = openAssetDialog({
+    document: dom.window.document,
+    detail: value,
+    descriptor: sourceDescriptor(value.item.provider),
+  });
 
   assert.match(view.overlay.textContent, /2390 浏览/);
   assert.match(view.overlay.textContent, /43 收藏/);
@@ -198,7 +207,11 @@ test("新增来源详情显示明确来源名", () => {
     const value = detail();
     value.item = { ...value.item, provider };
 
-    const view = openAssetDialog({ document: dom.window.document, detail: value });
+    const view = openAssetDialog({
+      document: dom.window.document,
+      detail: value,
+      descriptor: sourceDescriptor(value.item.provider),
+    });
 
     assert.equal(view.overlay.querySelector(".tyis-dialog-source").textContent, label);
     view.close();
@@ -208,7 +221,11 @@ test("新增来源详情显示明确来源名", () => {
 test("详情异步更新保留已打开的全屏查看器", () => {
   const dom = new JSDOM("<!doctype html><body></body>", { url: "https://localhost/" });
   const value = detail();
-  const view = openAssetDialog({ document: dom.window.document, detail: value });
+  const view = openAssetDialog({
+    document: dom.window.document,
+    detail: value,
+    descriptor: sourceDescriptor(value.item.provider),
+  });
   view.mainImage.click();
   const viewer = dom.window.document.querySelector(".tyis-image-viewer");
   view.update({ ...value, item: { ...value.item, prompt: "补全后的提示词" } });
@@ -220,7 +237,11 @@ test("详情异步更新保留已打开的全屏查看器", () => {
 test("详情异步返回原图时替换预览并更新图集", () => {
   const dom = new JSDOM("<!doctype html><body></body>", { url: "https://localhost/" });
   const value = detail();
-  const view = openAssetDialog({ document: dom.window.document, detail: value });
+  const view = openAssetDialog({
+    document: dom.window.document,
+    detail: value,
+    descriptor: sourceDescriptor(value.item.provider),
+  });
   view.update({
     ...value,
     images: ["https://example.com/original.jpg", "https://example.com/second.jpg"],

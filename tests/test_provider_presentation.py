@@ -48,3 +48,18 @@ def test_registered_provider_display_contract(tmp_path):
         assert presentation["visible"] == (descriptor.id != "xiaohongshu")
         if descriptor.capabilities.cache:
             assert presentation["cache_description"]
+
+
+def test_frontend_descriptor_fixture_matches_backend(tmp_path):
+    import json
+    from pathlib import Path
+
+    descriptors = build_services(
+        tmp_path / "out", tmp_path / "cache"
+    ).providers.descriptors()
+    fixture = json.loads(
+        Path("tests/fixtures/provider_descriptors.json").read_text("utf-8")
+    )
+    assert fixture == {
+        descriptor.id: descriptor.to_dict() for descriptor in descriptors
+    }
