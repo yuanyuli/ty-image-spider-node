@@ -34,6 +34,9 @@ _HOSTS = {
     "designmilk": lambda host: host == "design-milk.com",
     "featureshoot": lambda host: host in {"www.featureshoot.com", "i0.wp.com"},
     "mymodernmet": lambda host: host == "mymodernmet.com",
+    "aperture": lambda host: host == "aperture.org",
+    "printmag": lambda host: host == "www.printmag.com",
+    "nasa": lambda host: host == "images-assets.nasa.gov",
     "loc": lambda host: host == "tile.loc.gov",
     "arena": lambda host: host in {"images.are.na", "d2w9rnfcy7mm78.cloudfront.net"},
 }
@@ -46,7 +49,7 @@ def validate_asset_id(provider: str, item_id: str) -> None:
         re.fullmatch(r"O[0-9]+", item_id)
         if provider == "vam"
         else _SAFE_LOC_ID.fullmatch(item_id)
-        if provider == "loc"
+        if provider in {"loc", "nasa"}
         else _SAFE_ID.fullmatch(item_id)
     )
     if not valid:
@@ -83,7 +86,7 @@ class CuratedDownloader:
             )
         )
         request = Request(
-            url, headers={"User-Agent": "TY-Image-Spider/2.0", "Accept": "image/*"}
+            url, headers={"User-Agent": "TY-Image-Spider/2.4", "Accept": "image/*"}
         )
         try:
             with self._open_url(request, timeout=60) as response:

@@ -187,6 +187,24 @@ test("Wallhaven 详情显示统计、分类、标签和色板", () => {
   view.close();
 });
 
+test("新增来源详情显示明确来源名", () => {
+  const expected = {
+    aperture: "APERTURE",
+    printmag: "PRINT MAGAZINE",
+    nasa: "NASA IMAGE LIBRARY",
+  };
+  for (const [provider, label] of Object.entries(expected)) {
+    const dom = new JSDOM("<!doctype html><body></body>", { url: "https://localhost/" });
+    const value = detail();
+    value.item = { ...value.item, provider };
+
+    const view = openAssetDialog({ document: dom.window.document, detail: value });
+
+    assert.equal(view.overlay.querySelector(".tyis-dialog-source").textContent, label);
+    view.close();
+  }
+});
+
 test("详情异步更新保留已打开的全屏查看器", () => {
   const dom = new JSDOM("<!doctype html><body></body>", { url: "https://localhost/" });
   const value = detail();

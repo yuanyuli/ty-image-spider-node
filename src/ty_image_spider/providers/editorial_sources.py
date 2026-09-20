@@ -82,3 +82,38 @@ MY_MODERN_MET = EditorialSource(
     "art",
     12,
 )
+
+APERTURE = EditorialSource(
+    "aperture",
+    "Aperture",
+    "https://aperture.org/wp-json/wp/v2/",
+    {
+        "portfolios": ("摄影作品集", "categories", 1528),
+        "photobooks": ("摄影书", "categories", 1401),
+        "archive": ("经典档案", "categories", 3728),
+        "interviews": ("摄影师访谈", "categories", 322),
+        "essays": ("摄影评论", "categories", 664),
+        "reviews": ("展览与书评", "categories", 254),
+        "all": ("全部专题", "", 0),
+    },
+    "portfolios",
+    12,
+)
+
+PRINT_MAGAZINE = EditorialSource(
+    "printmag",
+    "PRINT",
+    "https://www.printmag.com/wp-json/wp/v2/",
+    {
+        "graphic": ("平面设计", "categories", 27),
+        "branding": ("品牌与标识", "categories", 19),
+        "typography": ("字体与排版", "categories", 40),
+        "illustration": ("插画", "categories", 36),
+        "packaging": ("包装设计", "categories", 16),
+        "posters": ("海报设计", "categories", 44),
+        "history": ("设计史", "categories", 30),
+        "all": ("全部专题", "", 0),
+    },
+    "graphic",
+    12,
+)

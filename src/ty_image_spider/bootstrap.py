@@ -21,13 +21,16 @@ from .providers.museum_client import MuseumClient
 from .providers.public_json_client import PublicJsonClient
 from .providers.editorial import EditorialProvider
 from .providers.editorial_sources import (
+    APERTURE,
     COLOSSAL,
     DESIGN_MILK,
     FEATURE_SHOOT,
     MY_MODERN_MET,
+    PRINT_MAGAZINE,
 )
 from .providers.arena import ArenaProvider
 from .providers.loc import LocProvider
+from .providers.nasa import NasaProvider
 from .providers.curated_client import BehanceClient, FilmGrabClient
 from .providers.curated_download import CuratedDownloader
 from .providers.filmgrab import FilmGrabProvider
@@ -85,7 +88,14 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
         )
     )
     providers.register(BehanceProvider(BehanceClient(), reader))
-    for source in (COLOSSAL, DESIGN_MILK, FEATURE_SHOOT, MY_MODERN_MET):
+    for source in (
+        COLOSSAL,
+        DESIGN_MILK,
+        FEATURE_SHOOT,
+        MY_MODERN_MET,
+        APERTURE,
+        PRINT_MAGAZINE,
+    ):
         providers.register(
             EditorialProvider(
                 source,
@@ -109,6 +119,16 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
                 "https://www.loc.gov/",
                 "美国国会图书馆",
                 JsonCache(cache / "loc"),
+            ),
+            reader,
+        )
+    )
+    providers.register(
+        NasaProvider(
+            PublicJsonClient(
+                "https://images-api.nasa.gov/",
+                "NASA",
+                JsonCache(cache / "nasa"),
             ),
             reader,
         )

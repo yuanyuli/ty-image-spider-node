@@ -66,6 +66,7 @@ test("Are.na 切换精选频道时清除自定义链接", async () => {
   node.onNodeCreated();
   await node.tyImageSpider.ready;
   const root = node.domWidgets[0].element;
+  root.querySelector('[data-source-group="editorial"]').click();
   root.querySelector('[data-provider="arena"]').click();
   node.tyImageSpider.state.set({
     filters: { query: "https://www.are.na/user/custom", category: "graphic" },
@@ -154,6 +155,23 @@ test("重复 configure 不重复安装控件和监听器", async () => {
 
   node.onRemoved();
   assert.equal(document.listenerCount("keydown"), 0);
+});
+
+test("忽略其他工作流误投递到同 ID 节点的图片预览", async () => {
+  const { extension, NodeType } = harness();
+  NodeType.prototype.onExecuted = function (message) {
+    this.imgs = message.images;
+    this.imageIndex = 0;
+  };
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+
+  node.onExecuted({ images: [{ filename: "foreign-workflow.png" }] });
+
+  assert.equal(node.imgs, undefined);
+  assert.equal(node.imageIndex, undefined);
 });
 
 test("素材源响应前同步显示初始组件骨架", async () => {

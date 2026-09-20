@@ -17,8 +17,11 @@ def test_build_services_composes_independent_providers(tmp_path):
         "designmilk",
         "featureshoot",
         "mymodernmet",
+        "aperture",
+        "printmag",
         "arena",
         "loc",
+        "nasa",
         "filmgrab",
         "vam",
         "artic",
@@ -38,6 +41,9 @@ def test_build_services_creates_source_specific_cache_directories(tmp_path):
 
     assert (cache_root / "civitai").is_dir()
     assert (cache_root / "wallhaven").is_dir()
+    assert (cache_root / "aperture").is_dir()
+    assert (cache_root / "printmag").is_dir()
+    assert (cache_root / "nasa").is_dir()
     assert (cache_root / "xiaohongshu").is_dir()
 
 

@@ -118,37 +118,91 @@
 }
 
 .tyis-source-bar {
-  min-height: 30px;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 8px;
+  display: block;
+  min-height: 62px;
 }
 
-.tyis-source-segments {
+.tyis-source-head {
   display: flex;
-  flex-wrap: wrap;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--tyis-line);
+}
+
+.tyis-source-groups {
+  display: flex;
   min-width: 0;
   overflow-x: auto;
-  scrollbar-width: thin;
-  border: 1px solid var(--tyis-line);
-  border-radius: 6px;
+  gap: 18px;
+  scrollbar-width: none;
 }
 
-.tyis-source-tab {
+.tyis-source-groups::-webkit-scrollbar {
+  display: none;
+}
+
+.tyis-source-group {
+  position: relative;
   flex: 0 0 auto;
-  min-height: 29px;
-  padding: 5px 10px;
-  color: var(--tyis-muted);
-  background: #181b1d;
+  min-height: 27px;
+  padding: 2px 0 5px;
+  color: #858f8d;
+  background: transparent;
   border: 0;
-  border-right: 1px solid var(--tyis-line);
   font: inherit;
+  font-size: 10px;
   font-weight: 650;
   cursor: pointer;
 }
 
-.tyis-source-tab:last-child {
-  border-right: 0;
+.tyis-source-group::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: transparent;
+  content: "";
+}
+
+.tyis-source-group:hover,
+.tyis-source-group:focus-visible {
+  color: var(--tyis-text);
+  outline: none;
+}
+
+.tyis-source-group[aria-selected="true"] {
+  color: var(--tyis-text);
+}
+
+.tyis-source-group[aria-selected="true"]::after {
+  background: var(--tyis-green);
+}
+
+.tyis-source-segments {
+  display: flex;
+  flex-wrap: nowrap;
+  min-width: 0;
+  min-height: 35px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  gap: 4px;
+  padding: 4px 0 0;
+}
+
+.tyis-source-tab {
+  flex: 0 0 auto;
+  min-height: 30px;
+  padding: 5px 11px;
+  color: var(--tyis-muted);
+  background: #171a1c;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
 }
 
 .tyis-source-tab:hover,
@@ -156,11 +210,13 @@
   color: var(--tyis-text);
   outline: none;
   background: var(--tyis-raised);
+  border-color: var(--tyis-line);
 }
 
 .tyis-source-tab[aria-selected="true"] {
   color: #0b1c10;
   background: var(--tyis-green);
+  border-color: var(--tyis-green);
 }
 
 .tyis-source-tab[data-provider="xiaohongshu"][aria-selected="true"] {
@@ -170,6 +226,7 @@
 
 .tyis-source-status {
   flex: 0 1 auto;
+  max-width: 38%;
   overflow: hidden;
   color: var(--tyis-green);
   font-size: 10px;

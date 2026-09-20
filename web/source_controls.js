@@ -1,6 +1,27 @@
 import { createIcon, createIconButton } from "./icons.js";
 import { renderTmdbHelp } from "./tmdb_help.js";
 
+const SOURCE_GROUPS = [
+  { id: "inspiration", label: "AI 与壁纸", providers: ["civitai", "wallhaven", "xiaohongshu"] },
+  {
+    id: "editorial",
+    label: "摄影与设计",
+    providers: [
+      "behance",
+      "colossal",
+      "designmilk",
+      "featureshoot",
+      "mymodernmet",
+      "arena",
+      "aperture",
+      "printmag",
+    ],
+  },
+  { id: "collections", label: "艺术馆藏", providers: ["loc", "nasa", "vam", "artic", "cleveland"] },
+  { id: "cinema", label: "电影", providers: ["filmgrab"] },
+  { id: "local", label: "本地", providers: ["local"] },
+];
+
 export function renderSourceControls(context) {
   const {
     document,
@@ -21,25 +42,55 @@ export function renderSourceControls(context) {
   const root = element(document, "section", "tyis-controls");
 
   const sourceBar = element(document, "div", "tyis-source-bar");
+  const sourceHead = element(document, "div", "tyis-source-head");
+  const groups = element(document, "div", "tyis-source-groups");
+  groups.setAttribute("role", "tablist");
+  groups.setAttribute("aria-label", "素材来源类别");
   const segments = element(document, "div", "tyis-source-segments");
   segments.setAttribute("role", "tablist");
-  for (const entry of providers) {
-    const button = element(document, "button", "tyis-source-tab", entry.provider.label);
-    button.type = "button";
-    button.dataset.provider = entry.provider.id;
-    button.setAttribute("role", "tab");
-    button.setAttribute("aria-selected", String(entry.provider.id === current?.provider.id));
-    button.dataset.available = String(entry.status?.available !== false);
-    button.addEventListener("click", () => onSourceChange(entry.provider.id));
-    segments.append(button);
-  }
+  segments.setAttribute("aria-label", "素材来源");
   const status = element(
     document,
     "span",
     `tyis-source-status${current?.status?.available === false ? " is-unavailable" : ""}`,
     current?.status?.message || (current?.status?.available === false ? "不可用" : "就绪"),
   );
-  sourceBar.append(segments, status);
+  const grouped = availableSourceGroups(providers);
+  let activeGroup = sourceGroup(current?.provider.id);
+  if (!grouped.some((entry) => entry.id === activeGroup)) activeGroup = grouped[0]?.id || "other";
+  function renderSources() {
+    segments.replaceChildren();
+    for (const entry of providers.filter(
+      (entry) => sourceGroup(entry.provider.id) === activeGroup,
+    )) {
+      const button = element(document, "button", "tyis-source-tab", entry.provider.label);
+      button.type = "button";
+      button.dataset.provider = entry.provider.id;
+      button.setAttribute("role", "tab");
+      button.setAttribute("aria-selected", String(entry.provider.id === current?.provider.id));
+      button.dataset.available = String(entry.status?.available !== false);
+      button.addEventListener("click", () => onSourceChange(entry.provider.id));
+      segments.append(button);
+    }
+  }
+  for (const group of grouped) {
+    const button = element(document, "button", "tyis-source-group", group.label);
+    button.type = "button";
+    button.dataset.sourceGroup = group.id;
+    button.setAttribute("role", "tab");
+    button.setAttribute("aria-selected", String(group.id === activeGroup));
+    button.addEventListener("click", () => {
+      activeGroup = group.id;
+      for (const peer of groups.children) {
+        peer.setAttribute("aria-selected", String(peer === button));
+      }
+      renderSources();
+    });
+    groups.append(button);
+  }
+  renderSources();
+  sourceHead.append(groups, status);
+  sourceBar.append(sourceHead, segments);
 
   if (current?.provider.id === "xiaohongshu") {
     const connect = element(document, "button", "tyis-subtle-button", "一键连接 OpenCLI");
@@ -188,6 +239,17 @@ export function renderSourceControls(context) {
     root.append(action);
   }
   return { root, query, status, descriptor: current?.provider || null };
+}
+
+function sourceGroup(provider) {
+  return SOURCE_GROUPS.find((group) => group.providers.includes(provider))?.id || "other";
+}
+
+function availableSourceGroups(providers) {
+  const ids = new Set(providers.map((entry) => sourceGroup(entry.provider.id)));
+  const groups = SOURCE_GROUPS.filter((group) => ids.has(group.id));
+  if (ids.has("other")) groups.push({ id: "other", label: "其他", providers: [] });
+  return groups;
 }
 
 function renderField(document, field, supplied, onFilterChange, options = {}) {

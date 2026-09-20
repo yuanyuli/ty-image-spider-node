@@ -10,6 +10,7 @@ from ty_image_spider.cache import JsonCache
 from ty_image_spider.providers.public_json_client import PublicJsonClient
 from ty_image_spider.providers.editorial import EditorialProvider
 from ty_image_spider.providers.editorial_images import article_images
+from ty_image_spider.providers import editorial_sources as source_config
 from ty_image_spider.providers.editorial_sources import (
     COLOSSAL,
     DESIGN_MILK,
@@ -183,6 +184,53 @@ def test_new_editorial_sources_use_real_categories_and_extract_galleries(
     assert page.items[0].image_count == 2
     assert page.items[0].download_mode == "gallery"
     assert len(provider.detail(page.items[0]).images) == 2
+
+
+@pytest.mark.parametrize(
+    "constant,category,category_id,image_root",
+    [
+        (
+            "APERTURE",
+            "portfolios",
+            1528,
+            "https://aperture.org/wp-content/uploads/2026/09/",
+        ),
+        (
+            "PRINT_MAGAZINE",
+            "graphic",
+            27,
+            "https://www.printmag.com/wp-content/uploads/2026/09/",
+        ),
+    ],
+)
+def test_v24_editorial_sources_map_categories_and_return_downloadable_galleries(
+    constant, category, category_id, image_root
+):
+    source = getattr(source_config, constant, None)
+    assert source is not None
+    calls = []
+    row = post()
+    row["link"] = source.api_root.split("/wp-json/")[0] + "/feature/"
+    row["content"]["rendered"] = (
+        f'<img src="{image_root}one.jpg"><img src="{image_root}two.jpg">'
+    )
+    media = row["_embedded"]["wp:featuredmedia"][0]
+    media["source_url"] = image_root + "one.jpg"
+    media["media_details"]["sizes"]["medium_large"]["source_url"] = (
+        image_root + "preview.jpg"
+    )
+    provider = EditorialProvider(source, client(source.api_root, [[row]], calls))
+
+    page = provider.search(SearchRequest(source.id, filters={"category": category}))
+
+    query = parse_qs(urlsplit(calls[0]).query)
+    assert query["categories"] == [str(category_id)]
+    assert query["per_page"] == ["12"]
+    assert page.items[0].preview_url.endswith("preview.jpg")
+    assert provider.detail(page.items[0]).images == (
+        image_root + "one.jpg",
+        image_root + "two.jpg",
+    )
 
 
 def test_editorial_partial_download_reports_saved_files(tmp_path):

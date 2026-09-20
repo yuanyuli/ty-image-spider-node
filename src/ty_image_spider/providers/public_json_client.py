@@ -51,7 +51,7 @@ class PublicJsonClient:
             return JsonResponse(cached["data"], int(cached.get("total_pages", 0)))
         request = Request(
             url,
-            headers={"User-Agent": "TY-Image-Spider/2.3", "Accept": "application/json"},
+            headers={"User-Agent": "TY-Image-Spider/2.4", "Accept": "application/json"},
         )
         try:
             for attempt in range(2):

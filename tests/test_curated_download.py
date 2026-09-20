@@ -26,6 +26,13 @@ from ty_image_spider.providers.curated_download import CuratedDownloader
             "42-1",
             "https://mymodernmet.com/wp/wp-content/uploads/image.jpg",
         ),
+        ("aperture", "42-1", "https://aperture.org/wp-content/uploads/image.jpg"),
+        ("printmag", "42-1", "https://www.printmag.com/wp-content/uploads/image.jpg"),
+        (
+            "nasa",
+            "PIA01234-Mars-abc123def456",
+            "https://images-assets.nasa.gov/image/PIA01234/PIA01234~orig.jpg",
+        ),
         (
             "loc",
             "afc1937002_001",

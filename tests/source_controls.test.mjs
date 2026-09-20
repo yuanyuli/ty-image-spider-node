@@ -105,6 +105,53 @@ const providers = [
   },
 ];
 
+test("来源导航按用途分组且切换分类不会提前切换来源", () => {
+  const dom = new JSDOM("<!doctype html><body></body>");
+  const changes = [];
+  const entries = [
+    ["civitai", "Civitai"],
+    ["wallhaven", "Wallhaven"],
+    ["aperture", "Aperture"],
+    ["printmag", "PRINT"],
+    ["loc", "美国国会图书馆"],
+    ["nasa", "NASA"],
+    ["filmgrab", "FilmGrab"],
+    ["local", "本地历史"],
+  ].map(([id, label]) => ({
+    provider: { id, label, filters: [], capabilities: {} },
+    status: { available: true },
+  }));
+  const view = renderSourceControls({
+    document: dom.window.document,
+    providers: entries,
+    provider: "aperture",
+    onSourceChange: (value) => changes.push(value),
+  });
+
+  const groups = [...view.root.querySelectorAll("[data-source-group]")];
+  assert.deepEqual(
+    groups.map((button) => button.textContent),
+    ["AI 与壁纸", "摄影与设计", "艺术馆藏", "电影", "本地"],
+  );
+  assert.equal(
+    view.root.querySelector('[data-source-group="editorial"]').getAttribute("aria-selected"),
+    "true",
+  );
+  assert.deepEqual(
+    [...view.root.querySelectorAll("[data-provider]")].map((button) => button.dataset.provider),
+    ["aperture", "printmag"],
+  );
+
+  view.root.querySelector('[data-source-group="collections"]').click();
+  assert.deepEqual(changes, []);
+  assert.deepEqual(
+    [...view.root.querySelectorAll("[data-provider]")].map((button) => button.dataset.provider),
+    ["loc", "nasa"],
+  );
+  view.root.querySelector('[data-provider="nasa"]').click();
+  assert.deepEqual(changes, ["nasa"]);
+});
+
 test("来源控件按描述符渲染并发出语义事件", () => {
   const dom = new JSDOM("<!doctype html><body></body>");
   const events = [];

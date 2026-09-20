@@ -27,15 +27,24 @@ export function createImageSpiderExtension({ app, api, document }) {
 function installLifecycle(nodeType, dependencies) {
   const created = nodeType.prototype.onNodeCreated;
   const configured = nodeType.prototype.onConfigure;
+  const executed = nodeType.prototype.onExecuted;
   const removed = nodeType.prototype.onRemoved;
   nodeType.prototype.onNodeCreated = function (...args) {
     const result = created?.apply(this, args);
+    clearComfyPreview(this);
     mountNode(this, dependencies);
     return result;
   };
   nodeType.prototype.onConfigure = function (...args) {
     const result = configured?.apply(this, args);
+    clearComfyPreview(this);
     mountNode(this, dependencies).restore();
+    return result;
+  };
+  nodeType.prototype.onExecuted = function (...args) {
+    const result = executed?.apply(this, args);
+    clearComfyPreview(this);
+    this.setDirtyCanvas?.(true, true);
     return result;
   };
   nodeType.prototype.onRemoved = function (...args) {
@@ -43,6 +52,13 @@ function installLifecycle(nodeType, dependencies) {
     this.tyImageSpider = null;
     return removed?.apply(this, args);
   };
+}
+
+function clearComfyPreview(node) {
+  delete node.imgs;
+  delete node.images;
+  delete node.imageIndex;
+  delete node.previewMediaType;
 }
 
 function mountNode(node, { app, api, document }) {

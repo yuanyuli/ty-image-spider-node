@@ -175,12 +175,28 @@ test("新增摄影与档案来源显示简短来源标记", () => {
     featureshoot: "FS",
     mymodernmet: "MMM",
     loc: "LOC",
+    aperture: "APT",
+    printmag: "PRINT",
+    nasa: "NASA",
   };
   for (const [provider, label] of Object.entries(expected)) {
     const dom = new JSDOM("<!doctype html><body></body>");
     const view = createGallery({ document: dom.window.document, provider });
     view.render([item({ provider, id: "101" })]);
     assert.equal(view.root.querySelector(".tyis-source-mark").textContent, label);
+  }
+});
+
+test("新增专题来源使用专题缓存说明", () => {
+  for (const provider of ["aperture", "printmag"]) {
+    const dom = new JSDOM("<!doctype html><body></body>");
+    const view = createGallery({
+      document: dom.window.document,
+      provider,
+      capabilities: { cache: true },
+    });
+
+    assert.match(view.cacheButton.title, /专题封面及图集资料/);
   }
 });
 
