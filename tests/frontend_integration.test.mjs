@@ -729,3 +729,75 @@ test("下载完成后显示可见的绝对保存路径", async () => {
     /C:\\path\\to\\ComfyUI\\output\\ty-node\\ty-image-spider\\civitai\\101\.png/,
   );
 });
+
+test("全屏跨素材方向键导航和保存请求对应当前图片", async () => {
+  const items = ["101", "102"].map((id) => ({
+    provider: "civitai",
+    id,
+    preview_url: `https://image.civitai.com/${id}.png`,
+  }));
+  const downloads = [];
+  const { extension, NodeType, document } = harness((path, options = {}) => {
+    if (path.endsWith("/providers")) return response(providers);
+    if (path.endsWith("/search")) return response({ items });
+    const payload = JSON.parse(options.body);
+    if (path.endsWith("/detail"))
+      return response({ item: payload.item, images: [payload.item.preview_url] });
+    if (path.endsWith("/download-image")) {
+      downloads.push(payload);
+      return response({
+        files: ["ty-image-spider/civitai/102.png"],
+        output_root: "/comfy/output/ty-node",
+        message: "已保存",
+      });
+    }
+    throw new Error(`意外接口 ${path}`);
+  });
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+  await node.tyImageSpider.search();
+  node.domWidgets[0].element.querySelector(".tyis-card-media").click();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  document.querySelector(".tyis-detail-image").click();
+  document.dispatchEvent(new document.defaultView.KeyboardEvent("keydown", { key: "ArrowRight" }));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.match(document.querySelector(".tyis-image-viewer-image").src, /102.png$/);
+  document.dispatchEvent(new document.defaultView.KeyboardEvent("keydown", { key: "ArrowDown" }));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(downloads.length, 1);
+  assert.equal(downloads[0].item.id, "102");
+  assert.equal(downloads[0].image_index, 0);
+  assert.match(document.querySelector(".tyis-image-viewer").textContent, /102.png/);
+  document.dispatchEvent(new document.defaultView.KeyboardEvent("keydown", { key: "ArrowLeft" }));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.match(document.querySelector(".tyis-image-viewer-image").src, /101.png$/);
+  node.onRemoved();
+});
+
+test("旧后端未加载单张接口时提示重启，不误报保存成功", async () => {
+  const item = { provider: "civitai", id: "101", preview_url: "https://image.civitai.com/101.png" };
+  const { extension, NodeType, document } = harness((path) => {
+    if (path.endsWith("/providers")) return response(providers);
+    if (path.endsWith("/search")) return response({ items: [item] });
+    if (path.endsWith("/detail")) return response({ item, images: [item.preview_url] });
+    return Promise.resolve({
+      ok: false,
+      status: 405,
+      json: async () => {
+        throw new Error("not JSON");
+      },
+    });
+  });
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+  await node.tyImageSpider.search();
+  node.domWidgets[0].element.querySelector(".tyis-card-media").click();
+  document.dispatchEvent(new document.defaultView.KeyboardEvent("keydown", { key: "ArrowDown" }));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.match(document.querySelector(".tyis-preview-status").textContent, /重启 ComfyUI/);
+  node.onRemoved();
+});

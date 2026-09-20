@@ -21,6 +21,7 @@ class UseCase:
         return SearchPage()
 
     start = execute
+    execute_image = execute
 
     def download_page(self, provider, items):
         self.calls.append((provider, items))
@@ -37,6 +38,7 @@ async def client_and_use_case():
         ("search", routes.post_search),
         ("detail", routes.post_detail),
         ("download", routes.post_download),
+        ("download-image", routes.post_download_image),
         ("download-page", routes.post_download_page),
         ("cache", routes.post_cache_start),
     ):
@@ -51,7 +53,7 @@ async def client_and_use_case():
 
 
 @pytest.mark.parametrize(
-    "path", ["search", "detail", "download", "download-page", "cache"]
+    "path", ["search", "detail", "download", "download-image", "download-page", "cache"]
 )
 @pytest.mark.parametrize("chunked", [False, True])
 def test_all_json_routes_reject_oversize_without_invoking_use_case(path, chunked):

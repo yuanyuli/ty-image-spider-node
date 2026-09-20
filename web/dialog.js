@@ -3,6 +3,7 @@ import { createIcon, createIconButton } from "./icons.js";
 import { openImageViewer } from "./image_viewer.js";
 import { renderCollectionDetails } from "./collection_detail.js";
 import { renderEditorialDetails } from "./editorial_detail.js";
+import { createPreviewActions, handlePreviewKey } from "./preview_actions.js";
 
 export function openAssetDialog(context) {
   const {
@@ -12,9 +13,20 @@ export function openAssetDialog(context) {
     onOpenSource = defaultOpenSource,
     copyText = defaultCopy,
     onClose = () => {},
+    onDownloadImage,
+    onPreviousItem,
+    onNextItem,
+    initialImageIndex = 0,
+    startFullscreen = false,
   } = context;
   let item = detail.item;
   let images = detail.images?.length ? detail.images : item.preview_url ? [item.preview_url] : [];
+  let imageIndex = initialImageIndex === -1 ? Math.max(0, images.length - 1) : 0;
+  let selectLastOnUpdate = initialImageIndex === -1;
+  let closed = false;
+  let viewer = null;
+  let saving = false;
+  let saveMessage = "";
   const priorFocus = document.activeElement;
   const overlay = element(document, "div", "tyis-dialog-backdrop");
   const dialog = element(document, "section", "tyis-dialog");
@@ -42,7 +54,7 @@ export function openAssetDialog(context) {
   const imageFrame = element(document, "div", "tyis-detail-image-frame");
   const mainImage = element(document, "img", "tyis-detail-image");
   mainImage.alt = item.title || "素材大图";
-  if (images[0]) mainImage.src = images[0];
+  if (images[imageIndex]) mainImage.src = images[imageIndex];
   mainImage.title = "全屏查看图片";
   mainImage.tabIndex = 0;
   imageFrame.append(mainImage);
@@ -53,7 +65,7 @@ export function openAssetDialog(context) {
       const button = element(document, "button", "tyis-thumb");
       button.type = "button";
       button.setAttribute("aria-label", `查看第 ${index + 1} 张图片`);
-      button.setAttribute("aria-pressed", String(index === 0));
+      button.setAttribute("aria-pressed", String(index === imageIndex));
       const image = element(document, "img");
       image.src = url;
       image.alt = "";
@@ -63,7 +75,13 @@ export function openAssetDialog(context) {
     });
   }
   renderThumbs();
-  stage.append(imageFrame, thumbs);
+  const actions = {
+    previous: () => navigate(-1),
+    next: () => navigate(1),
+    save: saveCurrentImage,
+  };
+  const previewActions = createPreviewActions(document, actions);
+  stage.append(imageFrame, previewActions.root, thumbs);
 
   const panel = element(document, "aside", "tyis-detail-panel");
   panel.append(renderFacts(document, item));
@@ -110,20 +128,21 @@ export function openAssetDialog(context) {
   overlay.append(dialog);
   document.body.append(overlay);
 
-  let closed = false;
-  let viewer = null;
-  mainImage.addEventListener("click", () => {
+  function openFullscreen() {
     if (!mainImage.src) return;
     viewer?.close();
     viewer = openImageViewer({
       document,
       src: mainImage.src,
       alt: mainImage.alt,
+      actions,
+      controls: controlsState(),
       onClose: () => {
         viewer = null;
       },
     });
-  });
+  }
+  mainImage.addEventListener("click", openFullscreen);
   mainImage.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
@@ -132,10 +151,56 @@ export function openAssetDialog(context) {
   });
   function selectImage(index) {
     if (!images[index]) return;
+    imageIndex = index;
+    selectLastOnUpdate = false;
     mainImage.src = images[index];
     [...thumbs.children].forEach((button, position) => {
       button.setAttribute("aria-pressed", String(position === index));
     });
+    syncPreview();
+  }
+  function controlsState() {
+    return {
+      hasPrevious: imageIndex > 0 || Boolean(onPreviousItem),
+      hasNext: imageIndex + 1 < images.length || Boolean(onNextItem),
+      canSave: Boolean(onDownloadImage) && item.download_mode !== "none" && images.length > 0,
+      saving,
+      message: saveMessage,
+      position: images.length
+        ? context.itemPosition
+          ? images.length > 1
+            ? `作品 ${context.itemPosition} · ${imageIndex + 1} / ${images.length} 张`
+            : context.itemPosition
+          : `${imageIndex + 1} / ${images.length}`
+        : "无图片",
+    };
+  }
+  function syncPreview() {
+    const controls = controlsState();
+    previewActions.update(controls);
+    viewer?.update({ src: mainImage.src, alt: mainImage.alt, controls });
+  }
+  function navigate(direction) {
+    if (closed) return;
+    const index = imageIndex + direction;
+    if (index >= 0 && index < images.length) selectImage(index);
+    else (direction < 0 ? onPreviousItem : onNextItem)?.(Boolean(viewer));
+  }
+  async function saveCurrentImage() {
+    if (closed || saving || !controlsState().canSave) return;
+    saving = true;
+    const selected = imageIndex;
+    saveMessage = `正在保存第 ${selected + 1} 张…`;
+    syncPreview();
+    try {
+      const message = await onDownloadImage(item, selected);
+      saveMessage = message || `第 ${selected + 1} 张已保存`;
+    } catch (error) {
+      saveMessage = error.message || "图片保存失败，请重试";
+    } finally {
+      saving = false;
+      if (!closed) syncPreview();
+    }
   }
   function close() {
     if (closed) return;
@@ -156,7 +221,9 @@ export function openAssetDialog(context) {
     if (editorial) editorial.replaceWith(renderEditorialDetails(document, nextDetail));
     if (nextDetail.images?.length) {
       images = [...nextDetail.images];
-      mainImage.src = images[0];
+      imageIndex = selectLastOnUpdate ? images.length - 1 : Math.min(imageIndex, images.length - 1);
+      selectLastOnUpdate = false;
+      mainImage.src = images[imageIndex];
       renderThumbs();
     }
     const nextPrompt = nextItem.prompt;
@@ -169,9 +236,11 @@ export function openAssetDialog(context) {
       );
     }
     dialog.setAttribute("aria-label", nextItem.title || `素材详情`);
+    syncPreview();
   }
   function onKeyDown(event) {
     if (viewer) return;
+    if (handlePreviewKey(event, actions)) return;
     if (event.key === "Escape") {
       event.preventDefault();
       close();
@@ -179,7 +248,7 @@ export function openAssetDialog(context) {
     }
     if (event.key !== "Tab") return;
     const focusable = [...dialog.querySelectorAll("button,[href],[tabindex]")].filter(
-      (node) => !node.disabled && node.tabIndex !== -1,
+      (node) => !node.disabled && !node.hidden && node.tabIndex !== -1,
     );
     const first = focusable[0];
     const last = focusable.at(-1);
@@ -197,6 +266,8 @@ export function openAssetDialog(context) {
   });
   document.addEventListener("keydown", onKeyDown, true);
   closeButton.focus();
+  syncPreview();
+  if (startFullscreen) openFullscreen();
   return { overlay, dialog, mainImage, close, selectImage, update };
 }
 

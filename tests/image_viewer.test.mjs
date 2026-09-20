@@ -10,6 +10,17 @@ function wheel(window, target, options) {
   return event;
 }
 
+test("切换全屏图片恢复全图并清除上张的缩放和拖拽", () => {
+  const dom = new JSDOM("<body></body>");
+  const view = openImageViewer({ document: dom.window.document, src: "https://example.com/a.jpg" });
+  wheel(dom.window, view.stage, { deltaY: -120 });
+  view.update({ src: "https://example.com/b.jpg", alt: "下一张" });
+  assert.match(view.image.src, /b.jpg$/);
+  assert.match(view.image.style.transform, /translate\(0px, 0px\) scale\(1\)/);
+  assert.equal(view.image.alt, "下一张");
+  view.close();
+});
+
 test("全屏查看器支持滚轮缩放并可双击复位", () => {
   const dom = new JSDOM("<!doctype html><body></body>", { url: "https://localhost/" });
   const { document } = dom.window;

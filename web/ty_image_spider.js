@@ -375,13 +375,32 @@ function mountNode(node, { app, api, document }) {
     }
   }
 
-  async function openDetail(item) {
+  async function openDetail(item, options = {}) {
+    const items = options.items || [...state.get().items];
+    const index = items.findIndex(
+      (entry) => entry.provider === item.provider && entry.id === item.id,
+    );
+    const navigate = (offset, fullscreen) =>
+      openDetail(items[index + offset], {
+        items,
+        startFullscreen: fullscreen,
+        initialImageIndex: offset < 0 ? -1 : 0,
+      });
     dialog?.close();
     dialog = openAssetDialog({
       document,
       descriptor: providers.find((entry) => entry.provider.id === item.provider)?.provider,
       detail: { item, images: item.preview_url ? [item.preview_url] : [] },
       onDownload: downloadItem,
+      onDownloadImage: downloadImage,
+      itemPosition: index >= 0 ? `${index + 1} / ${items.length}` : "",
+      onPreviousItem: index > 0 ? (fullscreen) => navigate(-1, fullscreen) : undefined,
+      onNextItem:
+        index >= 0 && index + 1 < items.length
+          ? (fullscreen) => navigate(1, fullscreen)
+          : undefined,
+      startFullscreen: options.startFullscreen,
+      initialImageIndex: options.initialImageIndex,
       onClose: () => {
         dialog = null;
       },
@@ -430,6 +449,21 @@ function mountNode(node, { app, api, document }) {
       showDownloadResult(result);
     } catch (error) {
       setActivity(error.message || "下载失败", true);
+    }
+  }
+
+  async function downloadImage(item, imageIndex) {
+    try {
+      const result = await client.requestJson("/ty-image-spider/download-image", {
+        method: "POST",
+        body: { item, image_index: imageIndex },
+      });
+      showDownloadResult(result);
+      return downloadResultMessage(result);
+    } catch (error) {
+      if (error.code === "invalid_response" && (error.status === 404 || error.status === 405))
+        throw new Error("请重启 ComfyUI 以启用保存当前图片功能");
+      throw error;
     }
   }
 

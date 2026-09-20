@@ -71,6 +71,13 @@ async def post_download(
     return await _execute_payload(request, app.download.execute)
 
 
+async def post_download_image(
+    request: web.Request, services: ApplicationServices | None = None
+) -> web.Response:
+    app = services or get_services()
+    return await _execute_payload(request, app.download.execute_image)
+
+
 async def post_download_page(
     request: web.Request, services: ApplicationServices | None = None
 ) -> web.Response:
@@ -209,6 +216,7 @@ ROUTES: tuple[
     ("POST", "/ty-image-spider/search", post_search),
     ("POST", "/ty-image-spider/detail", post_detail),
     ("POST", "/ty-image-spider/download", post_download),
+    ("POST", "/ty-image-spider/download-image", post_download_image),
     ("POST", "/ty-image-spider/download-page", post_download_page),
     ("POST", "/ty-image-spider/providers/xiaohongshu/check", post_provider_check),
     ("POST", "/ty-image-spider/providers/xiaohongshu/connect", post_opencli_connect),

@@ -5,6 +5,116 @@ import { JSDOM } from "jsdom";
 
 import { openAssetDialog } from "../web/dialog.js";
 
+function key(document, value, options = {}, target = document) {
+  const event = new document.defaultView.KeyboardEvent("keydown", {
+    key: value,
+    bubbles: true,
+    cancelable: true,
+    ...options,
+  });
+  target.dispatchEvent(event);
+  return event;
+}
+
+test("详情和全屏方向键切图同步，保存的始终是当前图片", async () => {
+  const document = new JSDOM("<body></body>").window.document;
+  const saved = [];
+  const view = openAssetDialog({
+    document,
+    detail: detail(),
+    onDownloadImage: async (item, index) => {
+      saved.push([item.id, index]);
+      return "已保存：output/ty-node/current.png";
+    },
+  });
+  assert.equal(key(document, "ArrowRight").defaultPrevented, true);
+  assert.match(view.mainImage.src, /two.png$/);
+  view.mainImage.click();
+  key(document, "ArrowLeft");
+  assert.match(document.querySelector(".tyis-image-viewer-image").src, /one.png$/);
+  assert.match(view.mainImage.src, /one.png$/);
+  key(document, "ArrowDown");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.deepEqual(saved, [["101", 0]]);
+  assert.match(document.querySelector(".tyis-image-viewer").textContent, /已保存/);
+  key(document, "Escape");
+  key(document, "ArrowRight");
+  key(document, "ArrowDown");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.deepEqual(saved, [
+    ["101", 0],
+    ["101", 1],
+  ]);
+  view.close();
+  key(document, "ArrowDown");
+  assert.equal(saved.length, 2);
+});
+
+test("图集边界进入相邻作品并保留全屏状态，普通首尾不循环", () => {
+  const document = new JSDOM("<body></body>").window.document;
+  let next;
+  const view = openAssetDialog({
+    document,
+    detail: detail(),
+    onNextItem: (fullscreen) => {
+      next = fullscreen;
+    },
+  });
+  key(document, "ArrowLeft");
+  assert.match(view.mainImage.src, /one.png$/);
+  view.selectImage(1);
+  view.mainImage.click();
+  key(document, "ArrowRight");
+  assert.equal(next, true);
+  view.close();
+});
+
+test("迟到详情不会把已选第二张重置为第一张，全屏同步更新原图", () => {
+  const document = new JSDOM("<body></body>").window.document;
+  const view = openAssetDialog({ document, detail: detail() });
+  view.selectImage(1);
+  view.mainImage.click();
+  view.update({ ...detail(), images: ["https://example.com/a.jpg", "https://example.com/b.jpg"] });
+  assert.match(view.mainImage.src, /b.jpg$/);
+  assert.match(document.querySelector(".tyis-image-viewer-image").src, /b.jpg$/);
+  view.close();
+});
+
+test("按住保存键和下载进行中不重复保存，失败可重试，输入区不拦截方向键", async () => {
+  const document = new JSDOM("<body></body>").window.document;
+  let rejectSave;
+  let calls = 0;
+  const view = openAssetDialog({
+    document,
+    detail: detail(),
+    onDownloadImage: () => {
+      calls++;
+      return new Promise((_, reject) => {
+        rejectSave = reject;
+      });
+    },
+  });
+  for (const tag of ["input", "textarea", "select", "div"]) {
+    const input = document.createElement(tag);
+    if (tag === "div") input.setAttribute("contenteditable", "true");
+    view.dialog.append(input);
+    assert.equal(key(document, "ArrowDown", {}, input).defaultPrevented, false);
+  }
+  key(document, "ArrowDown", { repeat: true });
+  assert.equal(calls, 0);
+  key(document, "ArrowDown");
+  key(document, "ArrowDown");
+  assert.equal(calls, 1);
+  rejectSave(new Error("磁盘写入失败"));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.match(view.dialog.textContent, /磁盘写入失败/);
+  key(document, "ArrowDown");
+  assert.equal(calls, 2);
+  rejectSave(new Error("重试失败"));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  view.close();
+});
+
 test("专题图集显示下载范围并更新说明和缩略图", () => {
   const document = new JSDOM("<body></body>").window.document;
   const item = {

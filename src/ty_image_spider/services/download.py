@@ -9,6 +9,7 @@ from typing import Mapping, Sequence
 from ..models import AssetItem, DownloadResult, SpiderError
 from ..asset_index import AssetIndex
 from ..providers.registry import ProviderRegistry
+from .selected_download import download_selected_image
 
 
 class DownloadService:
@@ -51,6 +52,18 @@ class DownloadService:
         return self._with_output_root(
             DownloadResult(tuple(files), f"已下载 {len(files)} 个文件")
         )
+
+    def execute_image(self, payload: Mapping[str, object]) -> DownloadResult:
+        item = AssetItem.from_untrusted(payload.get("item"))
+        if self._index is not None:
+            item = self._index.original(item)
+        result = download_selected_image(
+            self._providers.get(item.provider),
+            item,
+            payload.get("image_index"),
+            self._output_root,
+        )
+        return self._with_output_root(result)
 
     def _with_output_root(self, result: DownloadResult) -> DownloadResult:
         return replace(result, output_root=str(self._output_root.resolve()))

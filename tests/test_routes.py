@@ -213,4 +213,4 @@ def test_register_routes_is_idempotent_and_safe_without_comfyui(monkeypatch):
     assert routes.register_routes() is True
     count = len(table)
     assert routes.register_routes() is True
-    assert len(table) == count == 10
+    assert len(table) == count

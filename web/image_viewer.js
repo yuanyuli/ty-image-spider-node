@@ -1,9 +1,17 @@
 import { createIconButton } from "./icons.js";
+import { createPreviewActions, handlePreviewKey } from "./preview_actions.js";
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 8;
 
-export function openImageViewer({ document, src, alt = "图片", onClose = () => {} }) {
+export function openImageViewer({
+  document,
+  src,
+  alt = "图片",
+  onClose = () => {},
+  actions,
+  controls,
+}) {
   const priorFocus = document.activeElement;
   const overlay = document.createElement("div");
   overlay.className = "tyis-image-viewer";
@@ -28,6 +36,11 @@ export function openImageViewer({ document, src, alt = "图片", onClose = () =>
   closeButton.addEventListener("click", close);
   toolbar.append(resetButton, closeButton);
   overlay.append(stage, toolbar);
+  const previewActions = actions ? createPreviewActions(document, actions) : null;
+  if (previewActions) {
+    previewActions.update(controls || {});
+    overlay.append(previewActions.root);
+  }
   document.body.append(overlay);
 
   let scale = MIN_SCALE;
@@ -47,7 +60,21 @@ export function openImageViewer({ document, src, alt = "图片", onClose = () =>
     scale = MIN_SCALE;
     x = 0;
     y = 0;
+    drag = null;
     render();
+  }
+
+  function update(value) {
+    if (closed) return;
+    if (value.src && value.src !== image.getAttribute("src")) {
+      image.src = value.src;
+      reset();
+    }
+    if (value.alt !== undefined) {
+      image.alt = value.alt;
+      overlay.setAttribute("aria-label", `全屏查看${value.alt}`);
+    }
+    if (value.controls) previewActions?.update(value.controls);
   }
 
   function onWheel(event) {
@@ -93,6 +120,7 @@ export function openImageViewer({ document, src, alt = "图片", onClose = () =>
   }
 
   function onKeyDown(event) {
+    if (actions && handlePreviewKey(event, actions)) return;
     if (event.key === "Escape") {
       event.preventDefault();
       event.stopImmediatePropagation();
@@ -100,7 +128,9 @@ export function openImageViewer({ document, src, alt = "图片", onClose = () =>
       return;
     }
     if (event.key !== "Tab") return;
-    const focusable = [...overlay.querySelectorAll("button")].filter((node) => !node.disabled);
+    const focusable = [...overlay.querySelectorAll("button")].filter(
+      (node) => !node.disabled && !node.hidden,
+    );
     const first = focusable[0];
     const last = focusable.at(-1);
     if (!first || !last) return;
@@ -134,5 +164,5 @@ export function openImageViewer({ document, src, alt = "图片", onClose = () =>
   document.addEventListener("keydown", onKeyDown, true);
   closeButton.focus();
 
-  return { overlay, stage, image, close, reset };
+  return { overlay, stage, image, close, reset, update };
 }
