@@ -14,6 +14,9 @@ def test_build_services_composes_independent_providers(tmp_path):
         "wallhaven",
         "behance",
         "filmgrab",
+        "vam",
+        "artic",
+        "cleveland",
         "xiaohongshu",
         "local",
     ]

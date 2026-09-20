@@ -14,6 +14,10 @@ from .opencli import OpenCliRunner
 from .providers.civitai import CivitaiProvider
 from .providers.civitai_client import CivitaiClient
 from .providers.behance import BehanceProvider
+from .providers.artic import ArticProvider
+from .providers.vam import VamProvider
+from .providers.cleveland import ClevelandProvider
+from .providers.museum_client import MuseumClient
 from .providers.curated_client import BehanceClient, FilmGrabClient
 from .providers.curated_download import CuratedDownloader
 from .providers.filmgrab import FilmGrabProvider
@@ -84,6 +88,17 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
     )
     providers.register(
         FilmGrabProvider(filmgrab_client, reader, JsonCache(cache / "filmgrab"), movies)
+    )
+    providers.register(
+        VamProvider(MuseumClient("vam", JsonCache(cache / "vam")), reader)
+    )
+    providers.register(
+        ArticProvider(MuseumClient("artic", JsonCache(cache / "artic")), reader)
+    )
+    providers.register(
+        ClevelandProvider(
+            MuseumClient("cleveland", JsonCache(cache / "cleveland")), reader
+        )
     )
     opencli = OpenCliRunner()
     browser_lock = threading.Lock()

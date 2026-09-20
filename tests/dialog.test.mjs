@@ -4,6 +4,35 @@ import { JSDOM } from "jsdom";
 
 import { openAssetDialog } from "../web/dialog.js";
 
+test("馆藏详情显示作品资料，迟到的说明更新不会被当作提示词", () => {
+  const document = new JSDOM("<body></body>").window.document;
+  const item = {
+    provider: "vam",
+    id: "O499248",
+    kind: "collection",
+    title: "Upton Pyne",
+    author: "Jem Southam",
+    metadata: {
+      collection: "V&A",
+      category: "Photograph",
+      rights: "图片使用条件",
+      original_url: "https://framemark.vam.ac.uk/collections/image/full/full/0/default.jpg",
+    },
+  };
+  const view = openAssetDialog({ document, detail: { item, images: [] } });
+  assert.match(view.dialog.textContent, /馆藏资料/);
+  assert.match(view.dialog.textContent, /图片使用条件/);
+  assert.equal(view.dialog.querySelector(".tyis-prompt-unavailable"), null);
+  view.update({
+    item: { ...item, metadata: { ...item.metadata, medium: "photographic paper" } },
+    content: "Landscape study",
+    images: [item.metadata.original_url],
+  });
+  assert.match(view.dialog.textContent, /Landscape study/);
+  assert.match(view.dialog.textContent, /photographic paper/);
+  view.close();
+});
+
 function detail() {
   return {
     item: {

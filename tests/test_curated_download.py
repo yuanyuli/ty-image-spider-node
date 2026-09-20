@@ -7,6 +7,41 @@ from ty_image_spider.models import SpiderError
 from ty_image_spider.providers.curated_download import CuratedDownloader
 
 
+@pytest.mark.parametrize(
+    "provider,item_id,url",
+    [
+        (
+            "artic",
+            "27992",
+            "https://www.artic.edu/iiif/2/image/full/843,/0/default.jpg",
+        ),
+        (
+            "vam",
+            "O499248",
+            "https://framemark.vam.ac.uk/collections/2007BP5642/full/full/0/default.jpg",
+        ),
+        (
+            "cleveland",
+            "160087",
+            "https://openaccess-cdn.clevelandart.org/1997.56/1997.56_print.jpg",
+        ),
+    ],
+)
+def test_museum_download_saves_valid_image_under_its_own_source(
+    tmp_path, provider, item_id, url
+):
+    data = BytesIO()
+    Image.new("RGB", (12, 8)).save(data, "JPEG")
+    downloader = CuratedDownloader(lambda *a, **k: Response(data.getvalue(), url))
+    result = downloader.download(url, provider, item_id, tmp_path)
+    assert result.files == (f"ty-image-spider/{provider}/{item_id}.jpg",)
+    assert (tmp_path / result.files[0]).is_file()
+    with pytest.raises(SpiderError):
+        downloader.download(url, provider, "../../secret", tmp_path)
+    with pytest.raises(SpiderError):
+        downloader.read("https://example.com/image.jpg", provider)
+
+
 class Response(BytesIO):
     headers = {}
 
@@ -16,6 +51,18 @@ class Response(BytesIO):
 
     def geturl(self):
         return self.url
+
+
+def test_iiif_size_syntax_is_not_percent_encoded():
+    image = BytesIO()
+    Image.new("RGB", (8, 8)).save(image, "PNG")
+    url = "https://www.artic.edu/iiif/2/image/full/843,/0/default.jpg"
+
+    def read(request, **kwargs):
+        assert request.full_url == url
+        return Response(image.getvalue(), url)
+
+    CuratedDownloader(read).read(url, "artic")
 
 
 def test_curated_download_verifies_actual_image_and_saves_under_source(tmp_path):

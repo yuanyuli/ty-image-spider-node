@@ -1,5 +1,6 @@
 import { createIcon, createIconButton } from "./icons.js";
 import { openImageViewer } from "./image_viewer.js";
+import { renderCollectionDetails } from "./collection_detail.js";
 
 export function openAssetDialog(context) {
   const {
@@ -62,6 +63,7 @@ export function openAssetDialog(context) {
   if (item.provider === "civitai") panel.append(renderCivitai(document, item, detail, copyText));
   else if (item.provider === "wallhaven") panel.append(renderWallhaven(document, item));
   else if (item.provider === "xiaohongshu") panel.append(renderXiaohongshu(document, item, detail));
+  else if (item.kind === "collection") panel.append(renderCollectionDetails(document, detail));
   else if (item.provider === "behance" || item.provider === "filmgrab") {
     if (detail.content) {
       const section = sectionWithTitle(document, "作品说明");
@@ -136,6 +138,8 @@ export function openAssetDialog(context) {
     if (closed || !nextDetail?.item) return;
     const nextItem = nextDetail.item;
     item = nextItem;
+    const collection = panel.querySelector(".tyis-collection-info");
+    if (collection) collection.replaceWith(renderCollectionDetails(document, nextDetail));
     if (nextDetail.images?.length) {
       images = [...nextDetail.images];
       mainImage.src = images[0];
@@ -314,6 +318,9 @@ function sourceLabel(provider) {
       wallhaven: "WALLHAVEN",
       behance: "BEHANCE",
       filmgrab: "FILMGRAB",
+      vam: "V&A",
+      artic: "芝加哥艺术博物馆",
+      cleveland: "克利夫兰艺术博物馆",
       xiaohongshu: "小红书",
       local: "本地历史",
     }[provider] || provider

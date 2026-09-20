@@ -26,8 +26,28 @@ _HOSTS = {
         or host.endswith(".civitai.red")
     ),
     "wallhaven": lambda host: host in {"th.wallhaven.cc", "w.wallhaven.cc"},
+    "artic": lambda host: host == "www.artic.edu",
+    "vam": lambda host: host == "framemark.vam.ac.uk",
+    "cleveland": lambda host: host == "openaccess-cdn.clevelandart.org",
 }
 _SAFE_ID = re.compile(r"^[0-9]+(?:-[0-9]+)?$")
+
+
+def validate_asset_id(provider: str, item_id: str) -> None:
+    valid = (
+        re.fullmatch(r"O[0-9]+", item_id)
+        if provider == "vam"
+        else _SAFE_ID.fullmatch(item_id)
+    )
+    if not valid:
+        raise SpiderError("invalid_asset", "素材 ID 无效")
+
+
+def require_image_url(url: str, provider: str) -> None:
+    allowed = _HOSTS.get(provider)
+    if allowed is None:
+        raise SpiderError("invalid_provider", "不支持此来源的图片下载")
+    require_https_host(url, allowed)
 
 
 class CuratedDownloader:
@@ -44,7 +64,10 @@ class CuratedDownloader:
             (
                 parts.scheme,
                 parts.netloc,
-                quote(parts.path, safe="/%"),
+                # IIIF 尺寸中的逗号、感叹号是协议语法，AIC 不接受转义后的逗号。
+                quote(
+                    parts.path, safe="/%,!" if provider in {"artic", "vam"} else "/%"
+                ),
                 quote(parts.query, safe="=&%+/:,?"),
                 "",
             )
@@ -88,8 +111,7 @@ class CuratedDownloader:
     def download(
         self, url: str, provider: str, item_id: str, output_root: Path
     ) -> DownloadResult:
-        if not _SAFE_ID.fullmatch(item_id):
-            raise SpiderError("invalid_asset", "素材 ID 无效")
+        validate_asset_id(provider, item_id)
         payload, extension = self.read(url, provider)
         directory = resolve_inside(output_root, Path("ty-image-spider") / provider)
         directory.mkdir(parents=True, exist_ok=True)

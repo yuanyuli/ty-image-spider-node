@@ -200,6 +200,9 @@ function sourceMark(document, provider) {
     wallhaven: "W",
     behance: "B",
     filmgrab: "FILM",
+    vam: "V&A",
+    artic: "AIC",
+    cleveland: "CMA",
     xiaohongshu: "RED",
     local: "LOCAL",
   };
