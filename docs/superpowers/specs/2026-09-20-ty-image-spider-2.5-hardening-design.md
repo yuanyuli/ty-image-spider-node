@@ -139,6 +139,8 @@ CacheJobService
 - 错误对前端只暴露稳定错误码、中文消息和操作建议；技术细节进入日志且经过凭据脱敏。
 - Provider 状态检查保持轻量，不因列出来源而下载大量数据。
 
+新增 `src/ty_image_spider/version.py` 作为运行时产品标识的唯一来源，导出 `__version__ = "2.5.0"` 与由它生成的 `USER_AGENT`。所有 HTTP 客户端引用该常量，清除当前并存的 `2.0`、`2.1`、`2.4` 字符串。`pyproject.toml`、`package.json` 和 `package-lock.json` 仍保留生态工具要求的版本字段，但由发布校验保证它们与运行时版本一致。
+
 新增契约测试扫描所有可见 Provider，确认描述符完整、下载策略存在、缓存能力声明与实际注入一致。真实站点测试仍属于手动验收，CI 不依赖外部站点可用性。
 
 ## 9. 开源治理和素材权利
@@ -175,7 +177,7 @@ GitHub Actions 拆为两个独立作业，避免一个大作业掩盖失败来�
 - 文件时间统一为 `SOURCE_DATE_EPOCH`，未设置时使用目标 Git 提交时间。
 - 文件顺序、路径分隔符和压缩参数固定。
 - 排除 `.git`、`.github` 的非运行文件、`.local`、缓存、输出、测试缓存、虚拟环境、`node_modules`、`dist` 和本地凭据。
-- 打包前校验 `pyproject.toml`、`package.json` 和包内版本一致。
+- 打包前校验 `pyproject.toml`、`package.json`、`package-lock.json` 和 `src/ty_image_spider/version.py` 的版本一致。
 - 扫描归档路径与文本文件，拒绝 `tmdb.json`、常见密钥文件名、绝对本机路径和已知凭据格式。
 - 输出 ZIP 与同名 `.sha256` 文件；连续运行两次必须得到相同哈希。
 
@@ -193,6 +195,7 @@ Python 测试新增：
 - 带 `Content-Length`、chunked、刚好 1 MiB、超过 1 MiB、非法 UTF-8 和非对象 JSON。
 - 发布脚本的确定性、文件清单、版本不一致和敏感文件拒绝。
 - 全部注册 Provider 的契约检查。
+- 所有 HTTP 客户端使用统一的运行时 `USER_AGENT`，仓库内不残留旧版本请求标识。
 
 前端测试新增：
 
