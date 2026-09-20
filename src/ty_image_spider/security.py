@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any, Callable
 from urllib.parse import ParseResult, urlparse
 
@@ -23,7 +23,8 @@ def require_https_host(url: str, allowed: Callable[[str], bool]) -> ParseResult:
 def resolve_inside(root: Path, relative: Path) -> Path:
     root_path = Path(root).resolve()
     relative_path = Path(relative)
-    if relative_path.is_absolute():
+    # Linux 会把 Windows 盘符当作普通文件名；两种路径语法统一只接受相对路径。
+    if relative_path.is_absolute() or PureWindowsPath(relative).anchor:
         raise SpiderError("unsafe_path", "目标路径不在允许的输出目录内")
     candidate = (root_path / relative_path).resolve()
     try:

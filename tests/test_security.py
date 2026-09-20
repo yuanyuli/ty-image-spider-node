@@ -52,8 +52,17 @@ def test_resolve_inside_rejects_escape_and_absolute_path(tmp_path):
     )
     with pytest.raises(SpiderError, match="输出目录"):
         resolve_inside(tmp_path, Path("../escape.png"))
-    with pytest.raises(SpiderError, match="输出目录"):
-        resolve_inside(tmp_path, Path("C:/escape.png"))
+    # 不随宿主系统改变规则，包含 Windows 盘符相对路径和 UNC 路径。
+    for value in (
+        "C:/escape.png",
+        r"C:\escape.png",
+        "/escape.png",
+        r"\escape.png",
+        r"\\server\share\escape.png",
+        f"{tmp_path.drive or 'C:'}escape.png",
+    ):
+        with pytest.raises(SpiderError, match="输出目录"):
+            resolve_inside(tmp_path, Path(value))
 
 
 def test_read_limited_checks_header_and_stream_size():
