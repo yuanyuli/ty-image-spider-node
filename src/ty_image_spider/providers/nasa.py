@@ -16,6 +16,7 @@ from ..models import (
     FilterOption,
     ProviderCapabilities,
     ProviderDescriptor,
+    ProviderPresentation,
     ProviderStatus,
     SearchPage,
     SearchRequest,
@@ -62,6 +63,16 @@ class NasaProvider:
             self.id,
             "NASA",
             "太空、地球与航天历史影像",
+            presentation=ProviderPresentation(
+                "collections",
+                "艺术馆藏",
+                "NASA",
+                "NASA IMAGE LIBRARY",
+                30,
+                20,
+                "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+                True,
+            ),
             filters=(
                 FilterField(
                     "category",

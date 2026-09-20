@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from ..version import USER_AGENT
+
 import json
 import re
 import socket
@@ -77,7 +79,7 @@ class WallhavenClient:
                 url,
                 headers={
                     "Accept": "application/json",
-                    "User-Agent": "TY-Image-Spider/2.0",
+                    "User-Agent": USER_AGENT,
                 },
             )
             try:

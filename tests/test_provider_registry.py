@@ -6,6 +6,7 @@ from ty_image_spider.models import (
     DownloadResult,
     ProviderCapabilities,
     ProviderDescriptor,
+    ProviderPresentation,
     ProviderStatus,
     SearchPage,
     SpiderError,
@@ -19,6 +20,9 @@ class FakeProvider:
 
     def descriptor(self):
         return ProviderDescriptor(
+            presentation=ProviderPresentation(
+                "other", "其他", self.id, self.id, 99, 99
+            ),
             id=self.id,
             label=self.id,
             capabilities=ProviderCapabilities(),

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from ..version import USER_AGENT
+
 import json
 import re
 from dataclasses import dataclass
@@ -51,7 +53,7 @@ class PublicJsonClient:
             return JsonResponse(cached["data"], int(cached.get("total_pages", 0)))
         request = Request(
             url,
-            headers={"User-Agent": "TY-Image-Spider/2.4", "Accept": "application/json"},
+            headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
         )
         try:
             for attempt in range(2):

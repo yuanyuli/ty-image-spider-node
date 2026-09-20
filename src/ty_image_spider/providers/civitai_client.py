@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from ..version import USER_AGENT
+
 import json
 import re
 import socket
@@ -136,7 +138,7 @@ class CivitaiClient:
         raise SpiderError("civitai_unavailable", "Civitai 暂时不可用", status=502)
 
     def _request(self, url: str, *, accept: str) -> Request:
-        headers = {"Accept": accept, "User-Agent": "TY-Image-Spider/2.0"}
+        headers = {"Accept": accept, "User-Agent": USER_AGENT}
         if self._api_key:
             headers["Authorization"] = f"Bearer {self._api_key}"
         return Request(url, headers=headers)

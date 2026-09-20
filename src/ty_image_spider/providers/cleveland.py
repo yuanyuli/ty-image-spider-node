@@ -12,6 +12,7 @@ from ..models import (
     DownloadResult,
     ProviderCapabilities,
     ProviderDescriptor,
+    ProviderPresentation,
     ProviderStatus,
     SearchPage,
     SearchRequest,
@@ -56,6 +57,16 @@ class ClevelandProvider:
             self.id,
             "克利夫兰",
             "克利夫兰艺术博物馆 · 经典摄影与艺术",
+            presentation=ProviderPresentation(
+                "collections",
+                "艺术馆藏",
+                "CMA",
+                "CLEVELAND MUSEUM OF ART",
+                30,
+                50,
+                "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+                True,
+            ),
             filters=(category_field(_CATEGORIES, "photography"),),
             capabilities=ProviderCapabilities(
                 bulk_download=True, pagination="page", cache=True

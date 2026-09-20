@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from ..version import USER_AGENT
+
 import json
 import re
 from http.client import HTTPException
@@ -50,7 +52,7 @@ class MuseumClient:
             return cached
         request = Request(
             url,
-            headers={"User-Agent": "TY-Image-Spider/2.1", "Accept": "application/json"},
+            headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
         )
         try:
             with self._open_url(request, timeout=25) as response:

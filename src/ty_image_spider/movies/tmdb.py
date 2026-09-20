@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from ..version import USER_AGENT
+
 import json
 import re
 from http.client import HTTPException
@@ -118,7 +120,7 @@ class TmdbClient:
             headers={
                 "Authorization": "Bearer " + token,
                 "Accept": "application/json",
-                "User-Agent": "TY-Image-Spider/2.0",
+                "User-Agent": USER_AGENT,
             },
         )
         try:

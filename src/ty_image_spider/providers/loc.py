@@ -15,6 +15,7 @@ from ..models import (
     FilterOption,
     ProviderCapabilities,
     ProviderDescriptor,
+    ProviderPresentation,
     ProviderStatus,
     SearchPage,
     SearchRequest,
@@ -64,6 +65,16 @@ class LocProvider:
             self.id,
             "美国国会图书馆",
             "历史摄影、海报与视觉档案",
+            presentation=ProviderPresentation(
+                "collections",
+                "艺术馆藏",
+                "LOC",
+                "LIBRARY OF CONGRESS",
+                30,
+                10,
+                "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+                True,
+            ),
             filters=(
                 FilterField(
                     "category",

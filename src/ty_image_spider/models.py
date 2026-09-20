@@ -80,9 +80,36 @@ class ProviderCapabilities:
 
 
 @dataclass(frozen=True, slots=True)
+class ProviderPresentation:
+    """来源自行声明展示信息，前端无需维护来源映射。"""
+
+    group_id: str
+    group_label: str
+    short_label: str
+    detail_label: str
+    group_order: int
+    source_order: int
+    cache_description: str = ""
+    visible: bool = True
+
+    def to_dict(self) -> dict[str, JsonValue]:
+        return {
+            "group_id": self.group_id,
+            "group_label": self.group_label,
+            "short_label": self.short_label,
+            "detail_label": self.detail_label,
+            "group_order": self.group_order,
+            "source_order": self.source_order,
+            "cache_description": self.cache_description,
+            "visible": self.visible,
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class ProviderDescriptor:
     id: str
     label: str
+    presentation: ProviderPresentation = field(kw_only=True)
     description: str = ""
     filters: tuple[FilterField, ...] = ()
     capabilities: ProviderCapabilities = field(default_factory=ProviderCapabilities)
@@ -94,6 +121,7 @@ class ProviderDescriptor:
             "id": self.id,
             "label": self.label,
             "description": self.description,
+            "presentation": self.presentation.to_dict(),
             "filters": [item.to_dict() for item in self.filters],
             "capabilities": self.capabilities.to_dict(),
             "search_presets": [option.to_dict() for option in self.search_presets],

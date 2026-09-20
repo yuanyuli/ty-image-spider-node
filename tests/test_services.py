@@ -6,6 +6,7 @@ from ty_image_spider.models import (
     DownloadResult,
     ProviderCapabilities,
     ProviderDescriptor,
+    ProviderPresentation,
     ProviderStatus,
     SearchPage,
     SpiderError,
@@ -30,6 +31,9 @@ class RecordingProvider:
         return ProviderDescriptor(
             self.id,
             self.id.title(),
+            presentation=ProviderPresentation(
+                "other", "其他", self.id, self.id, 99, 99
+            ),
             capabilities=ProviderCapabilities(bulk_download=self.bulk),
         )
 

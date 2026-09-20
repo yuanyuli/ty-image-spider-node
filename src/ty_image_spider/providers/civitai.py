@@ -18,6 +18,7 @@ from ..models import (
     FilterOption,
     ProviderCapabilities,
     ProviderDescriptor,
+    ProviderPresentation,
     ProviderStatus,
     SearchPage,
     SearchRequest,
@@ -49,6 +50,16 @@ class CivitaiProvider:
 
     def descriptor(self) -> ProviderDescriptor:
         return ProviderDescriptor(
+            presentation=ProviderPresentation(
+                "inspiration",
+                "AI 与壁纸",
+                "C",
+                "CIVITAI",
+                10,
+                10,
+                "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+                True,
+            ),
             id=self.id,
             label="Civitai",
             description="浏览 civitai.com 与 civitai.red 的公开图片",

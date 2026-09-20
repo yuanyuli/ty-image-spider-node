@@ -22,6 +22,7 @@ from ..models import (
     FilterOption,
     ProviderCapabilities,
     ProviderDescriptor,
+    ProviderPresentation,
     ProviderStatus,
     SearchPage,
     SearchRequest,
@@ -65,6 +66,16 @@ class XiaohongshuProvider:
 
     def descriptor(self) -> ProviderDescriptor:
         return ProviderDescriptor(
+            presentation=ProviderPresentation(
+                "inspiration",
+                "AI 与壁纸",
+                "RED",
+                "小红书",
+                10,
+                30,
+                "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+                False,
+            ),
             id=self.id,
             label="小红书",
             description="通过 OpenCLI 与已登录的 Chrome 浏览公开笔记图片",

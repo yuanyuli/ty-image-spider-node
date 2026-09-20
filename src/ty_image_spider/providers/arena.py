@@ -16,6 +16,7 @@ from ..models import (
     FilterOption,
     ProviderCapabilities,
     ProviderDescriptor,
+    ProviderPresentation,
     ProviderStatus,
     SearchPage,
     SearchRequest,
@@ -55,6 +56,16 @@ class ArenaProvider:
             self.id,
             "Are.na",
             "设计师公开收藏频道",
+            presentation=ProviderPresentation(
+                "editorial",
+                "摄影与设计",
+                "ARE.NA",
+                "ARE.NA",
+                20,
+                60,
+                "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+                True,
+            ),
             filters=(
                 FilterField(
                     "category",

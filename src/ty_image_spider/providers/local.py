@@ -14,6 +14,7 @@ from ..models import (
     FilterField,
     ProviderCapabilities,
     ProviderDescriptor,
+    ProviderPresentation,
     ProviderStatus,
     SearchPage,
     SearchRequest,
@@ -34,6 +35,16 @@ class LocalProvider:
 
     def descriptor(self) -> ProviderDescriptor:
         return ProviderDescriptor(
+            presentation=ProviderPresentation(
+                "local",
+                "本地",
+                "LOCAL",
+                "本地历史",
+                50,
+                10,
+                "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+                True,
+            ),
             id=self.id,
             label="本地历史",
             description="浏览 TY Image Spider 与旧节点下载的本地图片",

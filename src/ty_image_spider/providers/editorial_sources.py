@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 from typing import Mapping
 
+from ..models import ProviderPresentation
+
 
 @dataclass(frozen=True)
 class EditorialSource:
@@ -11,6 +13,7 @@ class EditorialSource:
     api_root: str
     categories: Mapping[str, tuple[str, str, int]]
     default: str
+    presentation: ProviderPresentation
     page_size: int = 24
     prefer_original_preview: bool = False
 
@@ -29,6 +32,15 @@ COLOSSAL = EditorialSource(
         "all": ("全部专题", "", 0),
     },
     "photography",
+    ProviderPresentation(
+        "editorial",
+        "摄影与设计",
+        "COLO",
+        "COLOSSAL",
+        20,
+        20,
+        "新增最多100个专题封面及图集资料；图集高清图片按需下载，已有缓存跳过",
+    ),
 )
 
 DESIGN_MILK = EditorialSource(
@@ -45,6 +57,15 @@ DESIGN_MILK = EditorialSource(
         "all": ("全部专题", "", 0),
     },
     "graphic",
+    ProviderPresentation(
+        "editorial",
+        "摄影与设计",
+        "DM",
+        "DESIGN MILK",
+        20,
+        30,
+        "新增最多100个专题封面及图集资料；图集高清图片按需下载，已有缓存跳过",
+    ),
 )
 
 FEATURE_SHOOT = EditorialSource(
@@ -62,6 +83,15 @@ FEATURE_SHOOT = EditorialSource(
         "all": ("全部专题", "", 0),
     },
     "fine_art",
+    ProviderPresentation(
+        "editorial",
+        "摄影与设计",
+        "FS",
+        "FEATURE SHOOT",
+        20,
+        40,
+        "新增最多100个专题封面及图集资料；图集高清图片按需下载，已有缓存跳过",
+    ),
     prefer_original_preview=True,
 )
 
@@ -80,6 +110,15 @@ MY_MODERN_MET = EditorialSource(
         "all": ("全部专题", "", 0),
     },
     "art",
+    ProviderPresentation(
+        "editorial",
+        "摄影与设计",
+        "MMM",
+        "MY MODERN MET",
+        20,
+        50,
+        "新增最多100个专题封面及图集资料；图集高清图片按需下载，已有缓存跳过",
+    ),
     12,
 )
 
@@ -97,6 +136,15 @@ APERTURE = EditorialSource(
         "all": ("全部专题", "", 0),
     },
     "portfolios",
+    ProviderPresentation(
+        "editorial",
+        "摄影与设计",
+        "APT",
+        "APERTURE",
+        20,
+        70,
+        "新增最多100个专题封面及图集资料；图集高清图片按需下载，已有缓存跳过",
+    ),
     12,
 )
 
@@ -115,5 +163,14 @@ PRINT_MAGAZINE = EditorialSource(
         "all": ("全部专题", "", 0),
     },
     "graphic",
+    ProviderPresentation(
+        "editorial",
+        "摄影与设计",
+        "PRINT",
+        "PRINT MAGAZINE",
+        20,
+        80,
+        "新增最多100个专题封面及图集资料；图集高清图片按需下载，已有缓存跳过",
+    ),
     12,
 )

@@ -13,6 +13,7 @@ from ..models import (
     DownloadResult,
     ProviderCapabilities,
     ProviderDescriptor,
+    ProviderPresentation,
     ProviderStatus,
     SearchPage,
     SearchRequest,
@@ -59,6 +60,16 @@ class VamProvider:
             self.id,
             "V&A",
             "V&A 博物馆 · 摄影、时装与设计",
+            presentation=ProviderPresentation(
+                "collections",
+                "艺术馆藏",
+                "V&A",
+                "V&A MUSEUM",
+                30,
+                30,
+                "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+                True,
+            ),
             filters=(category_field(_CATEGORIES, "photography"),),
             capabilities=ProviderCapabilities(
                 bulk_download=True, pagination="page", cache=True

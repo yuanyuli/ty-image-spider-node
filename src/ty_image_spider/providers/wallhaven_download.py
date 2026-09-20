@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from ..version import USER_AGENT
+
 import os
 import re
 import tempfile
@@ -41,9 +43,7 @@ class WallhavenDownloader:
 
         directory = resolve_inside(output_root, Path("ty-image-spider/wallhaven"))
         directory.mkdir(parents=True, exist_ok=True)
-        request = Request(
-            url, headers={"User-Agent": "TY-Image-Spider/2.0", "Accept": "image/*"}
-        )
+        request = Request(url, headers={"User-Agent": USER_AGENT, "Accept": "image/*"})
         try:
             with self._open_url(request, timeout=60) as response:
                 try:

@@ -16,6 +16,7 @@ from ..models import (
     DownloadResult,
     ProviderCapabilities,
     ProviderDescriptor,
+    ProviderPresentation,
     ProviderStatus,
     SearchPage,
     SearchRequest,
@@ -76,6 +77,16 @@ class FilmGrabProvider:
             self.id,
             "FilmGrab",
             "电影静帧画廊",
+            presentation=ProviderPresentation(
+                "cinema",
+                "电影",
+                "FILM",
+                "FILMGRAB",
+                40,
+                10,
+                "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+                True,
+            ),
             capabilities=ProviderCapabilities(
                 bulk_download=True, pagination="page", cache=True, movie_lookup=True
             ),

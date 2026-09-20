@@ -52,6 +52,7 @@ class EditorialProvider:
             self.id,
             self._source.label,
             "摄影与设计专题图集",
+            presentation=self._source.presentation,
             filters=(
                 FilterField(
                     "category",

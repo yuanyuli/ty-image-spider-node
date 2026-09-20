@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from ..version import USER_AGENT
+
 import json
 import re
 from html.parser import HTMLParser
@@ -85,7 +87,7 @@ class FilmGrabClient:
         url = "https://film-grab.com/wp-json/wp/v2/posts?" + urlencode(params)
         request = Request(
             url,
-            headers={"User-Agent": "TY-Image-Spider/2.0", "Accept": "application/json"},
+            headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
         )
         for attempt in range(2):
             try:

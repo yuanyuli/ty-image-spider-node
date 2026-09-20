@@ -13,6 +13,7 @@ from ..models import (
     DownloadResult,
     ProviderCapabilities,
     ProviderDescriptor,
+    ProviderPresentation,
     ProviderStatus,
     SearchPage,
     SearchRequest,
@@ -60,6 +61,16 @@ class ArticProvider:
             self.id,
             "芝加哥艺术",
             "芝加哥艺术博物馆 · 绘画、摄影与设计",
+            presentation=ProviderPresentation(
+                "collections",
+                "艺术馆藏",
+                "AIC",
+                "ART INSTITUTE OF CHICAGO",
+                30,
+                40,
+                "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+                True,
+            ),
             filters=(category_field(_CATEGORIES, "painting"),),
             capabilities=ProviderCapabilities(
                 bulk_download=True, pagination="page", cache=True

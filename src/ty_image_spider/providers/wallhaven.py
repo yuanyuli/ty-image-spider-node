@@ -18,6 +18,7 @@ from ..models import (
     JsonValue,
     ProviderCapabilities,
     ProviderDescriptor,
+    ProviderPresentation,
     ProviderStatus,
     SearchPage,
     SearchRequest,
@@ -52,6 +53,16 @@ class WallhavenProvider:
 
     def descriptor(self) -> ProviderDescriptor:
         return ProviderDescriptor(
+            presentation=ProviderPresentation(
+                "inspiration",
+                "AI 与壁纸",
+                "W",
+                "WALLHAVEN",
+                10,
+                20,
+                "按当前搜索条件新增最多100张素材，已有缓存将跳过",
+                True,
+            ),
             id=self.id,
             label="Wallhaven",
             description="浏览 Wallhaven 的公开 SFW 壁纸与摄影素材",
