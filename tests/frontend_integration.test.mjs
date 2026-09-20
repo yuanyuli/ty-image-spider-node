@@ -706,7 +706,7 @@ test("下载完成后显示可见的绝对保存路径", async () => {
     if (path.endsWith("/download")) {
       return response({
         files: ["ty-image-spider/civitai/101.png"],
-        output_root: "C:\\path\\to\\ComfyUI\\output\\ty-node",
+        output_root: "C:\\ComfyUI\\output\\ty-node",
         message: "图片已下载",
       });
     }
@@ -726,7 +726,7 @@ test("下载完成后显示可见的绝对保存路径", async () => {
   assert.match(root.querySelector(".tyis-activity").textContent, /图片已下载/);
   assert.match(
     location.textContent,
-    /C:\\path\\to\\ComfyUI\\output\\ty-node\\ty-image-spider\\civitai\\101\.png/,
+    /C:\\ComfyUI\\output\\ty-node\\ty-image-spider\\civitai\\101\.png/,
   );
 });
 
