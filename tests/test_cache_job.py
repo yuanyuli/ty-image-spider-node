@@ -6,6 +6,7 @@ import pytest
 from ty_image_spider.asset_index import AssetIndex
 from ty_image_spider.models import AssetDetail, AssetItem, SearchPage, SpiderError
 from ty_image_spider.services.cache_job import CacheJobService
+from ty_image_spider.services.cache_runner import CacheJobRunner
 from ty_image_spider.services.cache_progress import CacheProgress
 from ty_image_spider.cache import JsonCache
 
@@ -38,7 +39,7 @@ class ImageStub:
 
 def test_cache_job_walks_pages_and_indexes_distinct_items(tmp_path):
     index = AssetIndex(tmp_path)
-    service = CacheJobService(
+    service = cache_service(
         SearchStub(), DetailStub(), index, ImageStub(), frozenset({"filmgrab"})
     )
     started = service.start({"provider": "filmgrab", "query": "film", "filters": {}})
@@ -83,7 +84,7 @@ def test_cache_job_stops_at_100_and_second_run_reuses_index(tmp_path):
             return super().read(url, provider)
 
     reader = Counter()
-    service = CacheJobService(
+    service = cache_service(
         Many(), DetailStub(), AssetIndex(tmp_path), reader, frozenset({"filmgrab"})
     )
     assert (
@@ -109,7 +110,7 @@ def test_cache_job_rejects_concurrency_and_honors_cancel(tmp_path):
             release.wait(2)
             return super().execute(payload)
 
-    service = CacheJobService(
+    service = cache_service(
         Blocking(),
         DetailStub(),
         AssetIndex(tmp_path),
@@ -130,7 +131,7 @@ def test_cache_job_rejects_concurrency_and_honors_cancel(tmp_path):
 
 
 def test_cache_job_rejects_bad_provider_shape(tmp_path):
-    service = CacheJobService(
+    service = cache_service(
         SearchStub(),
         DetailStub(),
         AssetIndex(tmp_path),
@@ -148,7 +149,7 @@ def test_cache_job_continues_past_empty_pages_with_next_cursor(tmp_path):
                 return SearchPage((), "2")
             return super().execute(payload)
 
-    service = CacheJobService(
+    service = cache_service(
         EmptyFirst(),
         DetailStub(),
         AssetIndex(tmp_path),
@@ -166,7 +167,7 @@ def test_cache_job_reports_source_error_and_preserves_completed_count(tmp_path):
                 raise SpiderError("filmgrab_unavailable", "FilmGrab 暂时无法访问")
             return super().execute(payload)
 
-    service = CacheJobService(
+    service = cache_service(
         Unavailable(),
         DetailStub(),
         AssetIndex(tmp_path),
@@ -200,7 +201,7 @@ def test_cache_continuation_survives_restart_and_isolates_queries(tmp_path):
             )
 
     def service():
-        return CacheJobService(
+        return cache_service(
             Pages(),
             DetailStub(),
             AssetIndex(tmp_path),
@@ -226,3 +227,9 @@ def test_cache_continuation_survives_restart_and_isolates_queries(tmp_path):
     calls.clear()
     finished(restarted, restarted.start({"provider": "filmgrab", "query": "two"})["id"])
     assert calls[0] == ("two", 1)
+
+
+def cache_service(search, detail, index, reader, enabled_providers, progress=None):
+    return CacheJobService(
+        CacheJobRunner(search, detail, index, reader, progress), enabled_providers
+    )

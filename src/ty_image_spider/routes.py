@@ -13,7 +13,7 @@ from typing import Awaitable, Callable, Mapping
 from aiohttp import web
 
 from .bootstrap import ApplicationServices, build_services
-from .models import SpiderError
+from .models import SpiderError, JsonValue
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -173,6 +173,7 @@ def _error(error: SpiderError) -> web.Response:
                 "code": error.code,
                 "message": _safe_text(error.message),
                 "action": _safe_text(error.action),
+                **({"details": _safe_json(error.details)} if error.details else {}),
             },
         },
         status=error.status,
@@ -230,3 +231,23 @@ def register_routes() -> bool:
         registrar(path)(handler)
     _routes_registered = True
     return True
+
+
+def _safe_json(value: object) -> JsonValue:
+    if isinstance(value, Mapping):
+        return {
+            str(key): "[已隐藏]"
+            if any(
+                part in str(key).lower()
+                for part in ("key", "token", "secret", "cookie", "authorization")
+            )
+            else _safe_json(nested)
+            for key, nested in value.items()
+        }
+    if isinstance(value, (list, tuple)):
+        return [_safe_json(nested) for nested in value]
+    if isinstance(value, str):
+        return _safe_text(value)
+    if value is None or isinstance(value, (bool, int, float)):
+        return value
+    return "[已隐藏]"

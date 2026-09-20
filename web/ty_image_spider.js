@@ -1,3 +1,4 @@
+import { createCacheTasks } from "./cache_tasks.js";
 import { normalizePresentation } from "./presentation.js";
 import { createApiClient } from "./api.js";
 import { openAssetDialog } from "./dialog.js";
@@ -100,8 +101,17 @@ function mountNode(node, { app, api, document }) {
   let dialog = null;
   let disposed = false;
   let restoreNeedsSearch = false;
-  let cacheJob = null;
-  let cacheTimer = null;
+  const cacheTasks = createCacheTasks({
+    client,
+    onUpdate(job) {
+      if (job.provider !== state.get().provider) return;
+      gallery?.setCacheStatus(job);
+      setActivity(job.message || `已缓存 ${job.cached || 0} 张`);
+    },
+    onError(error, provider) {
+      if (provider === state.get().provider) setActivity(error.message || "缓存操作失败", true);
+    },
+  });
   renderInitialState();
   const onKeyDown = (event) => {
     if (document.querySelector(".tyis-image-viewer")) return;
@@ -281,52 +291,18 @@ function mountNode(node, { app, api, document }) {
         has_previous: value.previousCursors.length > 0,
       });
     }
-    if (cacheJob?.provider === value.provider) gallery.setCacheStatus(cacheJob);
+    gallery.setCacheStatus(cacheTasks.get(value.provider));
   }
 
   async function startCache() {
     const current = state.get();
     const { query = "", ...filters } = current.filters;
     setActivity("正在启动后台缓存");
-    try {
-      cacheJob = await client.requestJson("/ty-image-spider/cache/start", {
-        method: "POST",
-        body: { provider: current.provider, query, filters },
-      });
-      if (cacheJob.provider === state.get().provider) gallery?.setCacheStatus(cacheJob);
-      scheduleCachePoll();
-    } catch (error) {
-      setActivity(error.message || "缓存启动失败", true);
-    }
-  }
-
-  function scheduleCachePoll() {
-    if (!cacheJob || disposed) return;
-    clearTimeout(cacheTimer);
-    cacheTimer = setTimeout(pollCache, 750);
-  }
-
-  async function pollCache() {
-    if (!cacheJob || disposed) return;
-    try {
-      cacheJob = await client.requestJson(`/ty-image-spider/cache/${cacheJob.id}`);
-      if (cacheJob.provider === state.get().provider) gallery?.setCacheStatus(cacheJob);
-      setActivity(cacheJob.message || `已缓存 ${cacheJob.cached || 0} 张`);
-      if (cacheJob.state === "running") scheduleCachePoll();
-    } catch (error) {
-      setActivity(error.message || "缓存状态读取失败", true);
-    }
+    await cacheTasks.start({ provider: current.provider, query, filters });
   }
 
   async function cancelCache() {
-    if (!cacheJob) return;
-    try {
-      await client.requestJson(`/ty-image-spider/cache/${cacheJob.id}/cancel`, { method: "POST" });
-      setActivity("正在取消缓存");
-      scheduleCachePoll();
-    } catch (error) {
-      setActivity(error.message || "取消缓存失败", true);
-    }
+    await cacheTasks.cancel(state.get().provider);
   }
 
   async function search(
@@ -549,7 +525,7 @@ function mountNode(node, { app, api, document }) {
     guard.invalidate();
     movieSearch.cancel();
     providerGuard.invalidate();
-    clearTimeout(cacheTimer);
+    cacheTasks.dispose();
     dialog?.close();
     document.removeEventListener("keydown", onKeyDown, true);
     root.remove();

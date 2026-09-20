@@ -43,6 +43,7 @@ from .providers.wallhaven_download import WallhavenDownloader
 from .providers.xiaohongshu import XiaohongshuProvider
 from .services.detail import DetailService
 from .services.cache_job import CacheJobService
+from .services.cache_runner import CacheJobRunner
 from .services.cache_progress import CacheProgress
 from .services.download import DownloadService
 from .services.search import SearchService
@@ -178,15 +179,17 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
         status=StatusService(providers),
         opencli_connect=OpenCliConnectService(opencli, session_lock=browser_lock),
         cache_job=CacheJobService(
-            search,
-            detail,
-            index,
-            reader,
+            CacheJobRunner(
+                search,
+                detail,
+                index,
+                reader,
+                CacheProgress(JsonCache(cache / "cache-progress")),
+            ),
             frozenset(
                 descriptor.id
                 for descriptor in providers.descriptors()
                 if descriptor.capabilities.cache
             ),
-            CacheProgress(JsonCache(cache / "cache-progress")),
         ),
     )

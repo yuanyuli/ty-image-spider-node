@@ -1,10 +1,11 @@
 export class ApiError extends Error {
-  constructor(code, message, action = "", status = 0) {
+  constructor(code, message, action = "", status = 0, details = {}) {
     super(message);
     this.name = "ApiError";
     this.code = code;
     this.action = action;
     this.status = status;
+    this.details = details;
   }
 }
 
@@ -38,6 +39,7 @@ export function createApiClient(fetchApi) {
           error.message || `请求失败（${response.status}）`,
           error.action || "",
           response.status,
+          error.details || {},
         );
       }
       return envelope.data;

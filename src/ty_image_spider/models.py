@@ -14,12 +14,21 @@ JsonValue: TypeAlias = (
 class SpiderError(Exception):
     """可以稳定映射到 HTTP 与前端状态的领域错误。"""
 
-    def __init__(self, code: str, message: str, action: str = "", status: int = 400):
+    def __init__(
+        self,
+        code: str,
+        message: str,
+        action: str = "",
+        status: int = 400,
+        *,
+        details: Mapping[str, JsonValue] | None = None,
+    ):
         super().__init__(message)
         self.code = code
         self.message = message
         self.action = action
         self.status = status
+        self.details = dict(details or {})
 
 
 @dataclass(frozen=True, slots=True)

@@ -15,6 +15,22 @@ from ty_image_spider.models import (
     SpiderError,
 )
 from ty_image_spider import routes
+
+
+def test_error_details_preserve_job_id_and_redact_nested_credentials():
+    details = {
+        "job_id": "safe",
+        "nested": [{"access_token": "secret", "note": "cookie=secret"}],
+    }
+    response = routes._error(
+        SpiderError("cache_duplicate", "重复", status=409, details=details)
+    )
+    payload = json.loads(response.body)
+    assert payload["error"]["details"]["job_id"] == "safe"
+    assert "secret" not in response.text
+    assert details["nested"][0]["access_token"] == "secret"
+
+
 from ty_image_spider.routes import (
     get_providers,
     post_detail,
