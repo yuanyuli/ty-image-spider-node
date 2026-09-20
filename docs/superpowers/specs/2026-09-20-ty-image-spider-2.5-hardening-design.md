@@ -171,12 +171,16 @@ GitHub Actions 拆为两个独立作业，避免一个大作业掩盖失败来�
 
 ## 11. 可复现发布
 
-新增 `scripts/build_release.py`。脚本只读取 Git 已跟踪文件，并使用明确排除规则生成 ZIP：
+新增 `scripts/build_release.py`。脚本只读取 Git 已跟踪文件，并使用明确的运行时白名单生成 ZIP。白名单包含根入口、`src/`、`web/`、`LICENSE`、`README.md`、`CHANGELOG.md`、`requirements.txt`、`pyproject.toml`、`tmdb.example.json`，以及面向用户的来源、兼容性和权利说明文档。
+
+开发资料不进入用户安装包：`.github/`、`.gitignore`、`.prettierrc.json`、`tests/`、`scripts/`、`requirements-dev.txt`、`package.json`、`package-lock.json` 与 `docs/superpowers/` 全部排除。它们继续保留在源码仓库中供贡献者使用。这样避免延续 2.4.0 将测试、开发依赖和设计草稿一并分发的行为。
+
+归档规则如下：
 
 - 顶层目录固定为 `ty-image-spider-node/`。
 - 文件时间统一为 `SOURCE_DATE_EPOCH`，未设置时使用目标 Git 提交时间。
 - 文件顺序、路径分隔符和压缩参数固定。
-- 排除 `.git`、`.github` 的非运行文件、`.local`、缓存、输出、测试缓存、虚拟环境、`node_modules`、`dist` 和本地凭据。
+- 白名单以外的文件全部拒绝进入归档；`.local`、缓存、输出、虚拟环境、`node_modules`、`dist` 和本地凭据即使被误跟踪也不能进入归档。
 - 打包前校验 `pyproject.toml`、`package.json`、`package-lock.json` 和 `src/ty_image_spider/version.py` 的版本一致。
 - 扫描归档路径与文本文件，拒绝 `tmdb.json`、常见密钥文件名、绝对本机路径和已知凭据格式。
 - 输出 ZIP 与同名 `.sha256` 文件；连续运行两次必须得到相同哈希。
@@ -193,7 +197,7 @@ Python 测试新增：
 - 每类下载策略的 ID、主机、重定向和 URL 规范化。
 - 两个不同缓存任务并发运行、相同任务去重、容量限制、独立取消和过期清理。
 - 带 `Content-Length`、chunked、刚好 1 MiB、超过 1 MiB、非法 UTF-8 和非对象 JSON。
-- 发布脚本的确定性、文件清单、版本不一致和敏感文件拒绝。
+- 发布脚本的确定性、运行时白名单、开发文件排除、版本不一致和敏感文件拒绝。
 - 全部注册 Provider 的契约检查。
 - 所有 HTTP 客户端使用统一的运行时 `USER_AGENT`，仓库内不残留旧版本请求标识。
 
