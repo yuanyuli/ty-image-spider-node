@@ -51,18 +51,26 @@ class PublicJsonClient:
             return JsonResponse(cached["data"], int(cached.get("total_pages", 0)))
         request = Request(
             url,
-            headers={"User-Agent": "TY-Image-Spider/2.2", "Accept": "application/json"},
+            headers={"User-Agent": "TY-Image-Spider/2.3", "Accept": "application/json"},
         )
         try:
-            with self._open_url(request, timeout=30) as response:
-                require_https_host(
-                    response.geturl(),
-                    lambda host: host == urlsplit(self._base).hostname,
-                )
-                data = json.loads(read_limited(response, 12 * 1024 * 1024))
-                pages = int(response.headers.get("X-WP-TotalPages", 0))
-            if not isinstance(data, (dict, list)):
-                raise ValueError("invalid JSON root")
+            for attempt in range(2):
+                try:
+                    with self._open_url(request, timeout=30) as response:
+                        require_https_host(
+                            response.geturl(),
+                            lambda host: host == urlsplit(self._base).hostname,
+                        )
+                        data = json.loads(read_limited(response, 12 * 1024 * 1024))
+                        pages = int(response.headers.get("X-WP-TotalPages", 0))
+                    if not isinstance(data, (dict, list)):
+                        raise ValueError("invalid JSON root")
+                    break
+                except HTTPError:
+                    raise
+                except (OSError, HTTPException, ValueError, UnicodeError):
+                    if attempt == 1:
+                        raise
         except HTTPError as exc:
             suffix = (
                 "请求过于频繁，请稍后重试"

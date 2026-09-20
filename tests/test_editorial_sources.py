@@ -9,7 +9,13 @@ from ty_image_spider.models import DownloadResult, SearchRequest, SpiderError
 from ty_image_spider.cache import JsonCache
 from ty_image_spider.providers.public_json_client import PublicJsonClient
 from ty_image_spider.providers.editorial import EditorialProvider
-from ty_image_spider.providers.editorial_sources import COLOSSAL, DESIGN_MILK
+from ty_image_spider.providers.editorial_images import article_images
+from ty_image_spider.providers.editorial_sources import (
+    COLOSSAL,
+    DESIGN_MILK,
+    FEATURE_SHOOT,
+    MY_MODERN_MET,
+)
 from ty_image_spider.providers.arena import ArenaProvider
 
 
@@ -57,6 +63,20 @@ def post():
     }
 
 
+def test_editorial_image_parser_can_choose_lightweight_preview_from_srcset():
+    root = "https://mymodernmet.com/wp/wp-content/uploads/2026/09/"
+    markup = (
+        f'<img src="{root}photo.jpg" '
+        f'srcset="{root}photo-400.jpg 400w, {root}photo-768.jpg 768w, '
+        f'{root}photo-1600.jpg 1600w">'
+    )
+
+    assert article_images(markup, "mymodernmet")[0].endswith("photo-1600.jpg")
+    assert article_images(markup, "mymodernmet", max_width=800)[0].endswith(
+        "photo-768.jpg"
+    )
+
+
 def test_editorial_real_category_pagination_and_deduplicated_gallery():
     calls = []
     provider = EditorialProvider(
@@ -83,6 +103,86 @@ def test_designmilk_graphic_filter_uses_tag_not_category():
     query = parse_qs(urlsplit(calls[0]).query)
     assert query["tags"] == ["206"] and "categories" not in query
     assert not page.items and page.next_cursor == "2"
+
+
+def test_feature_shoot_uses_downloadable_origin_cover_instead_of_wp_cdn_preview():
+    calls = []
+    row = post()
+    origin = "https://www.featureshoot.com/wp-content/uploads/2026/08/cover.jpg"
+    cdn = "https://i0.wp.com/www.featureshoot.com/wp-content/uploads/2026/08/cover.jpg?fit=768%2C512&ssl=1"
+    row["link"] = "https://www.featureshoot.com/2026/08/feature/"
+    row["content"]["rendered"] = f'<img src="{origin}">'
+    media = row["_embedded"]["wp:featuredmedia"][0]
+    media["source_url"] = origin
+    media["media_details"]["sizes"]["medium_large"]["source_url"] = cdn
+    provider = EditorialProvider(
+        FEATURE_SHOOT, client(FEATURE_SHOOT.api_root, [[row]], calls)
+    )
+
+    item = provider.search(SearchRequest("featureshoot")).items[0]
+
+    assert item.preview_url == origin
+
+
+def test_feature_shoot_without_featured_media_falls_back_to_article_image():
+    calls = []
+    row = post()
+    origin = "https://www.featureshoot.com/wp-content/uploads/2026/08/article.jpg"
+    row["link"] = "https://www.featureshoot.com/2026/08/feature/"
+    row["content"]["rendered"] = f'<img src="{origin}">'
+    row["_embedded"] = {}
+    provider = EditorialProvider(
+        FEATURE_SHOOT, client(FEATURE_SHOOT.api_root, [[row]], calls)
+    )
+
+    item = provider.search(SearchRequest("featureshoot")).items[0]
+
+    assert item.preview_url == origin
+
+
+@pytest.mark.parametrize(
+    "source,category,category_id,image_root,page_size",
+    [
+        (
+            FEATURE_SHOOT,
+            "fine_art",
+            11889,
+            "https://i0.wp.com/www.featureshoot.com/wp-content/uploads/2026/09/",
+            24,
+        ),
+        (
+            MY_MODERN_MET,
+            "art",
+            3,
+            "https://mymodernmet.com/wp/wp-content/uploads/2026/09/",
+            12,
+        ),
+    ],
+)
+def test_new_editorial_sources_use_real_categories_and_extract_galleries(
+    source, category, category_id, image_root, page_size
+):
+    calls = []
+    row = post()
+    row["link"] = source.api_root.split("/wp-json/")[0] + "/feature/"
+    row["content"]["rendered"] = (
+        f'<img src="{image_root}one.jpg">'
+        f'<img data-src="{image_root}two.jpg" src="data:image/svg+xml;base64,placeholder">'
+    )
+    row["_embedded"]["wp:featuredmedia"][0]["source_url"] = image_root + "one.jpg"
+    row["_embedded"]["wp:featuredmedia"][0]["media_details"]["sizes"]["medium_large"][
+        "source_url"
+    ] = image_root + "preview.jpg"
+    provider = EditorialProvider(source, client(source.api_root, [[row]], calls))
+
+    page = provider.search(SearchRequest(source.id, filters={"category": category}))
+
+    query = parse_qs(urlsplit(calls[0]).query)
+    assert query["categories"] == [str(category_id)]
+    assert query["per_page"] == [str(page_size)]
+    assert page.items[0].image_count == 2
+    assert page.items[0].download_mode == "gallery"
+    assert len(provider.detail(page.items[0]).images) == 2
 
 
 def test_editorial_partial_download_reports_saved_files(tmp_path):
@@ -184,3 +284,39 @@ def test_public_client_rejects_cross_host_response():
     )
     with pytest.raises(SpiderError):
         api.get("posts", {})
+
+
+def test_public_client_retries_one_transient_connection_failure():
+    calls = 0
+
+    def read(request, timeout):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise OSError("temporary disconnect")
+        return Response([], request.full_url, pages=1)
+
+    api = PublicJsonClient(COLOSSAL.api_root, "Colossal", open_url=read)
+
+    assert api.get("posts", {}).data == []
+    assert calls == 2
+
+
+def test_public_client_retries_one_truncated_json_response():
+    calls = 0
+
+    def read(request, timeout):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            response = Response([], request.full_url, pages=1)
+            response.seek(0)
+            response.truncate(1)
+            response.seek(0)
+            return response
+        return Response([], request.full_url, pages=1)
+
+    api = PublicJsonClient(COLOSSAL.api_root, "Colossal", open_url=read)
+
+    assert api.get("posts", {}).data == []
+    assert calls == 2

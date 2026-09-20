@@ -16,6 +16,21 @@ from ty_image_spider.providers.curated_download import CuratedDownloader
             "https://www.thisiscolossal.com/wp-content/uploads/image.jpg",
         ),
         ("designmilk", "42-1", "https://design-milk.com/images/image.jpg"),
+        (
+            "featureshoot",
+            "42-1",
+            "https://i0.wp.com/www.featureshoot.com/wp-content/uploads/image.jpg",
+        ),
+        (
+            "mymodernmet",
+            "42-1",
+            "https://mymodernmet.com/wp/wp-content/uploads/image.jpg",
+        ),
+        (
+            "loc",
+            "afc1937002_001",
+            "https://tile.loc.gov/storage-services/service/pnp/image.jpg",
+        ),
         ("arena", "42", "https://d2w9rnfcy7mm78.cloudfront.net/42/image.jpg"),
         (
             "artic",

@@ -8,7 +8,9 @@ from urllib.parse import urlsplit
 from .museum_assets import image_url
 
 
-def article_images(markup: str, source: str) -> tuple[str, ...]:
+def article_images(
+    markup: str, source: str, *, max_width: int | None = None
+) -> tuple[str, ...]:
     class Images(HTMLParser):
         def __init__(self) -> None:
             super().__init__(convert_charrefs=True)
@@ -37,6 +39,14 @@ def article_images(markup: str, source: str) -> tuple[str, ...]:
                 ):
                     candidates.append((int(parts[1][:-1]), parts[0]))
             candidates.extend((0, fields.get(key) or "") for key in ("data-src", "src"))
+            if max_width is not None:
+                bounded = [
+                    candidate
+                    for candidate in candidates
+                    if candidate[0] == 0 or candidate[0] <= max_width
+                ]
+                if bounded:
+                    candidates = bounded
             for _, value in sorted(candidates, reverse=True):
                 url = image_url(value, source)
                 if url and urlsplit(url).path.lower().endswith(

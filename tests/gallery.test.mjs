@@ -170,6 +170,20 @@ test("Wallhaven 卡片显示来源标记与收藏数据", () => {
   assert.match(view.root.textContent, /43 收藏/);
 });
 
+test("新增摄影与档案来源显示简短来源标记", () => {
+  const expected = {
+    featureshoot: "FS",
+    mymodernmet: "MMM",
+    loc: "LOC",
+  };
+  for (const [provider, label] of Object.entries(expected)) {
+    const dom = new JSDOM("<!doctype html><body></body>");
+    const view = createGallery({ document: dom.window.document, provider });
+    view.render([item({ provider, id: "101" })]);
+    assert.equal(view.root.querySelector(".tyis-source-mark").textContent, label);
+  }
+});
+
 test("Civitai 卡片在图片区域醒目标记提示词状态", () => {
   const dom = new JSDOM("<!doctype html><body></body>");
   const view = createGallery({ document: dom.window.document, provider: "civitai" });

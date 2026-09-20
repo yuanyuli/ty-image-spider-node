@@ -23,7 +23,7 @@ export function createGallery(context) {
   bulkDownloadButton.hidden = capabilities.bulk_download !== true;
   const cacheButton = element(document, "button", "tyis-subtle-button", "新增缓存100张");
   cacheButton.title = "按当前搜索条件续存最多100张新素材，跳过已有缓存；不足时按实际数量完成";
-  if (provider === "colossal" || provider === "designmilk") {
+  if (["colossal", "designmilk", "featureshoot", "mymodernmet"].includes(provider)) {
     cacheButton.title = "新增最多100个专题封面及图集资料；图集高清图片按需下载，已有缓存跳过";
   }
   cacheButton.type = "button";
@@ -209,7 +209,10 @@ function sourceMark(document, provider) {
     filmgrab: "FILM",
     colossal: "COLO",
     designmilk: "DM",
+    featureshoot: "FS",
+    mymodernmet: "MMM",
     arena: "ARE.NA",
+    loc: "LOC",
     vam: "V&A",
     artic: "AIC",
     cleveland: "CMA",

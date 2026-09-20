@@ -20,8 +20,14 @@ from .providers.cleveland import ClevelandProvider
 from .providers.museum_client import MuseumClient
 from .providers.public_json_client import PublicJsonClient
 from .providers.editorial import EditorialProvider
-from .providers.editorial_sources import COLOSSAL, DESIGN_MILK
+from .providers.editorial_sources import (
+    COLOSSAL,
+    DESIGN_MILK,
+    FEATURE_SHOOT,
+    MY_MODERN_MET,
+)
 from .providers.arena import ArenaProvider
+from .providers.loc import LocProvider
 from .providers.curated_client import BehanceClient, FilmGrabClient
 from .providers.curated_download import CuratedDownloader
 from .providers.filmgrab import FilmGrabProvider
@@ -79,7 +85,7 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
         )
     )
     providers.register(BehanceProvider(BehanceClient(), reader))
-    for source in (COLOSSAL, DESIGN_MILK):
+    for source in (COLOSSAL, DESIGN_MILK, FEATURE_SHOOT, MY_MODERN_MET):
         providers.register(
             EditorialProvider(
                 source,
@@ -93,6 +99,16 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
         ArenaProvider(
             PublicJsonClient(
                 "https://api.are.na/v2/", "Are.na", JsonCache(cache / "arena")
+            ),
+            reader,
+        )
+    )
+    providers.register(
+        LocProvider(
+            PublicJsonClient(
+                "https://www.loc.gov/",
+                "美国国会图书馆",
+                JsonCache(cache / "loc"),
             ),
             reader,
         )

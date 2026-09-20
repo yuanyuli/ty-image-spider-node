@@ -74,7 +74,11 @@ class EditorialProvider:
     def search(self, request: SearchRequest) -> SearchPage:
         page = page_number(request)
         choice = category(request, self._source.categories, self._source.default)
-        params: dict[str, object] = {"per_page": 24, "page": page, "_embed": "1"}
+        params: dict[str, object] = {
+            "per_page": self._source.page_size,
+            "page": page,
+            "_embed": "1",
+        }
         _, taxonomy, value = self._source.categories[choice]
         if taxonomy:
             params[taxonomy] = value
@@ -106,10 +110,14 @@ class EditorialProvider:
         if not item_id or not images:
             return None
         sizes = object_data(object_data(cover.get("media_details")).get("sizes"))
-        preview = (
-            image_url(object_data(sizes.get("medium_large")).get("source_url"), self.id)
-            or images[0]
+        content_previews = article_images(
+            markup if isinstance(markup, str) else "", self.id, max_width=800
         )
+        medium_preview = image_url(
+            object_data(sizes.get("medium_large")).get("source_url"), self.id
+        )
+        preferred = original if self._source.prefer_original_preview else medium_preview
+        preview = preferred or (content_previews[0] if content_previews else images[0])
         authors = embedded.get("author")
         author = (
             plain_text(object_data(authors[0]).get("name"))

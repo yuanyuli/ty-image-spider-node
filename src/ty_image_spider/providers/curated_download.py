@@ -32,15 +32,21 @@ _HOSTS = {
     "cleveland": lambda host: host == "openaccess-cdn.clevelandart.org",
     "colossal": lambda host: host in {"www.thisiscolossal.com", "thisiscolossal.com"},
     "designmilk": lambda host: host == "design-milk.com",
+    "featureshoot": lambda host: host in {"www.featureshoot.com", "i0.wp.com"},
+    "mymodernmet": lambda host: host == "mymodernmet.com",
+    "loc": lambda host: host == "tile.loc.gov",
     "arena": lambda host: host in {"images.are.na", "d2w9rnfcy7mm78.cloudfront.net"},
 }
 _SAFE_ID = re.compile(r"^[0-9]+(?:-[0-9]+)?$")
+_SAFE_LOC_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
 
 def validate_asset_id(provider: str, item_id: str) -> None:
     valid = (
         re.fullmatch(r"O[0-9]+", item_id)
         if provider == "vam"
+        else _SAFE_LOC_ID.fullmatch(item_id)
+        if provider == "loc"
         else _SAFE_ID.fullmatch(item_id)
     )
     if not valid:

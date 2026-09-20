@@ -11,6 +11,8 @@ class EditorialSource:
     api_root: str
     categories: Mapping[str, tuple[str, str, int]]
     default: str
+    page_size: int = 24
+    prefer_original_preview: bool = False
 
 
 COLOSSAL = EditorialSource(
@@ -43,4 +45,40 @@ DESIGN_MILK = EditorialSource(
         "all": ("全部专题", "", 0),
     },
     "graphic",
+)
+
+FEATURE_SHOOT = EditorialSource(
+    "featureshoot",
+    "Feature Shoot",
+    "https://www.featureshoot.com/wp-json/wp/v2/",
+    {
+        "fine_art": ("艺术摄影", "categories", 11889),
+        "documentary": ("纪实摄影", "categories", 11890),
+        "portraits": ("人像", "categories", 11888),
+        "nature": ("自然", "categories", 11897),
+        "landscape": ("风景", "categories", 11891),
+        "street": ("街头", "categories", 11892),
+        "still_life": ("静物", "categories", 11894),
+        "all": ("全部专题", "", 0),
+    },
+    "fine_art",
+    prefer_original_preview=True,
+)
+
+MY_MODERN_MET = EditorialSource(
+    "mymodernmet",
+    "My Modern Met",
+    "https://mymodernmet.com/wp-json/wp/v2/",
+    {
+        "art": ("当代艺术", "categories", 3),
+        "photography": ("摄影", "categories", 4),
+        "design": ("设计", "categories", 2),
+        "architecture": ("建筑", "categories", 62577),
+        "sculpture": ("雕塑", "categories", 109465),
+        "installation": ("装置艺术", "categories", 109469),
+        "painting": ("绘画", "categories", 109467),
+        "all": ("全部专题", "", 0),
+    },
+    "art",
+    12,
 )
