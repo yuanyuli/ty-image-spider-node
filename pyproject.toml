@@ -1,6 +1,6 @@
 [project]
 name = "ty-image-spider-node"
-version = "0.1.0"
+version = "2.0.0"
 description = "ComfyUI 多来源图片素材浏览节点"
 requires-python = ">=3.10"
 dependencies = ["Pillow>=10"]
@@ -20,4 +20,3 @@ select = ["E9", "F"]
 python_version = "3.10"
 mypy_path = "src"
 strict = true
-

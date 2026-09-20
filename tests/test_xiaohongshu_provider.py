@@ -171,7 +171,7 @@ def test_signed_note_url_uses_note_flow_instead_of_keyword_search(tmp_path):
     url = (
         "https://www.xiaohongshu.com/explore/66abcdef1234567890abcdef?xsec_token=signed"
     )
-    runner = FakeRunner([DETAIL["rows"], DETAIL["browser"]])
+    runner = FakeRunner([DETAIL["rows"], {}, DETAIL["browser"]])
 
     page = make_provider(tmp_path, runner).search(SearchRequest("xiaohongshu", url))
 
@@ -216,7 +216,7 @@ def test_repeating_same_keyword_reuses_recent_page_without_reopening_opencli(tmp
 
 
 def test_detail_returns_ordered_images_and_content(tmp_path):
-    runner = FakeRunner([DETAIL["rows"], DETAIL["browser"]])
+    runner = FakeRunner([DETAIL["rows"], {}, DETAIL["browser"]])
     item = xhs_item(SEARCH[0]["url"])
 
     detail = make_provider(tmp_path, runner).detail(item)
@@ -224,6 +224,34 @@ def test_detail_returns_ordered_images_and_content(tmp_path):
     assert detail.images == tuple(DETAIL["browser"]["images"])
     assert detail.content == "三套适合上班的叠穿思路"
     assert detail.item.stats == {"likes": "128", "collects": "32", "comments": "9"}
+    assert runner.calls[1].args[:3] == [
+        "browser",
+        "ty-image-spider-xiaohongshu-detail",
+        "open",
+    ]
+    assert runner.calls[1].args[3] == item.source_url
+    assert runner.calls[2].args[:3] == [
+        "browser",
+        "ty-image-spider-xiaohongshu-detail",
+        "eval",
+    ]
+
+
+def test_detail_accepts_trusted_http_cdn_images_as_https(tmp_path):
+    runner = FakeRunner(
+        [
+            DETAIL["rows"],
+            {},
+            {
+                "id": "66abcdef1234567890abcdef",
+                "images": ["http://sns-img-bd.xhscdn.com/photo.webp"],
+            },
+        ]
+    )
+
+    detail = make_provider(tmp_path, runner).detail(xhs_item(SEARCH[0]["url"]))
+
+    assert detail.images == ("https://sns-img-bd.xhscdn.com/photo.webp",)
 
 
 def test_download_returns_only_new_verified_images(tmp_path):
@@ -247,6 +275,9 @@ def test_download_returns_only_new_verified_images(tmp_path):
 
     assert result.files == (
         "ty-image-spider/xiaohongshu/66abcdef1234567890abcdef/image-1.png",
+    )
+    assert Path(runner.calls[0].args[runner.calls[0].args.index("--output") + 1]) == (
+        output / "ty-image-spider" / "xiaohongshu"
     )
     assert "--site-session" in runner.calls[0].args
 

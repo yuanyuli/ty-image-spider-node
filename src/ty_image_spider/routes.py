@@ -104,6 +104,27 @@ async def post_opencli_connect(
     return await _respond(app.opencli_connect.execute)
 
 
+async def post_cache_start(
+    request: web.Request, services: ApplicationServices | None = None
+) -> web.Response:
+    app = services or get_services()
+    return await _execute_payload(request, app.cache_job.start)
+
+
+async def get_cache_status(
+    request: web.Request, services: ApplicationServices | None = None
+) -> web.Response:
+    app = services or get_services()
+    return await _respond(lambda: app.cache_job.status(request.match_info["job_id"]))
+
+
+async def post_cache_cancel(
+    request: web.Request, services: ApplicationServices | None = None
+) -> web.Response:
+    app = services or get_services()
+    return await _respond(lambda: app.cache_job.cancel(request.match_info["job_id"]))
+
+
 async def _execute_payload(
     request: web.Request, execute: Callable[[Mapping[str, object]], object]
 ) -> web.Response:
@@ -186,6 +207,9 @@ ROUTES: tuple[
     ("POST", "/ty-image-spider/download-page", post_download_page),
     ("POST", "/ty-image-spider/providers/xiaohongshu/check", post_provider_check),
     ("POST", "/ty-image-spider/providers/xiaohongshu/connect", post_opencli_connect),
+    ("POST", "/ty-image-spider/cache/start", post_cache_start),
+    ("GET", "/ty-image-spider/cache/{job_id}", get_cache_status),
+    ("POST", "/ty-image-spider/cache/{job_id}/cancel", post_cache_cancel),
 )
 
 

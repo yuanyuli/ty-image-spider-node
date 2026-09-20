@@ -8,6 +8,8 @@ export function createGallery(context) {
     onOpen = () => {},
     onDownload = () => {},
     onDownloadPage = () => {},
+    onCache = () => {},
+    onCancelCache = () => {},
     onPrevious = () => {},
     onNext = () => {},
   } = context;
@@ -19,6 +21,15 @@ export function createGallery(context) {
   bulkDownloadButton.type = "button";
   bulkDownloadButton.prepend(createIcon(document, "download", 15));
   bulkDownloadButton.hidden = capabilities.bulk_download !== true;
+  const cacheButton = element(document, "button", "tyis-subtle-button", "新增缓存100张");
+  cacheButton.title = "按当前搜索条件续存最多100张新素材，跳过已有缓存；不足时按实际数量完成";
+  cacheButton.type = "button";
+  cacheButton.dataset.action = "cache-100";
+  cacheButton.hidden = capabilities.cache !== true;
+  const cancelCacheButton = element(document, "button", "tyis-subtle-button", "取消缓存");
+  cancelCacheButton.type = "button";
+  cancelCacheButton.dataset.action = "cancel-cache";
+  cancelCacheButton.hidden = true;
   const previousButton = element(document, "button", "tyis-subtle-button", "上一页");
   previousButton.type = "button";
   previousButton.setAttribute("aria-label", "上一页");
@@ -29,7 +40,7 @@ export function createGallery(context) {
   nextButton.setAttribute("aria-label", "下一页");
   nextButton.append(createIcon(document, "next", 15));
   nextButton.hidden = true;
-  actions.append(bulkDownloadButton, previousButton, nextButton);
+  actions.append(cacheButton, cancelCacheButton, bulkDownloadButton, previousButton, nextButton);
   toolbar.append(count, actions);
   const grid = element(document, "div", "tyis-grid");
   root.append(toolbar, grid);
@@ -38,6 +49,8 @@ export function createGallery(context) {
   let hasPrevious = false;
   let nextCursor = null;
   bulkDownloadButton.addEventListener("click", () => onDownloadPage(currentItems));
+  cacheButton.addEventListener("click", onCache);
+  cancelCacheButton.addEventListener("click", onCancelCache);
   previousButton.addEventListener("click", () => onPrevious());
   nextButton.addEventListener("click", () => nextCursor && onNext(nextCursor));
 
@@ -90,16 +103,29 @@ export function createGallery(context) {
     grid.replaceChildren(emptyState(document, message || "当前素材源不可用", action));
   }
 
+  function setCacheStatus(status) {
+    const running = status?.state === "running";
+    cacheButton.disabled = running;
+    cacheButton.textContent = running
+      ? `新增 ${status.cached || 0}/${status.target || 100}`
+      : "新增缓存100张";
+    cancelCacheButton.hidden = !running;
+    if (status) cacheButton.title = status.message || "";
+  }
+
   return {
     root,
     grid,
     bulkDownloadButton,
+    cacheButton,
+    cancelCacheButton,
     previousButton,
     nextButton,
     render,
     setLoading,
     setError,
     setUnavailable,
+    setCacheStatus,
   };
 }
 
@@ -169,7 +195,14 @@ function renderCard(document, item, provider, onOpen, onDownload) {
 }
 
 function sourceMark(document, provider) {
-  const labels = { civitai: "C", wallhaven: "W", xiaohongshu: "RED", local: "LOCAL" };
+  const labels = {
+    civitai: "C",
+    wallhaven: "W",
+    behance: "B",
+    filmgrab: "FILM",
+    xiaohongshu: "RED",
+    local: "LOCAL",
+  };
   return element(document, "span", `tyis-source-mark is-${provider}`, labels[provider] || provider);
 }
 

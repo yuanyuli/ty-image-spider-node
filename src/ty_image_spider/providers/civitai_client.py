@@ -70,16 +70,35 @@ class CivitaiClient:
         self._require_site(site)
         if not image_id.isdigit():
             raise SpiderError("invalid_asset", "Civitai 素材 ID 无效")
-        request = self._request(f"https://{site}/images/{image_id}", accept="text/html")
-        try:
-            with self._open_url(request, timeout=self._timeout_seconds) as response:
-                self._validate_final_url(response.geturl(), site)
-                html = read_limited(response, _MAX_PAGE_BYTES).decode(
-                    "utf-8", errors="replace"
-                )
-        except (HTTPError, URLError, TimeoutError, socket.timeout) as exc:
-            raise self._map_error(exc) from exc
-        return _extract_page_metadata(html)
+        sites = (site, "civitai.com") if site == "civitai.red" else (site,)
+        last_error: HTTPError | URLError | TimeoutError | socket.timeout | None = None
+        had_response = False
+        for page_site in sites:
+            request = Request(
+                f"https://{page_site}/images/{image_id}",
+                headers={
+                    "Accept": "text/html",
+                    "User-Agent": "Mozilla/5.0",
+                    "Referer": "https://civitai.com/",
+                },
+            )
+            try:
+                with self._open_url(request, timeout=self._timeout_seconds) as response:
+                    self._validate_final_url(response.geturl(), page_site)
+                    html = read_limited(response, _MAX_PAGE_BYTES).decode(
+                        "utf-8", errors="replace"
+                    )
+                had_response = True
+                metadata = _extract_page_metadata(html)
+                if metadata:
+                    return metadata
+            except (HTTPError, URLError, TimeoutError, socket.timeout) as exc:
+                last_error = exc
+        if had_response:
+            return {}
+        if last_error is not None:
+            raise self._map_error(last_error) from last_error
+        return {}
 
     def _request_json(self, url: str) -> dict[str, Any]:
         for attempt in range(self._max_retries + 1):

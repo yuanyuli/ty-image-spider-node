@@ -33,6 +33,15 @@ def test_merge_ignores_untrusted_urls_and_images():
     assert merge_search_rows([ROWS[0]], cards)[0]["preview_url"] is None
 
 
+def test_merge_skips_unsigned_note_links_that_cannot_open_detail_or_download():
+    unsigned = {
+        **ROWS[0],
+        "url": "https://www.xiaohongshu.com/explore/66abcdef1234567890abcdef",
+    }
+
+    assert merge_search_rows([unsigned], []) == []
+
+
 def test_browser_extract_scripts_are_read_only_and_detail_is_scoped():
     card_script = build_card_extract_js()
     detail_script = build_detail_extract_js("66abcdef1234567890abcdef")

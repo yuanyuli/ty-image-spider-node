@@ -3,6 +3,7 @@ import { openAssetDialog } from "./dialog.js";
 import { createGallery } from "./gallery.js";
 import { createSearchHistory } from "./search_history.js";
 import { renderSourceControls } from "./source_controls.js";
+import { createMovieSearch } from "./movie_search.js";
 import {
   createProviderSessions,
   createRequestGuard,
@@ -55,6 +56,7 @@ function mountNode(node, { app, api, document }) {
   const guard = createRequestGuard();
   const providerGuard = createRequestGuard();
   const client = createApiClient(api.fetchApi.bind(api));
+  const movieSearch = createMovieSearch({ document, client });
   const root = element(document, "div", "tyis-workspace");
   const masthead = element(document, "header", "tyis-masthead");
   const brand = element(document, "div", "tyis-brand");
@@ -81,6 +83,8 @@ function mountNode(node, { app, api, document }) {
   let dialog = null;
   let disposed = false;
   let restoreNeedsSearch = false;
+  let cacheJob = null;
+  let cacheTimer = null;
   renderInitialState();
   const onKeyDown = (event) => {
     if (document.querySelector(".tyis-image-viewer")) return;
@@ -178,6 +182,7 @@ function mountNode(node, { app, api, document }) {
       getRecentQueries: () => history.list(value.provider),
       onSourceChange(provider) {
         guard.invalidate();
+        movieSearch.cancel();
         sessions.save(value.provider, state.get());
         const restored = sessions.load(provider);
         state.set({ provider, ...restored, filters: withDefaults(provider, restored.filters) });
@@ -187,6 +192,9 @@ function mountNode(node, { app, api, document }) {
       },
       onSearch(query) {
         search(query);
+      },
+      onMovieLookup(query) {
+        search(query, null, false, "reset", true);
       },
       onRefresh() {
         search(undefined, null, true);
@@ -234,6 +242,8 @@ function mountNode(node, { app, api, document }) {
       onOpen: openDetail,
       onDownload: downloadItem,
       onDownloadPage: downloadPage,
+      onCache: startCache,
+      onCancelCache: cancelCache,
       onPrevious: () => {
         const previous = state.get().previousCursors;
         search(undefined, previous.at(-1) ?? null, false, "previous");
@@ -249,9 +259,61 @@ function mountNode(node, { app, api, document }) {
         has_previous: value.previousCursors.length > 0,
       });
     }
+    if (cacheJob?.provider === value.provider) gallery.setCacheStatus(cacheJob);
   }
 
-  async function search(queryOverride, cursor = null, refresh = false, navigation = "reset") {
+  async function startCache() {
+    const current = state.get();
+    const { query = "", ...filters } = current.filters;
+    setActivity("正在启动后台缓存");
+    try {
+      cacheJob = await client.requestJson("/ty-image-spider/cache/start", {
+        method: "POST",
+        body: { provider: current.provider, query, filters },
+      });
+      if (cacheJob.provider === state.get().provider) gallery?.setCacheStatus(cacheJob);
+      scheduleCachePoll();
+    } catch (error) {
+      setActivity(error.message || "缓存启动失败", true);
+    }
+  }
+
+  function scheduleCachePoll() {
+    if (!cacheJob || disposed) return;
+    clearTimeout(cacheTimer);
+    cacheTimer = setTimeout(pollCache, 750);
+  }
+
+  async function pollCache() {
+    if (!cacheJob || disposed) return;
+    try {
+      cacheJob = await client.requestJson(`/ty-image-spider/cache/${cacheJob.id}`);
+      if (cacheJob.provider === state.get().provider) gallery?.setCacheStatus(cacheJob);
+      setActivity(cacheJob.message || `已缓存 ${cacheJob.cached || 0} 张`);
+      if (cacheJob.state === "running") scheduleCachePoll();
+    } catch (error) {
+      setActivity(error.message || "缓存状态读取失败", true);
+    }
+  }
+
+  async function cancelCache() {
+    if (!cacheJob) return;
+    try {
+      await client.requestJson(`/ty-image-spider/cache/${cacheJob.id}/cancel`, { method: "POST" });
+      setActivity("正在取消缓存");
+      scheduleCachePoll();
+    } catch (error) {
+      setActivity(error.message || "取消缓存失败", true);
+    }
+  }
+
+  async function search(
+    queryOverride,
+    cursor = null,
+    refresh = false,
+    navigation = "reset",
+    movieLookup = false,
+  ) {
     const current = state.get();
     const source = providers.find((entry) => entry.provider.id === current.provider);
     if (source?.status?.available === false) {
@@ -265,6 +327,7 @@ function mountNode(node, { app, api, document }) {
       persist();
     }
     const ticket = guard.begin();
+    movieSearch.cancel();
     const previousCursors = [...current.previousCursors];
     if (navigation === "next") previousCursors.push(current.currentCursor ?? null);
     else if (navigation === "previous") previousCursors.pop();
@@ -273,11 +336,25 @@ function mountNode(node, { app, api, document }) {
     setActivity("检索中");
     const { query: _ignored, ...filters } = state.get().filters;
     try {
-      const page = await client.requestJson("/ty-image-spider/search", {
-        method: "POST",
-        body: { provider: state.get().provider, query, filters, cursor, refresh },
-      });
+      const page = await movieSearch.search(
+        {
+          provider: state.get().provider,
+          query,
+          filters: movieLookup ? { ...filters, movie_lookup: true } : filters,
+          cursor,
+          refresh,
+        },
+        () => guard.isCurrent(ticket) && !disposed,
+      );
       if (!guard.isCurrent(ticket) || disposed) return;
+      if (!page) {
+        gallery?.render(current.items || [], {
+          next_cursor: current.nextCursor,
+          has_previous: current.previousCursors.length > 0,
+        });
+        setActivity("已取消电影选择");
+        return;
+      }
       state.set({
         items: page.items || [],
         nextCursor: page.next_cursor || null,
@@ -297,8 +374,9 @@ function mountNode(node, { app, api, document }) {
     } catch (error) {
       if (!guard.isCurrent(ticket) || disposed) return;
       state.set({ error });
-      gallery?.setError(error.message);
-      setActivity(error.message || "检索失败", true);
+      const message = [error.message, error.action].filter(Boolean).join("。 ");
+      gallery?.setError(message);
+      setActivity(message || "检索失败", true);
     }
   }
 
@@ -445,7 +523,9 @@ function mountNode(node, { app, api, document }) {
     if (disposed) return;
     disposed = true;
     guard.invalidate();
+    movieSearch.cancel();
     providerGuard.invalidate();
+    clearTimeout(cacheTimer);
     dialog?.close();
     document.removeEventListener("keydown", onKeyDown, true);
     root.remove();

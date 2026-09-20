@@ -65,6 +65,8 @@ class ProviderCapabilities:
     download: bool = True
     bulk_download: bool = False
     pagination: str = "cursor"
+    cache: bool = False
+    movie_lookup: bool = False
 
     def to_dict(self) -> dict[str, JsonValue]:
         return {
@@ -72,6 +74,8 @@ class ProviderCapabilities:
             "download": self.download,
             "bulk_download": self.bulk_download,
             "pagination": self.pagination,
+            "cache": self.cache,
+            "movie_lookup": self.movie_lookup,
         }
 
 
@@ -82,6 +86,8 @@ class ProviderDescriptor:
     description: str = ""
     filters: tuple[FilterField, ...] = ()
     capabilities: ProviderCapabilities = field(default_factory=ProviderCapabilities)
+    search_presets: tuple[FilterOption, ...] = ()
+    search_placeholder: str = ""
 
     def to_dict(self) -> dict[str, JsonValue]:
         return {
@@ -90,6 +96,8 @@ class ProviderDescriptor:
             "description": self.description,
             "filters": [item.to_dict() for item in self.filters],
             "capabilities": self.capabilities.to_dict(),
+            "search_presets": [option.to_dict() for option in self.search_presets],
+            "search_placeholder": self.search_placeholder,
         }
 
 
@@ -269,6 +277,7 @@ class SearchPage:
     stale: bool = False
     status: ProviderStatus | None = None
     message: str = ""
+    choices: tuple[Mapping[str, JsonValue], ...] = ()
 
     def to_dict(self) -> dict[str, JsonValue]:
         result: dict[str, JsonValue] = {
@@ -280,6 +289,8 @@ class SearchPage:
             result["next_cursor"] = self.next_cursor
         if self.status is not None:
             result["status"] = self.status.to_dict()
+        if self.choices:
+            result["choices"] = [dict(choice) for choice in self.choices]
         return result
 
 

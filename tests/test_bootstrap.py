@@ -5,13 +5,15 @@ import pytest
 from ty_image_spider.bootstrap import ApplicationServices, build_services
 
 
-def test_build_services_composes_four_independent_providers(tmp_path):
+def test_build_services_composes_independent_providers(tmp_path):
     services = build_services(tmp_path / "output", tmp_path / "cache")
 
     assert isinstance(services, ApplicationServices)
     assert [item.id for item in services.providers.descriptors()] == [
         "civitai",
         "wallhaven",
+        "behance",
+        "filmgrab",
         "xiaohongshu",
         "local",
     ]

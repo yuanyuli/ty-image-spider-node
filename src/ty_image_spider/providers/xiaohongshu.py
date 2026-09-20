@@ -8,7 +8,7 @@ import time
 from contextlib import AbstractContextManager
 from dataclasses import replace
 from pathlib import Path
-from typing import Any, Mapping, Protocol
+from typing import Any, Mapping
 from urllib.parse import quote, urlparse, urlsplit, urlunsplit
 
 from PIL import Image
@@ -46,10 +46,7 @@ _BROWSER_FALLBACK_ATTEMPTS = 4
 _BROWSER_FALLBACK_DELAY_SECONDS = 0.75
 
 
-class SessionLock(Protocol):
-    def __enter__(self) -> AbstractContextManager[Any] | None: ...
-
-    def __exit__(self, exc_type: object, exc: object, traceback: object) -> object: ...
+SessionLock = AbstractContextManager[object]
 
 
 class XiaohongshuProvider:
@@ -311,10 +308,21 @@ class XiaohongshuProvider:
                 ],
                 timeout_seconds=120,
             )
+            self._runner.run_json(
+                [
+                    "browser",
+                    "ty-image-spider-xiaohongshu-detail",
+                    "open",
+                    url,
+                    "--window",
+                    "background",
+                ],
+                timeout_seconds=30,
+            )
             browser = self._runner.run_json(
                 [
                     "browser",
-                    "site:xiaohongshu",
+                    "ty-image-spider-xiaohongshu-detail",
                     "eval",
                     build_detail_extract_js(fallback_id),
                 ],

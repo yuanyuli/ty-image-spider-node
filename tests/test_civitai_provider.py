@@ -2,7 +2,14 @@ import json
 from pathlib import Path
 
 from ty_image_spider.cache import JsonCache
-from ty_image_spider.models import DownloadResult, SearchRequest, SpiderError
+from ty_image_spider.models import (
+    AssetDetail,
+    AssetItem,
+    DownloadResult,
+    SearchRequest,
+    SpiderError,
+)
+from ty_image_spider.asset_index import AssetIndex
 from ty_image_spider.providers.civitai import CivitaiProvider
 from ty_image_spider.providers.civitai_client import CivitaiPage
 
@@ -25,6 +32,31 @@ class FakeClient:
 
     def page_metadata(self, site, image_id):
         return {}
+
+
+def test_cached_metadata_skips_remote_prompt_lookup_and_satisfies_filter(tmp_path):
+    class Client(DetailPromptClient):
+        def page_metadata(self, site, image_id):
+            raise AssertionError("缓存命中不应再次请求详情")
+
+    index = AssetIndex(tmp_path)
+    saved = AssetItem(
+        "civitai",
+        "301",
+        prompt="cached prompt",
+        has_prompt=True,
+        metadata={"site": "civitai.com"},
+    )
+    index.store(AssetDetail(saved), b"image", ".png")
+    provider = CivitaiProvider(
+        Client(),
+        JsonCache(tmp_path / "query"),
+        None,
+        cached_asset=index.cached_original,
+    )
+    page = provider.search(SearchRequest("civitai", filters={"only_with_prompt": True}))
+    assert len(page.items) == 1
+    assert page.items[0].prompt == "cached prompt"
 
 
 class PromptPagingClient(FakeClient):

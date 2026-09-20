@@ -1,0 +1,107 @@
+"""策展来源的受限图片下载。"""
+
+from __future__ import annotations
+
+import os
+import re
+import tempfile
+from pathlib import Path
+from typing import Any, Callable
+from urllib.error import URLError
+from urllib.parse import quote, urlsplit, urlunsplit
+from urllib.request import Request, urlopen
+
+from PIL import Image
+
+from ..models import DownloadResult, SpiderError
+from ..security import read_limited, require_https_host, resolve_inside
+
+
+_HOSTS = {
+    "behance": lambda host: host.endswith(".behance.net") and host.startswith("mir-"),
+    "filmgrab": lambda host: host == "film-grab.com",
+    "civitai": lambda host: (
+        host in {"civitai.com", "civitai.red"}
+        or host.endswith(".civitai.com")
+        or host.endswith(".civitai.red")
+    ),
+    "wallhaven": lambda host: host in {"th.wallhaven.cc", "w.wallhaven.cc"},
+}
+_SAFE_ID = re.compile(r"^[0-9]+(?:-[0-9]+)?$")
+
+
+class CuratedDownloader:
+    def __init__(self, open_url: Callable[..., Any] = urlopen) -> None:
+        self._open_url = open_url
+
+    def read(self, url: str, provider: str) -> tuple[bytes, str]:
+        allowed = _HOSTS.get(provider)
+        if allowed is None:
+            raise SpiderError("invalid_provider", "不支持此来源的图片下载")
+        require_https_host(url, allowed)
+        parts = urlsplit(url)
+        url = urlunsplit(
+            (
+                parts.scheme,
+                parts.netloc,
+                quote(parts.path, safe="/%"),
+                quote(parts.query, safe="=&%+/:,?"),
+                "",
+            )
+        )
+        request = Request(
+            url, headers={"User-Agent": "TY-Image-Spider/2.0", "Accept": "image/*"}
+        )
+        try:
+            with self._open_url(request, timeout=60) as response:
+                require_https_host(response.geturl(), allowed)
+                payload = read_limited(response, 64 * 1024 * 1024)
+        except SpiderError:
+            raise
+        except (URLError, TimeoutError, OSError) as exc:
+            raise SpiderError("download_failed", "图片下载失败", status=502) from exc
+        descriptor, name = tempfile.mkstemp(suffix=".image")
+        path = Path(name)
+        try:
+            with os.fdopen(descriptor, "wb") as handle:
+                handle.write(payload)
+            with Image.open(path) as image:
+                image.verify()
+                extension = {
+                    "JPEG": ".jpg",
+                    "PNG": ".png",
+                    "WEBP": ".webp",
+                    "GIF": ".gif",
+                }.get(image.format or "")
+            if not extension:
+                raise SpiderError(
+                    "invalid_image", "远程内容不是受支持的图片", status=502
+                )
+            return payload, extension
+        except (OSError, ValueError) as exc:
+            raise SpiderError(
+                "invalid_image", "远程内容不是有效图片", status=502
+            ) from exc
+        finally:
+            path.unlink(missing_ok=True)
+
+    def download(
+        self, url: str, provider: str, item_id: str, output_root: Path
+    ) -> DownloadResult:
+        if not _SAFE_ID.fullmatch(item_id):
+            raise SpiderError("invalid_asset", "素材 ID 无效")
+        payload, extension = self.read(url, provider)
+        directory = resolve_inside(output_root, Path("ty-image-spider") / provider)
+        directory.mkdir(parents=True, exist_ok=True)
+        target = directory / f"{item_id}{extension}"
+        if not target.exists():
+            descriptor, name = tempfile.mkstemp(dir=directory, prefix=".image-")
+            try:
+                with os.fdopen(descriptor, "wb") as handle:
+                    handle.write(payload)
+                os.replace(name, target)
+            finally:
+                Path(name).unlink(missing_ok=True)
+        return DownloadResult(
+            (target.relative_to(output_root.resolve()).as_posix(),), "图片已下载"
+        )

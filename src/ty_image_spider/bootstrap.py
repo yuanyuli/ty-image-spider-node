@@ -8,10 +8,15 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .cache import JsonCache
+from .asset_index import AssetIndex
 from .downloads import ImageDownloader
 from .opencli import OpenCliRunner
 from .providers.civitai import CivitaiProvider
 from .providers.civitai_client import CivitaiClient
+from .providers.behance import BehanceProvider
+from .providers.curated_client import BehanceClient, FilmGrabClient
+from .providers.curated_download import CuratedDownloader
+from .providers.filmgrab import FilmGrabProvider
 from .providers.local import LocalProvider
 from .providers.registry import ProviderRegistry
 from .providers.wallhaven import WallhavenProvider
@@ -19,10 +24,17 @@ from .providers.wallhaven_client import WallhavenClient
 from .providers.wallhaven_download import WallhavenDownloader
 from .providers.xiaohongshu import XiaohongshuProvider
 from .services.detail import DetailService
+from .services.cache_job import CacheJobService
+from .services.cache_progress import CacheProgress
 from .services.download import DownloadService
 from .services.search import SearchService
 from .services.status import StatusService
 from .services.opencli_connect import OpenCliConnectService
+from .movies.credentials import TmdbCredentials
+from .movies.tmdb import TmdbClient
+from .movies.filmgrab_directory import FilmGrabDirectory
+from .movies.mapping_store import MovieMappingStore
+from .movies.resolution import MovieResolution
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,18 +45,22 @@ class ApplicationServices:
     download: DownloadService
     status: StatusService
     opencli_connect: OpenCliConnectService
+    cache_job: CacheJobService
 
 
 def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
     output = Path(output_root)
     cache = Path(cache_root)
     providers = ProviderRegistry()
+    index = AssetIndex(output)
+    reader = CuratedDownloader()
 
     providers.register(
         CivitaiProvider(
             CivitaiClient(api_key=os.environ.get("CIVITAI_API_KEY", "")),
             JsonCache(cache / "civitai"),
             ImageDownloader(),
+            cached_asset=index.cached_original,
         )
     )
     providers.register(
@@ -53,6 +69,21 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
             JsonCache(cache / "wallhaven"),
             WallhavenDownloader(),
         )
+    )
+    providers.register(BehanceProvider(BehanceClient(), reader))
+    filmgrab_client = FilmGrabClient()
+    movies = MovieResolution(
+        TmdbClient(
+            TmdbCredentials(
+                Path(__file__).resolve().parents[2] / ".local" / "tmdb.json"
+            ),
+            JsonCache(cache / "tmdb"),
+        ),
+        FilmGrabDirectory(filmgrab_client, JsonCache(cache / "film-directory")),
+        MovieMappingStore(cache / "movie-mappings.sqlite3"),
+    )
+    providers.register(
+        FilmGrabProvider(filmgrab_client, reader, JsonCache(cache / "filmgrab"), movies)
     )
     opencli = OpenCliRunner()
     browser_lock = threading.Lock()
@@ -65,12 +96,26 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
     )
     providers.register(LocalProvider(output))
 
+    search = SearchService(providers, index)
+    detail = DetailService(providers, index)
     return ApplicationServices(
         providers=providers,
-        search=SearchService(providers),
-        detail=DetailService(providers),
+        search=search,
+        detail=detail,
         # 下载统一落到 ComfyUI output/ty-node，便于和旧节点及用户工作流约定保持一致。
-        download=DownloadService(providers, output / "ty-node"),
+        download=DownloadService(providers, output / "ty-node", index),
         status=StatusService(providers),
         opencli_connect=OpenCliConnectService(opencli, session_lock=browser_lock),
+        cache_job=CacheJobService(
+            search,
+            detail,
+            index,
+            reader,
+            frozenset(
+                descriptor.id
+                for descriptor in providers.descriptors()
+                if descriptor.capabilities.cache
+            ),
+            CacheProgress(JsonCache(cache / "cache-progress")),
+        ),
     )

@@ -100,6 +100,11 @@ class LocalProvider:
     ) -> tuple[int, str, AssetItem] | None:
         try:
             if (
+                "cache" in path.relative_to(root).parts
+                and "ty-image-spider" in path.relative_to(root).parts
+            ):
+                return None
+            if (
                 path.is_symlink()
                 or not path.is_file()
                 or path.suffix.casefold() not in _IMAGE_EXTENSIONS

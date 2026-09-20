@@ -2,6 +2,8 @@
 
 TY Image Spider 是一个零输出端口的 ComfyUI 素材浏览节点。它在节点内完成图片检索、详情查看与下载，不向下游节点传递图片，也不会触发 ComfyUI 工作流执行。
 
+当前固化版本：**2.0.0**。功能范围、验收记录与回退说明见 [更新记录](CHANGELOG.md)。
+
 ## 支持的素材源
 
 | 素材源 | 搜索与筛选 | 详情 | 下载 | 额外依赖 |
@@ -9,6 +11,8 @@ TY Image Spider 是一个零输出端口的 ComfyUI 素材浏览节点。它在�
 | `civitai.com` | 关键词、周期、排序、SFW、标签、提示词、游标分页 | 提示词、模型、LoRA、workflow、metadata | 单图与本页批量下载 | 可选 Civitai API Key |
 | `civitai.red` | 与 `civitai.com` 相同 | 与 `civitai.com` 相同 | 单图与本页批量下载 | 可选 Civitai API Key |
 | Wallhaven | 关键词、分类、排序、榜单范围、方向、最低分辨率、页码分页 | 作者、统计、标签、分类、色板、原始来源 | 单图与本页 24 张批量下载 | 无，仅访问公开 SFW API |
+| Behance | 全站关键词搜索；空关键词时浏览平面设计或摄影精选 | 项目图集、作者、来源项目 | 项目首图下载 | 无，读取公开项目页面 |
+| FilmGrab | 中文精选片单、TMDB 中文电影版本查询、英文关键词；留空浏览全部电影 | 每部电影的静帧原图 | 单图与本页批量下载 | 扩展中文查询可选 TMDB 读取令牌 |
 | 小红书 | 关键词、排序、图文类型、发布时间；支持完整笔记链接 | 正文、互动数据、完整图集 | 一次下载整篇笔记的全部图片 | OpenCLI >= 1.8.8、Chrome 扩展、已登录的小红书会话 |
 | 本地历史 | 文件名或内嵌提示词、提示词筛选、分页 | 文件信息与图片 metadata | 文件已经位于本地，无需重复下载 | 无 |
 
@@ -81,9 +85,13 @@ OpenCLI 守护进程、等待 Chrome 扩展恢复连接并确认登录账号；�
 
 ## 界面与下载
 
-- 顶部来源控件切换 Civitai、Wallhaven、小红书和本地历史；筛选项由各 Provider 的描述符动态生成。
+- 顶部来源控件切换 Civitai、Wallhaven、Behance、FilmGrab、小红书和本地历史；筛选项由各 Provider 的描述符动态生成。
+- Civitai、Wallhaven、Behance 与 FilmGrab 支持“新增缓存100张”：只将本次新增素材计入100张，已缓存的跳过；显示新增、跳过和失败数量。每组来源、搜索词和筛选条件独立保存断点，再次点击从断点继续，来源耗尽时按实际数量结束。
+- 缓存按来源、站点与素材 ID 建立持久索引，再次检索复用本地预览、详情和提示词。每项缓存一张预览，高清原图和图集其余图片按需联网加载。小红书暂不支持此批量缓存。
+- Behance 精选画廊与关键词搜索均支持上下页，每页24项，使用来源返回的真实游标。
+- FilmGrab 可直接选择中文精选片单；配置 TMDB 后也支持片单以外的中文电影名。先确认电影及上映年份，再匹配 FilmGrab 条目，确认的映射会保存在本机。“查找电影版本”可重新选择同名电影。清空关键词则浏览全部电影。详见 [中文电影查询与配置](docs/tmdb-movie-mapping.md)。
 - 画廊在窄节点中显示两列，在宽节点中显示三列；详情弹窗支持图集缩略图、提示词复制和来源跳转。
-- 下载统一保存到 `output/ty-node/ty-image-spider/` 下的来源子目录：Civitai 为 `civitai/`、Wallhaven 为 `wallhaven/`、小红书为 `xiaohongshu/<note-id>/`。
+- 下载统一保存到 `output/ty-node/ty-image-spider/` 下的来源子目录；后台缓存保存在 `cache/`，索引文件为 `cache/index.sqlite3`。
 - 下载完成后，节点顶部会显示本次文件的完整绝对路径；整页下载的路径列表可在该区域滚动查看。
 - 搜索框提供最近关键词列表，按素材源分别保存在本机浏览器中；不会保存笔记链接或签名参数。
 - 下载器校验来源域名、重定向、响应大小、输出路径和实际图片格式。
@@ -93,6 +101,8 @@ OpenCLI 守护进程、等待 Chrome 扩展恢复连接并确认登录账号；�
 小红书 Cookie 由 OpenCLI 与 Chrome Browser Bridge 管理，本节点不读取或保存 Cookie。带 `xsec_token` 的签名链接和小红书搜索结果不会写入工作流、节点持久属性或持久缓存，也不会写入 `localStorage`。工作流只保存当前来源、不含凭据的筛选条件与查询摘要。
 
 Civitai API Key 不会写入工作流。HTTP 错误响应会隐藏常见的 key、token、secret、cookie 和 authorization 值。
+
+TMDB API 读取访问令牌只保存在本地 `.local/tmdb.json` 或环境变量中，不发送到浏览器、不写入工作流和电影映射。`.local/` 已被 Git 忽略。
 
 Wallhaven 只调用 `https://wallhaven.cc/api/v1` 的公开接口，并固定发送 `purity=100`，不会请求 Sketchy 或 NSFW 内容。搜索与详情不需要账号或 API Key；原图下载只接受 `w.wallhaven.cc`，重定向到其他域名会被拒绝。
 
@@ -140,6 +150,7 @@ node --test tests/*.test.mjs
 
 ## 第三方许可
 
+- [TMDB](https://www.themoviedb.org/) 提供电影身份与译名资料；非商业用途免费但须遵守署名要求，商业使用请核对其许可。[官方说明](https://developer.themoviedb.org/docs/faq)。This product uses the TMDB API but is not endorsed or certified by TMDB.
 - [OpenCLI](https://github.com/jackwener/opencli) 使用 Apache License 2.0。本项目只通过用户安装的 `opencli` 命令调用它，不打包其源码或浏览器扩展。
 - [Wallhaven API](https://wallhaven.cc/help/api) 用于访问公开 SFW 素材。图片版权与使用许可由原作者、上传者及原始来源决定，下载前请自行确认使用范围。
 - [Pillow](https://python-pillow.org/) 用于图片格式与 metadata 校验。

@@ -7,16 +7,25 @@ from pathlib import Path
 from typing import Mapping, Sequence
 
 from ..models import AssetItem, DownloadResult, SpiderError
+from ..asset_index import AssetIndex
 from ..providers.registry import ProviderRegistry
 
 
 class DownloadService:
-    def __init__(self, providers: ProviderRegistry, output_root: Path) -> None:
+    def __init__(
+        self,
+        providers: ProviderRegistry,
+        output_root: Path,
+        index: AssetIndex | None = None,
+    ) -> None:
         self._providers = providers
         self._output_root = Path(output_root)
+        self._index = index
 
     def execute(self, payload: Mapping[str, object]) -> DownloadResult:
         item = AssetItem.from_untrusted(payload.get("item"))
+        if self._index is not None:
+            item = self._index.original(item)
         return self._with_output_root(
             self._providers.get(item.provider).download(item, self._output_root)
         )
@@ -31,6 +40,8 @@ class DownloadService:
             raise SpiderError("bulk_download_limit", "一次最多下载 24 个素材")
 
         items = tuple(AssetItem.from_untrusted(value) for value in raw_items)
+        if self._index is not None:
+            items = tuple(self._index.original(item) for item in items)
         if any(item.provider != provider_id for item in items):
             raise SpiderError("provider_mismatch", "素材来源与请求来源不一致")
 

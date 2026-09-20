@@ -29,16 +29,7 @@ def executable(name: str) -> str:
 
 def main() -> None:
     python_targets = ["src", "tests", "scripts"]
-    mypy_targets = [
-        "src/ty_image_spider/models.py",
-        "src/ty_image_spider/cache.py",
-        "src/ty_image_spider/security.py",
-        "src/ty_image_spider/metadata.py",
-        "src/ty_image_spider/downloads.py",
-        "src/ty_image_spider/opencli.py",
-        "src/ty_image_spider/providers",
-        "src/ty_image_spider/services",
-    ]
+    mypy_targets = ["src"]
     node = executable("node")
     npx = executable("npx")
     js_tests = sorted(

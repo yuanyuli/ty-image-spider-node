@@ -110,6 +110,25 @@ test("画廊显示并触发上一页", () => {
   assert.deepEqual(calls, ["previous"]);
 });
 
+test("可缓存来源显示后台缓存操作和进度", () => {
+  const dom = new JSDOM("<!doctype html><body></body>");
+  const calls = [];
+  const view = createGallery({
+    document: dom.window.document,
+    provider: "filmgrab",
+    capabilities: { cache: true },
+    onCache: () => calls.push("start"),
+    onCancelCache: () => calls.push("cancel"),
+  });
+  view.render([item({ provider: "filmgrab", id: "12-77" })]);
+  view.cacheButton.click();
+  view.setCacheStatus({ state: "running", cached: 7, target: 100 });
+  assert.equal(view.cacheButton.disabled, true);
+  assert.match(view.root.textContent, /7\/100/);
+  view.cancelCacheButton.click();
+  assert.deepEqual(calls, ["start", "cancel"]);
+});
+
 test("加载、错误和空状态保持画廊稳定结构", () => {
   const dom = new JSDOM("<!doctype html><body></body>");
   const view = createGallery({ document: dom.window.document, provider: "local" });

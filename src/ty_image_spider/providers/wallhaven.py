@@ -134,7 +134,9 @@ class WallhavenProvider:
                     ),
                 ),
             ),
-            capabilities=ProviderCapabilities(bulk_download=True, pagination="page"),
+            capabilities=ProviderCapabilities(
+                bulk_download=True, pagination="page", cache=True
+            ),
         )
 
     def status(self) -> ProviderStatus:

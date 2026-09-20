@@ -1,0 +1,70 @@
+from io import BytesIO
+
+import pytest
+from PIL import Image
+
+from ty_image_spider.models import SpiderError
+from ty_image_spider.providers.curated_download import CuratedDownloader
+
+
+class Response(BytesIO):
+    headers = {}
+
+    def __init__(self, payload, url):
+        super().__init__(payload)
+        self.url = url
+
+    def geturl(self):
+        return self.url
+
+
+def test_curated_download_verifies_actual_image_and_saves_under_source(tmp_path):
+    data = BytesIO()
+    Image.new("RGB", (12, 8)).save(data, "PNG")
+    url = "https://film-grab.com/wp-content/uploads/photo-gallery/test.jpg"
+    downloader = CuratedDownloader(
+        lambda *args, **kwargs: Response(data.getvalue(), url)
+    )
+    result = downloader.download(url, "filmgrab", "12-77", tmp_path)
+    assert result.files == ("ty-image-spider/filmgrab/12-77.png",)
+    with Image.open(tmp_path / result.files[0]) as image:
+        assert image.size == (12, 8)
+
+
+def test_curated_download_rejects_untrusted_urls_before_fetching():
+    def unexpected(*args, **kwargs):
+        raise AssertionError("不应请求不受信任的域名")
+
+    downloader = CuratedDownloader(unexpected)
+    with pytest.raises(SpiderError):
+        downloader.read("https://example.com/test.jpg", "behance")
+
+
+def test_curated_download_rejects_html_and_cross_site_redirect():
+    url = "https://film-grab.com/test.jpg"
+    downloader = CuratedDownloader(
+        lambda *args, **kwargs: Response(b"<html>blocked</html>", url)
+    )
+    with pytest.raises(SpiderError, match="有效图片"):
+        downloader.read(url, "filmgrab")
+    downloader = CuratedDownloader(
+        lambda *args, **kwargs: Response(b"image", "https://example.com/test.jpg")
+    )
+    with pytest.raises(SpiderError):
+        downloader.read(url, "filmgrab")
+
+
+def test_curated_download_encodes_old_filmgrab_filenames_without_double_encoding():
+    image = BytesIO()
+    Image.new("RGB", (8, 8)).save(image, "PNG")
+    expected = "https://film-grab.com/wp-content/uploads/photo-gallery/01%20%28155%29%20%C3%A9.jpg?bwg=12%203"
+
+    def open_url(request, **kwargs):
+        assert request.full_url == expected
+        return Response(image.getvalue(), expected)
+
+    downloader = CuratedDownloader(open_url)
+    downloader.read(
+        "https://film-grab.com/wp-content/uploads/photo-gallery/01 (155) é.jpg?bwg=12%203",
+        "filmgrab",
+    )

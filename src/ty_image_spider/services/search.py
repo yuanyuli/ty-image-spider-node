@@ -2,15 +2,20 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Mapping
 
 from ..models import SearchPage, SearchRequest, SpiderError
+from ..asset_index import AssetIndex
 from ..providers.registry import ProviderRegistry
 
 
 class SearchService:
-    def __init__(self, providers: ProviderRegistry) -> None:
+    def __init__(
+        self, providers: ProviderRegistry, index: AssetIndex | None = None
+    ) -> None:
         self._providers = providers
+        self._index = index
 
     def execute(self, payload: Mapping[str, object]) -> SearchPage:
         provider_id = payload.get("provider")
@@ -36,4 +41,9 @@ class SearchService:
             cursor,
             refresh,
         )
-        return self._providers.get(provider_id).search(request)
+        page = self._providers.get(provider_id).search(request)
+        if self._index is None or provider_id == "xiaohongshu":
+            return page
+        return replace(
+            page, items=tuple(self._index.overlay(item) for item in page.items)
+        )

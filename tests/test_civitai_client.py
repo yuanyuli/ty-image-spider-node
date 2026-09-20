@@ -36,6 +36,37 @@ class Response:
         return self.final_url
 
 
+def test_page_metadata_retries_red_image_on_com_with_browser_headers():
+    requests = []
+    html = (
+        '<script type="application/json">'
+        '{"image":{"meta":{"prompt":"a visible prompt",'
+        '"negativePrompt":"blur"}}}</script>'
+    )
+
+    class HtmlResponse(Response):
+        def __init__(self, final_url):
+            self.payload = html.encode()
+            self.final_url = final_url
+
+    def open_url(request, timeout):
+        requests.append(request)
+        if "civitai.red" in request.full_url:
+            raise HTTPError(request.full_url, 403, "forbidden", {}, None)
+        return HtmlResponse(request.full_url)
+
+    result = CivitaiClient(open_url=open_url).page_metadata("civitai.red", "143124948")
+
+    assert result["prompt"] == "a visible prompt"
+    assert result["negativePrompt"] == "blur"
+    assert [request.full_url for request in requests] == [
+        "https://civitai.red/images/143124948",
+        "https://civitai.com/images/143124948",
+    ]
+    assert requests[1].get_header("User-agent").startswith("Mozilla/")
+    assert requests[1].get_header("Referer") == "https://civitai.com/"
+
+
 def test_client_builds_query_and_keeps_api_key_out_of_url():
     requests = []
 

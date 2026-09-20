@@ -3,7 +3,61 @@ import test from "node:test";
 import { JSDOM } from "jsdom";
 
 import { createIcon, createIconButton } from "../web/icons.js";
+
+test("手动修改电影名后片单选择同步，不保留上一部电影", () => {
+  const dom = new JSDOM("<body></body>");
+  const view = renderSourceControls({
+    document: dom.window.document,
+    providers: [
+      {
+        provider: {
+          id: "filmgrab",
+          label: "FilmGrab",
+          search_presets: [{ value: "花样年华", label: "花样年华" }],
+        },
+        status: { available: true },
+      },
+    ],
+    provider: "filmgrab",
+    filters: { query: "花样年华" },
+  });
+  view.query.value = "低俗小说";
+  view.query.dispatchEvent(new dom.window.Event("input"));
+  assert.equal(view.root.querySelector('[name="search_preset"]').value, "");
+  view.query.value = "花样年华";
+  view.query.dispatchEvent(new dom.window.Event("input"));
+  assert.equal(view.root.querySelector('[name="search_preset"]').value, "花样年华");
+});
 import { renderSourceControls } from "../web/source_controls.js";
+
+test("中文片单选择后填充中文搜索词并只发起一次搜索", () => {
+  const dom = new JSDOM("<!doctype html><body></body>");
+  const calls = [];
+  const view = renderSourceControls({
+    document: dom.window.document,
+    providers: [
+      {
+        provider: {
+          id: "filmgrab",
+          label: "FilmGrab",
+          search_placeholder: "中文片名或留空浏览",
+          search_presets: [{ value: "花样年华", label: "花样年华 · 东方色彩" }],
+        },
+      },
+    ],
+    provider: "filmgrab",
+    onSearch: (value) => calls.push(value),
+  });
+  const select = view.root.querySelector('[name="search_preset"]');
+  select.value = "花样年华";
+  select.dispatchEvent(new dom.window.Event("change"));
+  assert.equal(view.query.value, "花样年华");
+  assert.deepEqual(calls, ["花样年华"]);
+  assert.match(view.query.placeholder, /中文片名/);
+  select.value = "";
+  select.dispatchEvent(new dom.window.Event("change"));
+  assert.deepEqual(calls, ["花样年华", ""]);
+});
 
 const providers = [
   {

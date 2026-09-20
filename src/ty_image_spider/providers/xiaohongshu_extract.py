@@ -30,7 +30,8 @@ def build_card_extract_js() -> str:
     'section.note-item, section:has(a[href*="/search_result/"]), section:has(a[href*="/explore/"])'
   );
   for (const card of cards) {
-    const link = card.querySelector('a[href*="/search_result/"], a[href*="/explore/"]');
+    const link = Array.from(card.querySelectorAll('a[href*="/search_result/"], a[href*="/explore/"]'))
+      .find((candidate) => candidate.href.includes('xsec_token='));
     if (!link) continue;
     let url = '';
     try {
@@ -110,6 +111,8 @@ def merge_search_rows(rows: object, cards: object) -> list[dict[str, Any]]:
         card_url = _trusted_note_url(card.get("url"))
         if card_url and "xsec_token=" in card_url:
             source_url = card_url
+        if "xsec_token=" not in source_url:
+            continue
         preview = _trusted_image_url(card.get("preview_url"))
         image_count = card.get("image_count", 1)
         if (
@@ -192,7 +195,9 @@ def _trusted_image_url(value: object) -> str | None:
         or host == "xiaohongshu.com"
         or host.endswith(".xiaohongshu.com")
     )
-    return value if parsed.scheme == "https" and trusted else None
+    if not trusted or parsed.scheme not in {"http", "https"}:
+        return None
+    return parsed._replace(scheme="https").geturl()
 
 
 def _note_id(url: str) -> str:

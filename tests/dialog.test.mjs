@@ -139,3 +139,17 @@ test("详情异步更新保留已打开的全屏查看器", () => {
   assert.match(view.overlay.textContent, /补全后的提示词/);
   view.close();
 });
+
+test("详情异步返回原图时替换预览并更新图集", () => {
+  const dom = new JSDOM("<!doctype html><body></body>", { url: "https://localhost/" });
+  const value = detail();
+  const view = openAssetDialog({ document: dom.window.document, detail: value });
+  view.update({
+    ...value,
+    images: ["https://example.com/original.jpg", "https://example.com/second.jpg"],
+  });
+  assert.equal(view.mainImage.src, "https://example.com/original.jpg");
+  view.selectImage(1);
+  assert.equal(view.mainImage.src, "https://example.com/second.jpg");
+  view.close();
+});

@@ -10,8 +10,8 @@ export function openAssetDialog(context) {
     copyText = defaultCopy,
     onClose = () => {},
   } = context;
-  const item = detail.item;
-  const images = detail.images?.length ? detail.images : item.preview_url ? [item.preview_url] : [];
+  let item = detail.item;
+  let images = detail.images?.length ? detail.images : item.preview_url ? [item.preview_url] : [];
   const priorFocus = document.activeElement;
   const overlay = element(document, "div", "tyis-dialog-backdrop");
   const dialog = element(document, "section", "tyis-dialog");
@@ -39,18 +39,22 @@ export function openAssetDialog(context) {
   mainImage.tabIndex = 0;
   imageFrame.append(mainImage);
   const thumbs = element(document, "div", "tyis-thumbs");
-  images.forEach((url, index) => {
-    const button = element(document, "button", "tyis-thumb");
-    button.type = "button";
-    button.setAttribute("aria-label", `查看第 ${index + 1} 张图片`);
-    button.setAttribute("aria-pressed", String(index === 0));
-    const image = element(document, "img");
-    image.src = url;
-    image.alt = "";
-    button.append(image);
-    button.addEventListener("click", () => selectImage(index));
-    thumbs.append(button);
-  });
+  function renderThumbs() {
+    thumbs.replaceChildren();
+    images.forEach((url, index) => {
+      const button = element(document, "button", "tyis-thumb");
+      button.type = "button";
+      button.setAttribute("aria-label", `查看第 ${index + 1} 张图片`);
+      button.setAttribute("aria-pressed", String(index === 0));
+      const image = element(document, "img");
+      image.src = url;
+      image.alt = "";
+      button.append(image);
+      button.addEventListener("click", () => selectImage(index));
+      thumbs.append(button);
+    });
+  }
+  renderThumbs();
   stage.append(imageFrame, thumbs);
 
   const panel = element(document, "aside", "tyis-detail-panel");
@@ -58,7 +62,13 @@ export function openAssetDialog(context) {
   if (item.provider === "civitai") panel.append(renderCivitai(document, item, detail, copyText));
   else if (item.provider === "wallhaven") panel.append(renderWallhaven(document, item));
   else if (item.provider === "xiaohongshu") panel.append(renderXiaohongshu(document, item, detail));
-  else panel.append(renderLocal(document, detail));
+  else if (item.provider === "behance" || item.provider === "filmgrab") {
+    if (detail.content) {
+      const section = sectionWithTitle(document, "作品说明");
+      section.append(element(document, "p", "tyis-detail-copy", detail.content));
+      panel.append(section);
+    }
+  } else panel.append(renderLocal(document, detail));
   const actionBar = element(document, "div", "tyis-detail-actions");
   if (item.download_mode !== "none") {
     const download = element(
@@ -125,6 +135,12 @@ export function openAssetDialog(context) {
   function update(nextDetail) {
     if (closed || !nextDetail?.item) return;
     const nextItem = nextDetail.item;
+    item = nextItem;
+    if (nextDetail.images?.length) {
+      images = [...nextDetail.images];
+      mainImage.src = images[0];
+      renderThumbs();
+    }
     const nextPrompt = nextItem.prompt;
     const prompt = overlay.querySelector(".tyis-prompt-copy");
     const unavailable = overlay.querySelector(".tyis-prompt-unavailable");
@@ -296,6 +312,8 @@ function sourceLabel(provider) {
     {
       civitai: "CIVITAI",
       wallhaven: "WALLHAVEN",
+      behance: "BEHANCE",
+      filmgrab: "FILMGRAB",
       xiaohongshu: "小红书",
       local: "本地历史",
     }[provider] || provider

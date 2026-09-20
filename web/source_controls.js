@@ -1,4 +1,5 @@
 import { createIcon, createIconButton } from "./icons.js";
+import { renderTmdbHelp } from "./tmdb_help.js";
 
 export function renderSourceControls(context) {
   const {
@@ -13,6 +14,7 @@ export function renderSourceControls(context) {
     onCheck = () => {},
     onConnect = () => {},
     onFilterChange = () => {},
+    onMovieLookup = () => {},
   } = context;
   const current = providers.find((entry) => entry.provider.id === provider) || providers[0];
   const unavailable = current?.status?.available === false;
@@ -59,12 +61,21 @@ export function renderSourceControls(context) {
   query.spellcheck = false;
   query.value = String(filters.query || "");
   query.placeholder =
-    current?.provider.id === "xiaohongshu" ? "搜索关键词或粘贴笔记链接" : "搜索素材";
+    current?.provider.search_placeholder ||
+    (current?.provider.id === "xiaohongshu" ? "搜索关键词或粘贴笔记链接" : "搜索素材");
   query.setAttribute("aria-label", "搜索素材");
   query.disabled = unavailable;
   const historyMenu = element(document, "div", "tyis-search-history");
   historyMenu.setAttribute("role", "listbox");
   historyMenu.hidden = true;
+  function syncPreset() {
+    const preset = root.querySelector('[name="search_preset"]');
+    if (preset) {
+      preset.value = current.provider.search_presets.some((entry) => entry.value === query.value)
+        ? query.value
+        : "";
+    }
+  }
   function updateHistory() {
     historyMenu.replaceChildren();
     if (query.disabled) return;
@@ -78,6 +89,7 @@ export function renderSourceControls(context) {
       option.addEventListener("pointerdown", (event) => event.preventDefault());
       option.addEventListener("click", () => {
         query.value = item;
+        syncPreset();
         onFilterChange("query", item);
         historyMenu.hidden = true;
         onSearch(item);
@@ -88,6 +100,7 @@ export function renderSourceControls(context) {
   }
   query.addEventListener("focus", updateHistory);
   query.addEventListener("input", () => {
+    syncPreset();
     onFilterChange("query", query.value);
     updateHistory();
   });
@@ -114,8 +127,42 @@ export function renderSourceControls(context) {
   refresh.disabled = unavailable;
   refresh.addEventListener("click", onRefresh);
   searchRow.append(searchWrap, searchButton, refresh);
+  if (current?.provider.capabilities?.movie_lookup) {
+    const versions = element(document, "button", "tyis-subtle-button", "查找电影版本");
+    versions.type = "button";
+    versions.title = "通过 TMDB 按中文片名、年份选择电影，也可重新选择已记住的版本";
+    versions.addEventListener("click", () => onMovieLookup(query.value.trim()));
+    searchRow.append(versions);
+  }
 
   const filterRow = element(document, "div", "tyis-filter-row");
+  if (current?.provider.search_presets?.length) {
+    filterRow.append(
+      renderField(
+        document,
+        {
+          name: "search_preset",
+          label: "中文精选片单",
+          kind: "select",
+          default: "",
+          options: [
+            { value: "", label: "浏览全部 / 自行输入片名" },
+            ...current.provider.search_presets,
+          ],
+        },
+        current.provider.search_presets.some((entry) => entry.value === query.value)
+          ? query.value
+          : "",
+        (_name, value) => {
+          query.value = value;
+          historyMenu.hidden = true;
+          onFilterChange("query", value);
+          onSearch(value);
+        },
+        { disabled: unavailable },
+      ),
+    );
+  }
   for (const field of current?.provider.filters || []) {
     filterRow.append(
       renderField(document, field, filters[field.name], onFilterChange, {
@@ -127,6 +174,7 @@ export function renderSourceControls(context) {
     );
   }
   root.append(sourceBar, searchRow, filterRow);
+  if (current?.provider.capabilities?.movie_lookup) root.append(renderTmdbHelp(document));
   if (unavailable) {
     const action = element(document, "div", "tyis-source-action");
     if (current.status.action) {

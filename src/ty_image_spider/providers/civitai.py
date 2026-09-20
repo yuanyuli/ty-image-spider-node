@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import replace
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping
 
 from ..cache import JsonCache
 from ..downloads import ImageDownloader
@@ -35,11 +35,17 @@ class CivitaiProvider:
     id = "civitai"
 
     def __init__(
-        self, client: CivitaiClient, cache: JsonCache, downloader: ImageDownloader
+        self,
+        client: CivitaiClient,
+        cache: JsonCache,
+        downloader: ImageDownloader,
+        *,
+        cached_asset: Callable[[AssetItem], AssetItem | None] | None = None,
     ) -> None:
         self._client = client
         self._cache = cache
         self._downloader = downloader
+        self._cached_asset = cached_asset
 
     def descriptor(self) -> ProviderDescriptor:
         return ProviderDescriptor(
@@ -94,7 +100,7 @@ class CivitaiProvider:
                 FilterField("only_with_prompt", "仅含提示词", "toggle", False),
                 FilterField("count", "数量", "number", 12, minimum=1, maximum=100),
             ),
-            capabilities=ProviderCapabilities(bulk_download=True),
+            capabilities=ProviderCapabilities(bulk_download=True, cache=True),
         )
 
     def status(self) -> ProviderStatus:
@@ -116,8 +122,20 @@ class CivitaiProvider:
                 pages_scanned += 1
                 for raw in raw_page.items:
                     item = self._normalize(raw, site)
+                    cached = (
+                        self._cached_asset(item)
+                        if self._cached_asset and not request.refresh
+                        else None
+                    )
+                    if cached is not None:
+                        item = replace(
+                            cached,
+                            preview_url=item.preview_url,
+                            source_url=item.source_url,
+                        )
                     if (
-                        not item.has_prompt
+                        cached is None
+                        and not item.has_prompt
                         and enriched_count < _MAX_PROMPT_ENRICH_ITEMS
                     ):
                         item = self._with_page_metadata_safe(item, site)
