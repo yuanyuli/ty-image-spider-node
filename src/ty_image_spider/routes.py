@@ -14,6 +14,7 @@ from aiohttp import web
 
 from .bootstrap import ApplicationServices, build_services
 from .models import SpiderError, JsonValue
+from .http_json import JsonBodyReader
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -139,14 +140,11 @@ async def _execute_payload(
         return _unexpected_error()
 
 
+_body_reader = JsonBodyReader()
+
+
 async def _request_json(request: web.Request) -> Mapping[str, object]:
-    try:
-        payload = await request.json()
-    except Exception as exc:
-        raise SpiderError("invalid_json", "请求正文不是有效 JSON") from exc
-    if not isinstance(payload, Mapping):
-        raise SpiderError("invalid_json", "请求正文必须是 JSON 对象")
-    return payload
+    return await _body_reader.read(request)
 
 
 async def _respond(call: Callable[[], object]) -> web.Response:
