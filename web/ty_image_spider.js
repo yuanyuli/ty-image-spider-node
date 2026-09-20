@@ -6,6 +6,7 @@ import { createGallery } from "./gallery.js";
 import { createSearchHistory } from "./search_history.js";
 import { renderSourceControls } from "./source_controls.js";
 import { createMovieSearch } from "./movie_search.js";
+import { clearComfyPreview, installPreviewIsolation } from "./preview_isolation.js";
 import {
   createProviderSessions,
   createRequestGuard,
@@ -29,8 +30,8 @@ export function createImageSpiderExtension({ app, api, document }) {
 function installLifecycle(nodeType, dependencies) {
   const created = nodeType.prototype.onNodeCreated;
   const configured = nodeType.prototype.onConfigure;
-  const executed = nodeType.prototype.onExecuted;
   const removed = nodeType.prototype.onRemoved;
+  installPreviewIsolation(nodeType);
   nodeType.prototype.onNodeCreated = function (...args) {
     const result = created?.apply(this, args);
     clearComfyPreview(this);
@@ -43,24 +44,11 @@ function installLifecycle(nodeType, dependencies) {
     mountNode(this, dependencies).restore();
     return result;
   };
-  nodeType.prototype.onExecuted = function (...args) {
-    const result = executed?.apply(this, args);
-    clearComfyPreview(this);
-    this.setDirtyCanvas?.(true, true);
-    return result;
-  };
   nodeType.prototype.onRemoved = function (...args) {
     this.tyImageSpider?.dispose();
     this.tyImageSpider = null;
     return removed?.apply(this, args);
   };
-}
-
-function clearComfyPreview(node) {
-  delete node.imgs;
-  delete node.images;
-  delete node.imageIndex;
-  delete node.previewMediaType;
 }
 
 function mountNode(node, { app, api, document }) {

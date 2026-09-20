@@ -43,23 +43,21 @@ def test_cache_job_walks_pages_and_indexes_distinct_items(tmp_path):
         SearchStub(), DetailStub(), index, ImageStub(), frozenset({"filmgrab"})
     )
     started = service.start({"provider": "filmgrab", "query": "film", "filters": {}})
-    for _ in range(100):
-        status = service.status(started["id"])
-        if status["state"] != "running":
-            break
-        time.sleep(0.01)
+    status = finished(service, started["id"])
     assert status["state"] == "complete"
     assert status["cached"] == 3
     assert index.overlay(AssetItem("filmgrab", "2-1")).preview_url.startswith("/view?")
 
 
 def finished(service, job_id):
-    for _ in range(200):
+    # 这里验证真实磁盘写入结果，不约束共享 CI runner 的 I/O 性能。
+    deadline = time.monotonic() + 30
+    while time.monotonic() < deadline:
         status = service.status(job_id)
         if status["state"] != "running":
             return status
-        time.sleep(0.01)
-    pytest.fail("缓存任务未及时结束")
+        time.sleep(0.02)
+    pytest.fail(f"缓存任务未及时结束：{service.status(job_id)}")
 
 
 def test_cache_job_stops_at_100_and_second_run_reuses_index(tmp_path):

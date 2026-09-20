@@ -215,6 +215,90 @@ test("忽略其他工作流误投递到同 ID 节点的图片预览", async () =
   assert.equal(node.imageIndex, undefined);
 });
 
+test("重绘不读取同 ID 外来预览，也不创建默认预览控件", async () => {
+  const { extension, NodeType, app } = harness();
+  const foreignImages = [{ src: "blob:foreign-sampling-preview" }];
+  app.nodePreviewImages = { 1: foreignImages };
+  let reads = 0;
+  NodeType.prototype.onDrawBackground = function () {
+    reads++;
+    this.imgs = app.nodePreviewImages[this.id];
+    this.widgets.push({ name: "$$canvas-image-preview", type: "IMAGE_PREVIEW" });
+  };
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.id = 1;
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+  node.onDrawBackground();
+  node.onDrawBackground();
+
+  assert.equal(reads, 0);
+  assert.equal(node.imgs, undefined);
+  assert.equal(node.hideOutputImages, true);
+  assert.equal(
+    node.widgets.some((widget) => widget.type === "IMAGE_PREVIEW"),
+    false,
+  );
+  assert.equal(app.nodePreviewImages[1], foreignImages);
+  assert.ok(node.domWidgets[0].element.querySelector(".tyis-gallery"));
+  node.onRemoved();
+});
+
+test("执行事件不会启动延迟回写图片的默认处理器", async () => {
+  const { extension, NodeType } = harness();
+  NodeType.prototype.onExecuted = function (message) {
+    return Promise.resolve().then(() => {
+      this.imgs = message.images;
+      this.imageIndex = 0;
+    });
+  };
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+  await node.onExecuted({ images: [{ filename: "late-foreign.png" }] });
+  assert.equal(node.imgs, undefined);
+  assert.equal(node.imageIndex, undefined);
+  node.onRemoved();
+});
+
+test("其他类型节点仍保留默认预览处理器", async () => {
+  const { extension, NodeType } = harness();
+  const draw = function () {};
+  const executed = function () {};
+  NodeType.prototype.onDrawBackground = draw;
+  NodeType.prototype.onExecuted = executed;
+  await extension.beforeRegisterNodeDef(NodeType, { name: "PreviewImage" });
+  assert.equal(NodeType.prototype.onDrawBackground, draw);
+  assert.equal(NodeType.prototype.onExecuted, executed);
+  assert.equal(new NodeType().hideOutputImages, undefined);
+});
+
+test("恢复工作流清除残留默认预览且保留素材控件", async () => {
+  const { extension, NodeType } = harness();
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+  let removed = 0;
+  node.widgets.push({
+    name: "$$canvas-image-preview",
+    onRemove() {
+      removed++;
+    },
+  });
+  node.preview = ["blob:stale"];
+  node.imgs = [{ src: "blob:stale" }];
+  node.onConfigure({});
+  assert.equal(removed, 1);
+  assert.equal(node.preview, undefined);
+  assert.equal(node.imgs, undefined);
+  assert.equal(node.widgets.length, 1);
+  assert.equal(node.domWidgets.length, 1);
+  node.onRemoved();
+});
+
 test("素材源响应前同步显示初始组件骨架", async () => {
   let resolveProviders;
   const fetchApi = (path) => {

@@ -6,8 +6,8 @@ from pathlib import Path
 def test_runtime_and_manifest_versions_match():
     from ty_image_spider.version import USER_AGENT, __version__
 
-    assert __version__ == "2.5.0"
-    assert USER_AGENT == "TY-Image-Spider/2.5.0"
+    assert __version__ == "2.5.1"
+    assert USER_AGENT == "TY-Image-Spider/2.5.1"
     assert (
         re.search(
             r'^version = "([^"]+)"', Path("pyproject.toml").read_text("utf-8"), re.M

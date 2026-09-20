@@ -1,4 +1,5 @@
 import subprocess
+from types import SimpleNamespace
 
 import pytest
 
@@ -199,7 +200,8 @@ def test_runner_invokes_windows_cmd_shim_through_node_for_browser_scripts(
     entry.parent.mkdir(parents=True)
     entry.write_text("", encoding="utf-8")
     fake_run = FakeRun(completed(0, "[]"))
-    monkeypatch.setattr("ty_image_spider.opencli.os.name", "nt")
+    # 仅模拟被测模块的平台视图，避免污染 pathlib 和 pytest 的全局 os.name。
+    monkeypatch.setattr("ty_image_spider.opencli.os", SimpleNamespace(name="nt"))
     opencli = OpenCliRunner(run=fake_run, which=lambda _: str(cmd))
 
     opencli.run_json(["browser", "site:xiaohongshu", "eval", "(() => [])()"], 30)
