@@ -2,7 +2,7 @@
 
 TY Image Spider 是一个零输出端口的 ComfyUI 素材浏览节点。它在节点内完成图片检索、详情查看与下载，不向下游节点传递图片，也不会触发 ComfyUI 工作流执行。
 
-当前固化版本：**2.4.0**。功能范围、验收记录与回退说明见 [更新记录](CHANGELOG.md)。
+当前固化版本：**2.5.0**。功能范围、验收记录与回退说明见 [更新记录](CHANGELOG.md)。
 
 ## 支持的素材源
 
@@ -28,7 +28,7 @@ TY Image Spider 是一个零输出端口的 ComfyUI 素材浏览节点。它在�
 | 小红书（暂隐藏） | 保留接入代码，暂不显示来源入口 | — | — | 恢复后需 OpenCLI、Chrome 扩展及登录会话 |
 | 本地历史 | 文件名或内嵌提示词、提示词筛选、分页 | 文件信息与图片 metadata | 文件已经位于本地，无需重复下载 | 无 |
 
-节点会同时读取新版 `output/ty-image-spider/` 与旧版 `output/ty-node/` 历史。各素材源由独立 Provider 实现；新增来源不需要修改现有来源的请求与下载流程。
+当前下载目录为 `output/ty-node/ty-image-spider/`；同时兼容读取历史 `output/ty-image-spider/` 与 `output/ty-node/` 图片。各素材源由独立 Provider 实现；新增来源不需要修改现有来源的请求与下载流程。
 
 ## 安装
 
@@ -39,11 +39,7 @@ cd <ComfyUI>\custom_nodes\ty-image-spider-node
 <ComfyUI Python> -m pip install -r requirements.txt
 ```
 
-本地工作区开发使用 junction，不复制源码：
-
-```powershell
-cmd /c mklink /J "C:\path\to\ComfyUI\custom_nodes\ty-image-spider-node" "C:\path\to\ty-image-spider-node"
-```
+安装依赖时请使用运行 ComfyUI 的 Python；便携版通常为 `python_embeded/python.exe`。节点运行不需要 Node.js。
 
 安装后在 `TY Utils/素材浏览` 分类中添加 `TY Image Spider · 素材浏览`。该节点没有输出端口，所有浏览与下载操作都在节点界面内完成。
 
@@ -64,7 +60,7 @@ API Key 只通过 `Authorization` 请求头发送，不会放入 URL、缓存、
 小红书是可选素材源。它不可用时，Civitai 与本地历史仍可正常使用。
 
 1. 安装 Node.js `>= 20.18.1`。
-2. 安装 OpenCLI >= 1.8.8。npm 当前公开的最新版仍为 `1.8.7`，请从已验证的上游提交 `8271afc` 构建安装：
+2. 安装 OpenCLI >= 1.8.8。历史验证使用上游提交 `8271afc`；如需复现该版本，可构建安装：
 
    ```powershell
    git clone https://github.com/jackwener/opencli.git
@@ -128,23 +124,7 @@ Wallhaven 只调用 `https://wallhaven.cc/api/v1` 的公开接口，并固定发
 
 ## 开发与测试
 
-项目使用总工作区的 uv 虚拟环境：
-
-```powershell
-cd C:\path\to\source
-uv sync
-uv run --project . python ty-comfyui-utils-node\ty-image-spider-node\scripts\check_quality.py
-```
-
-也可以在节点目录运行分项检查：
-
-```powershell
-& '..\..\.venv\Scripts\python.exe' -m pytest -q
-npm install
-node --test tests/*.test.mjs
-```
-
-测试使用固定 fixture、注入式 HTTP/进程替身和临时目录，不依赖 Civitai 或小红书实时网络。
+源码仓库可独立创建虚拟环境并运行测试，完整步骤见 [贡献指南](CONTRIBUTING.md)。测试使用固定 fixture、注入式 HTTP/进程替身和临时目录，不依赖实时外部站点。
 
 ## 故障排查
 
@@ -179,3 +159,7 @@ node --test tests/*.test.mjs
 - [Pillow](https://python-pillow.org/) 用于图片格式与 metadata 校验。
 - [Lucide](https://lucide.dev/) 图标路径用于界面按钮，遵循 ISC License。
 - `jsdom` 与 Prettier 仅用于前端开发和测试，不进入 ComfyUI 运行时。
+
+## 开源与维护
+
+代码采用 [MIT](LICENSE)，外部素材不包含在该授权内。请阅读 [素材权利](docs/source-rights.md)、[第三方声明](THIRD_PARTY_NOTICES.md)、[兼容性](docs/compatibility.md)、[贡献指南](CONTRIBUTING.md)、[安全政策](SECURITY.md) 和 [行为准则](CODE_OF_CONDUCT.md)。
