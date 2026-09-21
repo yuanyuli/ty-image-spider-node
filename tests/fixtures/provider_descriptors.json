@@ -104,8 +104,24 @@
             "label": "全部"
           },
           {
+            "value": "Anime",
+            "label": "Anime"
+          },
+          {
+            "value": "Beach",
+            "label": "Beach"
+          },
+          {
+            "value": "Fantasy",
+            "label": "Fantasy"
+          },
+          {
             "value": "Portrait",
             "label": "Portrait"
+          },
+          {
+            "value": "Landscape",
+            "label": "Landscape"
           }
         ]
       },

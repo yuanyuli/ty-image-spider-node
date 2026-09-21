@@ -258,3 +258,21 @@ def test_civitai_descriptor_and_download_capabilities(tmp_path):
     assert provider.download(item, tmp_path).files == (
         "ty-image-spider/civitai/101.png",
     )
+
+
+def test_civitai_legacy_tags_remain_available_and_map_to_api_ids(tmp_path):
+    expected = {
+        "Anime": 4,
+        "Beach": 5998,
+        "Fantasy": 5207,
+        "Portrait": 1441,
+        "Landscape": 8363,
+    }
+    client = FakeClient()
+    provider = make_provider(tmp_path, client)
+    field = next(field for field in provider.descriptor().filters if field.name == "tag")
+
+    assert {option.value for option in field.options} == {"", *expected}
+    for name, tag_id in expected.items():
+        provider.search(SearchRequest("civitai", filters={"tag": name}))
+        assert client.calls[-1][1]["tags"] == tag_id

@@ -27,7 +27,13 @@ from ..models import (
 from .civitai_client import CivitaiClient
 
 
-_TAGS = {"Portrait": 1441}
+_TAGS = {
+    "Anime": 4,
+    "Beach": 5998,
+    "Fantasy": 5207,
+    "Portrait": 1441,
+    "Landscape": 8363,
+}
 _MAX_PROMPT_SCAN_PAGES = 5
 _MAX_PROMPT_ENRICH_ITEMS = 24
 
@@ -119,7 +125,8 @@ class CivitaiProvider:
                     "标签",
                     "select",
                     "",
-                    (FilterOption("", "全部"), FilterOption("Portrait", "Portrait")),
+                    (FilterOption("", "全部"),)
+                    + tuple(FilterOption(name, name) for name in _TAGS),
                 ),
                 FilterField("only_with_prompt", "仅含提示词", "toggle", False),
                 FilterField("count", "数量", "number", 12, minimum=1, maximum=100),
