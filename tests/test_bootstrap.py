@@ -12,6 +12,8 @@ def test_build_services_composes_independent_providers(tmp_path):
     assert [item.id for item in services.providers.descriptors()] == [
         "civitai",
         "wallhaven",
+        "netbian",
+        "bizhi99",
         "behance",
         "colossal",
         "designmilk",
@@ -41,6 +43,8 @@ def test_build_services_creates_source_specific_cache_directories(tmp_path):
 
     assert (cache_root / "civitai").is_dir()
     assert (cache_root / "wallhaven").is_dir()
+    assert (cache_root / "netbian").is_dir()
+    assert (cache_root / "bizhi99").is_dir()
     assert (cache_root / "aperture").is_dir()
     assert (cache_root / "printmag").is_dir()
     assert (cache_root / "nasa").is_dir()

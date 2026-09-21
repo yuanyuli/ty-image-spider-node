@@ -64,12 +64,12 @@ class WallhavenProvider:
     def descriptor(self) -> ProviderDescriptor:
         return ProviderDescriptor(
             presentation=ProviderPresentation(
-                "inspiration",
-                "AI 与壁纸",
+                "wallpaper",
+                "壁纸",
                 "W",
                 "WALLHAVEN",
+                15,
                 10,
-                20,
                 "按当前搜索条件新增最多100张素材，已有缓存将跳过",
                 True,
             ),

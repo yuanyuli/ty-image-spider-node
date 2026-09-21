@@ -40,6 +40,8 @@ from .providers.registry import ProviderRegistry
 from .providers.wallhaven import WallhavenProvider
 from .providers.wallhaven_client import WallhavenClient
 from .providers.wallhaven_download import WallhavenDownloader
+from .providers.netbian import NetbianProvider, NetbianClient
+from .providers.bizhi99 import Bizhi99Provider, Bizhi99Client
 from .providers.xiaohongshu import XiaohongshuProvider
 from .services.detail import DetailService
 from .services.cache_job import CacheJobService
@@ -87,6 +89,20 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
             WallhavenClient(),
             JsonCache(cache / "wallhaven"),
             WallhavenDownloader(),
+        )
+    )
+    providers.register(
+        NetbianProvider(
+            NetbianClient(),
+            JsonCache(cache / "netbian"),
+            CuratedDownloader(NetbianProvider.image_policy),
+        )
+    )
+    providers.register(
+        Bizhi99Provider(
+            Bizhi99Client(),
+            JsonCache(cache / "bizhi99"),
+            CuratedDownloader(Bizhi99Provider.image_policy),
         )
     )
     providers.register(BehanceProvider(BehanceClient()))

@@ -371,6 +371,7 @@ test("后发素材源检查结果不会被较慢的旧请求覆盖", async () =>
   await Promise.all(pending.map(() => Promise.resolve()));
 
   await new Promise((resolve) => setTimeout(resolve, 0));
+  node.domWidgets[0].element.querySelector('[data-source-group="wallpaper"]').click();
   const source = node.domWidgets[0].element.querySelector('[data-provider="wallhaven"]');
   source.click();
   assert.match(node.domWidgets[0].element.textContent, /已连接/);
@@ -491,7 +492,9 @@ test("切换来源后恢复各自已经加载的图片", async () => {
   });
   node.tyImageSpider.render();
 
+  node.domWidgets[0].element.querySelector('[data-source-group="wallpaper"]').click();
   node.domWidgets[0].element.querySelector('[data-provider="wallhaven"]').click();
+  node.domWidgets[0].element.querySelector('[data-source-group="inspiration"]').click();
   node.domWidgets[0].element.querySelector('[data-provider="civitai"]').click();
 
   assert.equal(node.tyImageSpider.state.get().items[0].id, "c-1");

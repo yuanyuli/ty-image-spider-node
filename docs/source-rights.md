@@ -6,6 +6,8 @@
 | --- | --- |
 | Civitai（含 civitai.red） | 公开图片 API 与详情页；核对作者、模型及作品许可，镜像可访问不产生额外授权。[主站](https://civitai.com/) |
 | Wallhaven | [公开 API](https://wallhaven.cc/help/api)；上传者不一定拥有版权，优先核对原始来源和作者。 |
+| 彼岸图网 | [公开分类与详情页](https://pic.netbian.com/)；壁纸来源、作者和转载许可以原页面为准。 |
+| 壁纸网 | [公开分类与详情页](https://www.bizhi99.com/)；图片由站点静态主机提供，下载不代表获得商用或再发布许可。 |
 | Behance | [公开作品页](https://www.behance.net/)；保留项目与创作者链接，公开作品集不等于商业授权。 |
 | Colossal | [公开专题](https://www.thisiscolossal.com/)；核对专题中摄影师、艺术家署名和原作链接。 |
 | Design Milk | [公开专题](https://design-milk.com/)；图片权利归相应作者及权利方。 |

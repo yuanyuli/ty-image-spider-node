@@ -158,12 +158,12 @@
     "label": "Wallhaven",
     "description": "浏览 Wallhaven 的公开 SFW 壁纸与摄影素材",
     "presentation": {
-      "group_id": "inspiration",
-      "group_label": "AI 与壁纸",
+      "group_id": "wallpaper",
+      "group_label": "壁纸",
       "short_label": "W",
       "detail_label": "WALLHAVEN",
-      "group_order": 10,
-      "source_order": 20,
+      "group_order": 15,
+      "source_order": 10,
       "cache_description": "按当前搜索条件新增最多100张素材，已有缓存将跳过",
       "visible": true
     },
@@ -307,6 +307,152 @@
     },
     "search_presets": [],
     "search_placeholder": ""
+  },
+  "netbian": {
+    "id": "netbian",
+    "label": "彼岸图网",
+    "description": "浏览彼岸图网公开的中文 4K 壁纸与手机壁纸",
+    "presentation": {
+      "group_id": "wallpaper",
+      "group_label": "壁纸",
+      "short_label": "B",
+      "detail_label": "NETBIAN",
+      "group_order": 15,
+      "source_order": 20,
+      "cache_description": "按当前分类新增最多100张素材，已有缓存将跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "分类",
+        "kind": "select",
+        "default": "latest",
+        "options": [
+          {
+            "value": "latest",
+            "label": "最新"
+          },
+          {
+            "value": "landscape",
+            "label": "4K风景"
+          },
+          {
+            "value": "anime",
+            "label": "4K动漫"
+          },
+          {
+            "value": "movie",
+            "label": "4K剧照"
+          },
+          {
+            "value": "car",
+            "label": "4K汽车"
+          },
+          {
+            "value": "animal",
+            "label": "4K动物"
+          },
+          {
+            "value": "background",
+            "label": "4K背景"
+          },
+          {
+            "value": "mobile",
+            "label": "4K手机"
+          },
+          {
+            "value": "ultrawide",
+            "label": "5K带鱼屏"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": true,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "按标题筛选，例如：秋日、风景"
+  },
+  "bizhi99": {
+    "id": "bizhi99",
+    "label": "壁纸网",
+    "description": "浏览壁纸网公开的中文 4K、5K 和带鱼屏壁纸",
+    "presentation": {
+      "group_id": "wallpaper",
+      "group_label": "壁纸",
+      "short_label": "B",
+      "detail_label": "BIZHI99",
+      "group_order": 15,
+      "source_order": 30,
+      "cache_description": "按当前分类新增最多100张素材，已有缓存将跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "分类",
+        "kind": "select",
+        "default": "latest",
+        "options": [
+          {
+            "value": "latest",
+            "label": "最新"
+          },
+          {
+            "value": "landscape",
+            "label": "风景美图"
+          },
+          {
+            "value": "stars",
+            "label": "星空壁纸"
+          },
+          {
+            "value": "anime",
+            "label": "动漫壁纸"
+          },
+          {
+            "value": "background",
+            "label": "背景壁纸"
+          },
+          {
+            "value": "animal",
+            "label": "萌宠动物"
+          },
+          {
+            "value": "car",
+            "label": "汽车天下"
+          },
+          {
+            "value": "movie",
+            "label": "影视剧照"
+          },
+          {
+            "value": "ultrawide",
+            "label": "带鱼屏"
+          },
+          {
+            "value": "4k",
+            "label": "4K壁纸"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": true,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "按标题筛选，例如：风景、电影、动漫"
   },
   "behance": {
     "id": "behance",

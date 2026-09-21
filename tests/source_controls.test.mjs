@@ -132,7 +132,7 @@ test("来源导航按用途分组且切换分类不会提前切换来源", () =>
   const groups = [...view.root.querySelectorAll("[data-source-group]")];
   assert.deepEqual(
     groups.map((button) => button.textContent),
-    ["AI 与壁纸", "摄影与设计", "艺术馆藏", "电影", "本地"],
+    ["AI 与壁纸", "壁纸", "摄影与设计", "艺术馆藏", "电影", "本地"],
   );
   assert.equal(
     view.root.querySelector('[data-source-group="editorial"]').getAttribute("aria-selected"),
