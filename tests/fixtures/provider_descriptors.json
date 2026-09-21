@@ -1195,6 +1195,53 @@
     ],
     "search_placeholder": "中文片名，如花样年华；留空浏览全部电影"
   },
+  "tmdb-images": {
+    "id": "tmdb-images",
+    "label": "TMDB 图片",
+    "description": "按中文或英文电影名浏览 TMDB 公开海报与静态剧照",
+    "presentation": {
+      "group_id": "cinema",
+      "group_label": "电影",
+      "short_label": "TMDB",
+      "detail_label": "TMDB 电影图片",
+      "group_order": 40,
+      "source_order": 20,
+      "cache_description": "按当前电影新增最多100张素材，已有缓存将跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "type",
+        "label": "图片类型",
+        "kind": "select",
+        "default": "backdrop",
+        "options": [
+          {
+            "value": "backdrop",
+            "label": "横幅剧照"
+          },
+          {
+            "value": "poster",
+            "label": "海报"
+          },
+          {
+            "value": "all",
+            "label": "全部"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": true,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "中文或英文电影名，例如：花样年华"
+  },
   "vam": {
     "id": "vam",
     "label": "V&A",

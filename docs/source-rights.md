@@ -19,6 +19,7 @@
 | 美国国会图书馆 | [官方接口](https://www.loc.gov/apis/)；逐项查看 Rights & Access，无已知限制并非对所有用途的担保。 |
 | NASA Image Library | [官方图片库](https://images.nasa.gov/)；核对 [媒体使用规范](https://www.nasa.gov/nasa-brand-center/images-and-media/)，第三方署名、人物肖像和标识可能另有限制。 |
 | FilmGrab | [电影静帧](https://film-grab.com/)；电影画面通常受版权保护，网站收录不等于提供商用许可。 |
+| TMDB 图片 | [TMDB 图片 API](https://developer.themoviedb.org/reference/movie-images) 与 [图片主机](https://image.tmdb.org/)；电影海报和剧照通常受电影版权及 TMDB 条款限制。 |
 | V&A | [馆藏接口](https://developers.vam.ac.uk/)；逐项核对馆藏页及图像使用条款。 |
 | 芝加哥艺术博物馆 | [官方接口](https://api.artic.edu/docs/)；仅对明确标记开放授权的作品按对应条款使用。 |
 | 克利夫兰艺术博物馆 | [开放馆藏](https://www.clevelandart.org/open-access)；核对每件作品的许可，不将开放政策推及所有内容。 |

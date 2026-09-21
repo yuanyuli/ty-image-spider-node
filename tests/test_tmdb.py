@@ -52,3 +52,26 @@ def test_missing_token_is_actionable_and_file_changes_are_read_without_restart(
         TmdbClient(credentials).search("低俗小说")
     path.write_text('{"read_access_token":"example"}')
     assert credentials.read() == "example"
+
+
+def test_images_request_uses_safe_image_types_and_language(tmp_path):
+    credentials = TmdbCredentials(
+        tmp_path / "tmdb.json", environment={"TMDB_READ_ACCESS_TOKEN": "private-token"}
+    )
+
+    def open_url(request, timeout):
+        assert request.get_header("Authorization") == "Bearer private-token"
+        assert request.full_url.endswith(
+            "/movie/680/images?include_image_language=zh%2Cen%2Cnull"
+        )
+        return Response(
+            json.dumps(
+                {
+                    "backdrops": [{"file_path": "/backdrop.jpg", "width": 1920, "height": 1080}],
+                    "posters": [{"file_path": "/poster.jpg", "width": 500, "height": 750}],
+                }
+            ).encode()
+        )
+
+    result = TmdbClient(credentials, open_url=open_url).images(680)
+    assert [item["type"] for item in result] == ["backdrop", "poster"]

@@ -35,6 +35,7 @@ from .providers.curated_client import BehanceClient, FilmGrabClient
 from .providers.curated_download import CuratedDownloader
 from .providers.image_readers import ImageReaderRegistry
 from .providers.filmgrab import FilmGrabProvider
+from .providers.tmdb_images import TmdbImageProvider
 from .providers.local import LocalProvider
 from .providers.registry import ProviderRegistry
 from .providers.wallhaven import WallhavenProvider
@@ -148,13 +149,14 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
         )
     )
     filmgrab_client = FilmGrabClient()
-    movies = MovieResolution(
-        TmdbClient(
-            TmdbCredentials(
-                Path(__file__).resolve().parents[2] / ".local" / "tmdb.json"
-            ),
-            JsonCache(cache / "tmdb"),
+    tmdb_client = TmdbClient(
+        TmdbCredentials(
+            Path(__file__).resolve().parents[2] / ".local" / "tmdb.json"
         ),
+        JsonCache(cache / "tmdb"),
+    )
+    movies = MovieResolution(
+        tmdb_client,
         FilmGrabDirectory(filmgrab_client, JsonCache(cache / "film-directory")),
         MovieMappingStore(cache / "movie-mappings.sqlite3"),
     )
@@ -163,6 +165,7 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
             filmgrab_client, cache=JsonCache(cache / "filmgrab"), movies=movies
         )
     )
+    providers.register(TmdbImageProvider(tmdb_client, JsonCache(cache / "tmdb-images")))
     providers.register(VamProvider(MuseumClient("vam", JsonCache(cache / "vam"))))
     providers.register(ArticProvider(MuseumClient("artic", JsonCache(cache / "artic"))))
     providers.register(

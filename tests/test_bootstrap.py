@@ -25,6 +25,7 @@ def test_build_services_composes_independent_providers(tmp_path):
         "loc",
         "nasa",
         "filmgrab",
+        "tmdb-images",
         "vam",
         "artic",
         "cleveland",
@@ -48,6 +49,7 @@ def test_build_services_creates_source_specific_cache_directories(tmp_path):
     assert (cache_root / "aperture").is_dir()
     assert (cache_root / "printmag").is_dir()
     assert (cache_root / "nasa").is_dir()
+    assert (cache_root / "tmdb-images").is_dir()
     assert (cache_root / "xiaohongshu").is_dir()
 
 

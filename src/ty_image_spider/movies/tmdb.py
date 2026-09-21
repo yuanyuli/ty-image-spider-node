@@ -35,6 +35,10 @@ class TmdbClient:
         self._cache = cache
         self._open_url = open_url or build_opener(_NoRedirect()).open
 
+    def has_credentials(self) -> bool:
+        """返回当前是否配置了读取令牌，不发起网络请求。"""
+        return bool(self.credentials.read())
+
     def search(self, query: str) -> list[dict[str, Any]]:
         params: dict[str, object] = {
             "query": query,
@@ -103,6 +107,46 @@ class TmdbClient:
         )[:8]
         movie["imdb_id"] = data.get("external_ids", {}).get("imdb_id")
         return movie
+
+    def images(self, movie_id: int) -> list[dict[str, Any]]:
+        """读取电影的海报与横幅图片元数据。"""
+        if isinstance(movie_id, bool) or not isinstance(movie_id, int) or movie_id < 1:
+            raise SpiderError("invalid_movie", "电影 ID 无效")
+        data = self._get(
+            f"movie/{movie_id}/images",
+            {"include_image_language": "zh,en,null"},
+        )
+        result: list[dict[str, Any]] = []
+        for media_type, field in (("backdrop", "backdrops"), ("poster", "posters")):
+            rows = data.get(field)
+            if not isinstance(rows, list):
+                continue
+            for row in rows:
+                if not isinstance(row, dict):
+                    continue
+                file_path = row.get("file_path")
+                width = row.get("width")
+                height = row.get("height")
+                if (
+                    not isinstance(file_path, str)
+                    or not re.fullmatch(r"/[A-Za-z0-9._-]+", file_path)
+                    or not isinstance(width, int)
+                    or isinstance(width, bool)
+                    or not isinstance(height, int)
+                    or isinstance(height, bool)
+                    or width < 1
+                    or height < 1
+                ):
+                    continue
+                result.append(
+                    {
+                        "file_path": file_path,
+                        "width": width,
+                        "height": height,
+                        "type": media_type,
+                    }
+                )
+        return result
 
     def _get(self, path: str, params: dict[str, object]) -> dict[str, Any]:
         key = path + "?" + urlencode(params)
