@@ -14,6 +14,7 @@ def test_build_services_composes_independent_providers(tmp_path):
         "wallhaven",
         "netbian",
         "bizhi99",
+        "wallpaperscraft",
         "behance",
         "colossal",
         "designmilk",
@@ -29,6 +30,8 @@ def test_build_services_composes_independent_providers(tmp_path):
         "vam",
         "artic",
         "cleveland",
+        "commons",
+        "met",
         "xiaohongshu",
         "local",
     ]
@@ -46,10 +49,13 @@ def test_build_services_creates_source_specific_cache_directories(tmp_path):
     assert (cache_root / "wallhaven").is_dir()
     assert (cache_root / "netbian").is_dir()
     assert (cache_root / "bizhi99").is_dir()
+    assert (cache_root / "wallpaperscraft").is_dir()
     assert (cache_root / "aperture").is_dir()
     assert (cache_root / "printmag").is_dir()
     assert (cache_root / "nasa").is_dir()
     assert (cache_root / "tmdb-images").is_dir()
+    assert (cache_root / "commons").is_dir()
+    assert (cache_root / "met").is_dir()
     assert (cache_root / "xiaohongshu").is_dir()
 
 

@@ -43,6 +43,9 @@ from .providers.wallhaven_client import WallhavenClient
 from .providers.wallhaven_download import WallhavenDownloader
 from .providers.netbian import NetbianProvider, NetbianClient
 from .providers.bizhi99 import Bizhi99Provider, Bizhi99Client
+from .providers.wallpaperscraft import WallpapersCraftClient, WallpapersCraftProvider
+from .providers.commons import CommonsClient, CommonsProvider
+from .providers.met import MetClient, MetProvider
 from .providers.xiaohongshu import XiaohongshuProvider
 from .services.detail import DetailService
 from .services.cache_job import CacheJobService
@@ -104,6 +107,13 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
             Bizhi99Client(),
             JsonCache(cache / "bizhi99"),
             CuratedDownloader(Bizhi99Provider.image_policy),
+        )
+    )
+    providers.register(
+        WallpapersCraftProvider(
+            WallpapersCraftClient(),
+            JsonCache(cache / "wallpaperscraft"),
+            CuratedDownloader(WallpapersCraftProvider.image_policy),
         )
     )
     providers.register(BehanceProvider(BehanceClient()))
@@ -170,6 +180,24 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
     providers.register(ArticProvider(MuseumClient("artic", JsonCache(cache / "artic"))))
     providers.register(
         ClevelandProvider(MuseumClient("cleveland", JsonCache(cache / "cleveland")))
+    )
+    providers.register(
+        CommonsProvider(
+            CommonsClient(JsonCache(cache / "commons")),
+            CuratedDownloader(CommonsProvider.image_policy),
+        )
+    )
+    providers.register(
+        MetProvider(
+            MetClient(
+                PublicJsonClient(
+                    "https://collectionapi.metmuseum.org/public/collection/v1/",
+                    "纽约大都会艺术博物馆",
+                    JsonCache(cache / "met"),
+                )
+            ),
+            CuratedDownloader(MetProvider.image_policy),
+        )
     )
     opencli = OpenCliRunner()
     browser_lock = threading.Lock()

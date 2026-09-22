@@ -454,6 +454,97 @@
     "search_presets": [],
     "search_placeholder": "按标题筛选，例如：风景、电影、动漫"
   },
+  "wallpaperscraft": {
+    "id": "wallpaperscraft",
+    "label": "WallpapersCraft",
+    "description": "浏览 WallpapersCraft 公开桌面壁纸",
+    "presentation": {
+      "group_id": "wallpaper",
+      "group_label": "壁纸",
+      "short_label": "WC",
+      "detail_label": "WALLPAPERSCRAFT",
+      "group_order": 15,
+      "source_order": 40,
+      "cache_description": "按当前分类新增最多100张素材，已有缓存将跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "分类",
+        "kind": "select",
+        "default": "nature",
+        "options": [
+          {
+            "value": "nature",
+            "label": "自然"
+          },
+          {
+            "value": "city",
+            "label": "城市"
+          },
+          {
+            "value": "abstract",
+            "label": "抽象"
+          },
+          {
+            "value": "space",
+            "label": "太空"
+          },
+          {
+            "value": "anime",
+            "label": "动漫"
+          },
+          {
+            "value": "animals",
+            "label": "动物"
+          },
+          {
+            "value": "cars",
+            "label": "汽车"
+          },
+          {
+            "value": "minimalism",
+            "label": "极简"
+          }
+        ]
+      },
+      {
+        "name": "resolution",
+        "label": "分辨率",
+        "kind": "select",
+        "default": "1920x1080",
+        "options": [
+          {
+            "value": "1920x1080",
+            "label": "1920x1080"
+          },
+          {
+            "value": "2560x1440",
+            "label": "2560x1440"
+          },
+          {
+            "value": "3840x2160",
+            "label": "3840x2160"
+          },
+          {
+            "value": "3440x1440",
+            "label": "3440x1440"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": true,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "可留空浏览分类；关键词建议使用英文"
+  },
   "behance": {
     "id": "behance",
     "label": "Behance",
@@ -1446,6 +1537,120 @@
     },
     "search_presets": [],
     "search_placeholder": "可留空浏览分类；作品名或作者建议用英文"
+  },
+  "commons": {
+    "id": "commons",
+    "label": "Wikimedia Commons",
+    "description": "浏览 Wikimedia Commons 精选、优质和开放许可图片",
+    "presentation": {
+      "group_id": "collections",
+      "group_label": "艺术馆藏",
+      "short_label": "WMC",
+      "detail_label": "WIKIMEDIA COMMONS",
+      "group_order": 30,
+      "source_order": 60,
+      "cache_description": "按当前条件新增最多100张精选图片，已有缓存将跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "图片分类",
+        "kind": "select",
+        "default": "featured",
+        "options": [
+          {
+            "value": "featured",
+            "label": "精选图片"
+          },
+          {
+            "value": "quality",
+            "label": "优质图片"
+          },
+          {
+            "value": "photography",
+            "label": "精选摄影"
+          },
+          {
+            "value": "art",
+            "label": "艺术作品"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": true,
+      "pagination": "cursor",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "可留空浏览精选图片；支持中英文关键词"
+  },
+  "met": {
+    "id": "met",
+    "label": "纽约大都会艺术博物馆",
+    "description": "浏览 The Met 有图片的公共领域馆藏",
+    "presentation": {
+      "group_id": "collections",
+      "group_label": "艺术馆藏",
+      "short_label": "MET",
+      "detail_label": "THE MET",
+      "group_order": 30,
+      "source_order": 70,
+      "cache_description": "按当前分类新增最多100件公共领域馆藏，已有缓存将跳过",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "馆藏分类",
+        "kind": "select",
+        "default": "all",
+        "options": [
+          {
+            "value": "all",
+            "label": "精选公共领域馆藏"
+          },
+          {
+            "value": "paintings",
+            "label": "欧洲绘画"
+          },
+          {
+            "value": "photography",
+            "label": "摄影"
+          },
+          {
+            "value": "modern",
+            "label": "现代艺术"
+          },
+          {
+            "value": "asian",
+            "label": "亚洲艺术"
+          },
+          {
+            "value": "egyptian",
+            "label": "埃及艺术"
+          },
+          {
+            "value": "islamic",
+            "label": "伊斯兰艺术"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": true,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "可留空浏览；作品名或作者建议使用英文"
   },
   "xiaohongshu": {
     "id": "xiaohongshu",

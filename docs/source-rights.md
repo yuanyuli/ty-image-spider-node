@@ -8,6 +8,7 @@
 | Wallhaven | [公开 API](https://wallhaven.cc/help/api)；上传者不一定拥有版权，优先核对原始来源和作者。 |
 | 彼岸图网 | [公开分类与详情页](https://pic.netbian.com/)；壁纸来源、作者和转载许可以原页面为准。 |
 | 壁纸网 | [公开分类与详情页](https://www.bizhi99.com/)；图片由站点静态主机提供，下载不代表获得商用或再发布许可。 |
+| WallpapersCraft | [公开壁纸目录](https://wallpaperscraft.com/)；站点提供下载尺寸不等于授予商用或再发布许可，须沿作品信息核对原作者与授权。 |
 | Behance | [公开作品页](https://www.behance.net/)；保留项目与创作者链接，公开作品集不等于商业授权。 |
 | Colossal | [公开专题](https://www.thisiscolossal.com/)；核对专题中摄影师、艺术家署名和原作链接。 |
 | Design Milk | [公开专题](https://design-milk.com/)；图片权利归相应作者及权利方。 |
@@ -23,6 +24,8 @@
 | V&A | [馆藏接口](https://developers.vam.ac.uk/)；逐项核对馆藏页及图像使用条款。 |
 | 芝加哥艺术博物馆 | [官方接口](https://api.artic.edu/docs/)；仅对明确标记开放授权的作品按对应条款使用。 |
 | 克利夫兰艺术博物馆 | [开放馆藏](https://www.clevelandart.org/open-access)；核对每件作品的许可，不将开放政策推及所有内容。 |
+| Wikimedia Commons | [精选图片分类](https://commons.wikimedia.org/wiki/Commons:Featured_pictures)；逐项遵守许可、署名和相同方式共享等条件，节点保留接口返回的许可字段。 |
+| 纽约大都会艺术博物馆 | [Open Access](https://www.metmuseum.org/hubs/open-access)；节点只收录接口明确标记 `isPublicDomain=true` 的有图作品，仍应保留作品来源信息。 |
 | 小红书（隐藏） | 通过用户安装的 OpenCLI 与自有浏览器会话读取；不打包 Cookie、扩展或素材，遵守原平台规则和作者许可。 |
 | 本地历史 | 读取用户本地图片与元数据；权利取决于原素材来源，保存到本地不改变授权。 |
 

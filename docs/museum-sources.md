@@ -1,6 +1,6 @@
 # 馆藏素材源
 
-2.1.0 新增 V&A、芝加哥艺术博物馆、克利夫兰艺术博物馆。三者通过各自官方公开接口检索，无需账号、API 密钥、OpenCLI 或浏览器登录。沿用现有 `TY Image Spider 2.0` 工作流即可。
+节点目前提供 V&A、芝加哥艺术博物馆、克利夫兰艺术博物馆、Wikimedia Commons 和纽约大都会艺术博物馆五个馆藏来源。它们通过各自官方公开接口检索，无需账号、API 密钥、OpenCLI 或浏览器登录。沿用现有 `TY Image Spider 2.0` 工作流即可。
 
 ## 浏览方式
 
@@ -9,6 +9,8 @@
 | V&A | 摄影、时装、海报、装饰艺术、纹样 | 摄影 | 摄影分类下输入 `landscape` |
 | 芝加哥艺术 | 绘画、平面设计、建筑图纸、雕塑 | 绘画 | 绘画分类下输入 `Monet` |
 | 克利夫兰 | 摄影、绘画、素描、版画、纺织 | 摄影 | 摄影分类下输入 `portrait` |
+| Wikimedia Commons | 精选图片、优质图片、摄影、艺术作品 | 精选图片 | 精选图片下输入中文或英文关键词 |
+| 纽约大都会艺术博物馆 | 公共领域绘画、摄影与多地区艺术 | 精选公共领域馆藏 | 欧洲绘画分类下输入 `van gogh` |
 
 分类选项使用中文，映射到来源的真实分类 ID 或类型名称。关键词留空即可浏览；作者、作品名及说明来自原馆藏记录，主要为英文，当前不做自动翻译。
 
@@ -21,9 +23,11 @@
 - V&A 当前使用作品主图，尚未导入单件作品的所有附图。高清标记的作品预览最长边800像素、下载最长边1680像素；低分辨率作品使用来源提供的原始尺寸。
 - 芝加哥艺术使用 IIIF 图片，预览宽843像素；公共领域作品下载宽1686像素，其他作品宽843像素。详情展示公共领域或来源版权说明。
 - 克利夫兰预览使用 `web` 图，下载优先使用 `print` JPG；不默认下载体积较大的完整 TIFF。
+- Wikimedia Commons 使用800像素缩略图预览，详情重新向官方接口核验原图与许可。节点只接收 JPG、PNG 和 WebP，SVG、TIFF 等格式暂不进入通用图片下载器。
+- 纽约大都会艺术博物馆固定检索有图片且标记为公共领域的作品；预览使用官方小图，详情与下载使用 `primaryImage` 原图。每页最多并发读取6件详情，返回顺序与搜索结果一致。
 - “新增缓存100张”只计算新增成功的作品。每件存一张预览与完整详情；已有缓存跳过，当前条件保存断点，下一次点击继续。缓存任务在后端异步执行，切换来源不影响任务。
 - 预览缓存按来源与作品 ID 索引。再次检索命中后使用本地 `/view` 地址，详情也复用本地记录；高清大图仍按需联网获取。搜索结果列表本身仍需来源接口，不等同于完整离线馆藏。
-- 缓存放在 `output/ty-node/ty-image-spider/cache/`，索引为 `index.sqlite3`。手动下载按来源分别存入 `vam/`、`artic/`、`cleveland/`，下载成功后节点会显示完整绝对路径。
+- 缓存放在 `output/ty-node/ty-image-spider/cache/`，索引为 `index.sqlite3`。手动下载按来源分别存入 `vam/`、`artic/`、`cleveland/`、`commons/`、`met/`，下载成功后节点会显示完整绝对路径。
 
 ## 模块职责
 
@@ -39,6 +43,12 @@
 - [V&A API v2](https://developers.vam.ac.uk/guide/v2/welcome.html)，[IIIF 图片](https://developers.vam.ac.uk/guide/v2/images/iiif.html)
 - [芝加哥艺术博物馆 API](https://api.artic.edu/docs/)
 - [克利夫兰艺术博物馆 Open Access API](https://openaccess-api.clevelandart.org/)
+- [Wikimedia Commons MediaWiki API](https://commons.wikimedia.org/w/api.php)
+- [The Met Collection API](https://metmuseum.github.io/)
+
+## 2026-09-22 实测
+
+WallpapersCraft 以外的两个新增馆藏来源完成只读真实烟测：Wikimedia Commons 精选首屏返回23件有效网页图片，纽约大都会欧洲绘画搜索 `van gogh` 返回22件公共领域作品；两者均有下一页，并成功重新核验首件详情原图。The Met 使用6路受控并发后，首屏详情读取约5.5秒。
 
 ## 2026-09-20 实测
 
