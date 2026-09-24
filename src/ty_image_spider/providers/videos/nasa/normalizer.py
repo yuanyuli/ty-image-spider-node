@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from typing import Mapping, Sequence
-from urllib.parse import quote, urlsplit
+from urllib.parse import quote, urlsplit, urlunsplit
 
 from ....domain import AssetDetail, AssetItem, MediaResource
 from ...collections.assets import plain_text
@@ -64,9 +64,10 @@ def normalize_search_item(raw: Mapping[str, object]) -> AssetItem | None:
 def normalize_detail(item: AssetItem, manifest: Sequence[str]) -> AssetDetail:
     ranked: list[tuple[int, str]] = []
     for url in manifest:
-        if not _allowed_asset(url, image=False):
+        normalized_url = _normalize_video_url(url)
+        if normalized_url is None:
             continue
-        name = urlsplit(url).path.casefold()
+        name = urlsplit(normalized_url).path.casefold()
         if not name.endswith(".mp4"):
             continue
         rank = next(
@@ -82,7 +83,7 @@ def normalize_detail(item: AssetItem, manifest: Sequence[str]) -> AssetDetail:
             ),
             0,
         )
-        ranked.append((rank, url))
+        ranked.append((rank, normalized_url))
     resources: list[MediaResource] = []
     if ranked:
         playback = min(ranked, key=lambda entry: abs(entry[0] - 2))
@@ -133,6 +134,32 @@ def _allowed_asset(url: str, *, image: bool) -> bool:
         )
     except ValueError:
         return False
+
+
+def _normalize_video_url(url: str) -> str | None:
+    try:
+        parsed = urlsplit(url)
+        if (
+            parsed.scheme not in {"http", "https"}
+            or parsed.hostname != "images-assets.nasa.gov"
+            or parsed.username is not None
+            or parsed.password is not None
+            or parsed.port
+            not in ({None, 80} if parsed.scheme == "http" else {None, 443})
+            or not parsed.path.casefold().endswith(".mp4")
+        ):
+            return None
+        return urlunsplit(
+            (
+                "https",
+                "images-assets.nasa.gov",
+                parsed.path,
+                parsed.query,
+                "",
+            )
+        )
+    except ValueError:
+        return None
 
 
 def _mappings(value: object) -> list[Mapping[str, object]]:

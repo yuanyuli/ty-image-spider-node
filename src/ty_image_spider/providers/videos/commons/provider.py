@@ -27,7 +27,7 @@ from .normalizer import normalize_detail, normalize_search_item
 
 IMAGE_POLICY = HostDownloadPolicy(
     "commons-video",
-    lambda host: host == "upload.wikimedia.org",
+    lambda host: host in {"thumb.wikimedia.org", "upload.wikimedia.org"},
     id_pattern=r"[1-9][0-9]*",
 )
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from typing import Any, Callable, Mapping
-from urllib.parse import urlencode, urlsplit
+from urllib.parse import quote, urlencode, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 
 from ....domain import SpiderError
@@ -49,7 +49,21 @@ class NasaVideoClient:
 
     def manifest(self, url: str, refresh: bool = False) -> list[str]:
         self._require_manifest_url(url)
-        data = self._get(url, lambda host: host == "images-assets.nasa.gov", refresh)
+        parsed = urlsplit(url)
+        normalized_url = urlunsplit(
+            (
+                parsed.scheme,
+                parsed.netloc,
+                quote(parsed.path, safe="/%"),
+                parsed.query,
+                "",
+            )
+        )
+        data = self._get(
+            normalized_url,
+            lambda host: host == "images-assets.nasa.gov",
+            refresh,
+        )
         if not isinstance(data, list):
             raise SpiderError("nasa_video_invalid", "NASA 视频清单无效", status=502)
         return [value for value in data if isinstance(value, str)]

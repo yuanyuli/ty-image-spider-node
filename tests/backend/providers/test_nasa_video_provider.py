@@ -100,6 +100,29 @@ def test_nasa_video_client_rejects_unsafe_manifest_host_without_network():
     assert opened is False
 
 
+def test_nasa_video_client_encodes_spaces_in_manifest_path():
+    requests = []
+
+    class Response(BytesIO):
+        def geturl(self):
+            return (
+                "https://images-assets.nasa.gov/video/SLS-4091%20August/collection.json"
+            )
+
+    def open_url(request, timeout):
+        requests.append(request)
+        return Response(b"[]")
+
+    client = NasaVideoClient(open_url=open_url)
+    client.manifest(
+        "https://images-assets.nasa.gov/video/SLS-4091 August/collection.json"
+    )
+
+    assert requests[0].full_url == (
+        "https://images-assets.nasa.gov/video/SLS-4091%20August/collection.json"
+    )
+
+
 def test_nasa_video_detail_selects_medium_playback_and_original_download():
     provider = NasaVideoProvider(FakeClient(), FakeDownloader())
     item = provider.search(SearchRequest("nasa-video")).items[0]
@@ -135,6 +158,23 @@ def test_nasa_video_ignores_unsafe_asset_urls():
     item = provider.search(SearchRequest("nasa-video")).items[0]
 
     assert provider.detail(item).media == ()
+
+
+def test_nasa_video_upgrades_official_http_media_urls_to_https():
+    manifest = [
+        "http://images-assets.nasa.gov/video/demo/demo~medium.mp4",
+        "http://images-assets.nasa.gov/video/demo/demo~orig.mp4",
+        "http://attacker.test/video/demo~orig.mp4",
+    ]
+    provider = NasaVideoProvider(FakeClient(manifest), FakeDownloader())
+    item = provider.search(SearchRequest("nasa-video")).items[0]
+
+    detail = provider.detail(item)
+
+    assert [resource.url for resource in detail.media] == [
+        "https://images-assets.nasa.gov/video/demo/demo~medium.mp4",
+        "https://images-assets.nasa.gov/video/demo/demo~orig.mp4",
+    ]
 
 
 def test_nasa_video_download_delegates_highest_resource(tmp_path):

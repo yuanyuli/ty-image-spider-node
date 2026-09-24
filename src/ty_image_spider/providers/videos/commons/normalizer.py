@@ -22,7 +22,7 @@ def normalize_search_item(raw: Mapping[str, object]) -> AssetItem | None:
     ):
         return None
     preview = info.get("thumburl")
-    if not isinstance(preview, str) or not _allowed_upload_url(preview):
+    if not isinstance(preview, str) or not _allowed_preview_url(preview):
         return None
     metadata = _metadata(info)
     return AssetItem(
@@ -88,7 +88,7 @@ def _select_playback(info: Mapping[str, object]) -> MediaResource | None:
         mime = _string(raw.get("type")).split(";", 1)[0].strip().casefold()
         if (
             not isinstance(url, str)
-            or not _allowed_upload_url(url)
+            or not _allowed_media_url(url)
             or mime not in {"video/mp4", "video/webm", "video/ogg"}
         ):
             continue
@@ -113,7 +113,7 @@ def _select_playback(info: Mapping[str, object]) -> MediaResource | None:
 
 def _original_resource(info: Mapping[str, object]) -> MediaResource | None:
     url = info.get("url")
-    if not isinstance(url, str) or not _allowed_upload_url(url):
+    if not isinstance(url, str) or not _allowed_media_url(url):
         return None
     suffix = urlsplit(url).path.casefold()
     mime = (
@@ -165,12 +165,20 @@ def _meta(values: Mapping[str, object], name: str) -> str:
     return plain_text(entry.get("value")) if isinstance(entry, Mapping) else ""
 
 
-def _allowed_upload_url(url: str) -> bool:
+def _allowed_preview_url(url: str) -> bool:
+    return _allowed_wikimedia_url(url, {"thumb.wikimedia.org", "upload.wikimedia.org"})
+
+
+def _allowed_media_url(url: str) -> bool:
+    return _allowed_wikimedia_url(url, {"upload.wikimedia.org"})
+
+
+def _allowed_wikimedia_url(url: str, hosts: set[str]) -> bool:
     try:
         parsed = urlsplit(url)
         return (
             parsed.scheme == "https"
-            and parsed.hostname == "upload.wikimedia.org"
+            and parsed.hostname in hosts
             and parsed.username is None
             and parsed.password is None
             and parsed.port in {None, 443}

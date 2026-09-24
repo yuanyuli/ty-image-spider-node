@@ -7,7 +7,9 @@ from io import BytesIO
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from ty_image_spider.domain import DownloadResult, SearchRequest
+import pytest
+
+from ty_image_spider.domain import DownloadResult, SearchRequest, SpiderError
 from ty_image_spider.providers.videos.commons import (
     CommonsVideoClient,
     CommonsVideoProvider,
@@ -25,13 +27,14 @@ DETAIL = json.loads(
 
 
 class FakeClient:
-    def __init__(self, detail=None):
+    def __init__(self, detail=None, search=None):
         self.calls = []
         self._detail = detail or DETAIL
+        self._search = search or SEARCH
 
     def search(self, query, category, cursor, refresh=False):
         self.calls.append(("search", query, category, cursor, refresh))
-        return SEARCH
+        return self._search
 
     def detail(self, title, refresh=False):
         self.calls.append(("detail", title, refresh))
@@ -88,6 +91,45 @@ def test_commons_video_search_round_trips_cursor_and_metadata():
     assert item.author == "Alice"
     assert item.metadata["rights"] == "CC BY-SA 4.0"
     assert item.metadata["attribution_required"] is True
+
+
+def test_commons_video_search_accepts_real_thumbnail_host():
+    payload = json.loads(json.dumps(SEARCH))
+    payload["query"]["pages"][0]["videoinfo"][0]["thumburl"] = (
+        "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/Example.webm/800px--Example.webm.jpg"
+    )
+    provider = CommonsVideoProvider(FakeClient(search=payload), FakeDownloader())
+
+    page = provider.search(SearchRequest("commons-video", "city"))
+
+    assert len(page.items) == 1
+    assert page.items[0].preview_url.startswith("https://thumb.wikimedia.org/")
+
+
+def test_commons_video_image_policy_accepts_thumbnail_but_rejects_media_on_it():
+    CommonsVideoProvider.image_policy.validate_url(
+        "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/poster.jpg"
+    )
+    payload = json.loads(json.dumps(DETAIL))
+    info = payload["query"]["pages"][0]["videoinfo"][0]
+    info["derivatives"][0]["src"] = (
+        "https://thumb.wikimedia.org/wikipedia/commons/a/ab/unsafe.mp4"
+    )
+
+    item = (
+        CommonsVideoProvider(FakeClient(), FakeDownloader())
+        .search(SearchRequest("commons-video"))
+        .items[0]
+    )
+    detail = normalize_detail(item, payload)
+
+    assert all(
+        resource.url != info["derivatives"][0]["src"] for resource in detail.media
+    )
+    with pytest.raises(SpiderError):
+        CommonsVideoProvider.image_policy.validate_url(
+            "https://attacker.test/poster.jpg"
+        )
 
 
 def test_commons_video_detail_prefers_mp4_playback_and_original_download():
