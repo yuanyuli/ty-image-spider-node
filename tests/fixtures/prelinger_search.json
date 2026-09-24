@@ -1,0 +1,17 @@
+{
+  "response": {
+    "numFound": 49,
+    "start": 0,
+    "docs": [
+      {
+        "identifier": "Design_for_Dreaming",
+        "title": "Design for Dreaming",
+        "creator": "General Motors",
+        "date": "1956",
+        "description": "A stylized industrial film about future cars.",
+        "downloads": 12000,
+        "item_size": 987654321
+      }
+    ]
+  }
+}

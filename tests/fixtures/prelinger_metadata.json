@@ -1,0 +1,38 @@
+{
+  "metadata": {
+    "identifier": "Design_for_Dreaming",
+    "title": "Design for Dreaming",
+    "creator": "General Motors",
+    "date": "1956",
+    "description": "A stylized industrial film about future cars.",
+    "licenseurl": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "rights": "Public Domain Mark 1.0"
+  },
+  "files": [
+    {
+      "name": "Design_for_Dreaming_512kb.mp4",
+      "format": "512Kb MPEG4",
+      "size": "10485760",
+      "length": "00:09:18",
+      "width": "640",
+      "height": "480"
+    },
+    {
+      "name": "Design_for_Dreaming.mp4",
+      "format": "h.264",
+      "size": "73400320",
+      "length": "558.4",
+      "width": "1280",
+      "height": "960"
+    },
+    {
+      "name": "../escape.mp4",
+      "format": "MPEG4",
+      "size": "999999999"
+    },
+    {
+      "name": "Design_for_Dreaming.gif",
+      "format": "Animated GIF"
+    }
+  ]
+}
