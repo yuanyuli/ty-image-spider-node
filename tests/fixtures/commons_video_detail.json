@@ -1,0 +1,55 @@
+{
+  "query": {
+    "pages": [
+      {
+        "pageid": 123456,
+        "ns": 6,
+        "title": "File:Example film.webm",
+        "videoinfo": [
+          {
+            "url": "https://upload.wikimedia.org/wikipedia/commons/a/a1/Example_film.webm",
+            "descriptionurl": "https://commons.wikimedia.org/wiki/File:Example_film.webm",
+            "thumburl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Example_film.webm/800px--Example_film.webm.jpg",
+            "width": 1920,
+            "height": 1080,
+            "duration": 95.6,
+            "size": 90000000,
+            "derivatives": [
+              {
+                "src": "https://upload.wikimedia.org/wikipedia/commons/transcoded/a/a1/Example_film.webm/Example_film.webm.480p.webm",
+                "type": "video/webm; codecs=vp9",
+                "width": 854,
+                "height": 480,
+                "title": "480p WebM",
+                "bandwidth": 900000
+              },
+              {
+                "src": "https://upload.wikimedia.org/wikipedia/commons/transcoded/a/a1/Example_film.webm/Example_film.webm.720p.mp4",
+                "type": "video/mp4; codecs=avc1",
+                "width": 1280,
+                "height": 720,
+                "title": "720p MP4",
+                "bandwidth": 1800000
+              },
+              {
+                "src": "https://attacker.test/fake.mp4",
+                "type": "video/mp4",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "extmetadata": {
+              "ObjectName": {"value": "Example film"},
+              "Artist": {"value": "<a href='/wiki/User:Alice'>Alice</a>"},
+              "LicenseShortName": {"value": "CC BY-SA 4.0"},
+              "LicenseUrl": {"value": "https://creativecommons.org/licenses/by-sa/4.0/"},
+              "AttributionRequired": {"value": "true"},
+              "ImageDescription": {"value": "<p>A <b>city</b> film.</p>"},
+              "DateTimeOriginal": {"value": "2020-03-02"}
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
