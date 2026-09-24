@@ -2,7 +2,7 @@
 
 from .commons import CommonsVideoClient, CommonsVideoProvider
 from .nasa import NasaVideoClient, NasaVideoProvider
-from .prelinger import PrelingerClient, PrelingerProvider
+from .prelinger import PrelingerClient, PrelingerProvider, is_archive_download_host
 
 __all__ = [
     "CommonsVideoClient",
@@ -11,4 +11,5 @@ __all__ = [
     "NasaVideoProvider",
     "PrelingerClient",
     "PrelingerProvider",
+    "is_archive_download_host",
 ]

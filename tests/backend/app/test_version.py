@@ -7,7 +7,9 @@ def test_runtime_and_manifest_versions_match():
     from ty_image_spider.version import USER_AGENT, __version__
 
     assert __version__ == "2.7.0"
-    assert USER_AGENT == "TY-Image-Spider/2.7.0"
+    assert USER_AGENT == (
+        "TY-Image-Spider/2.7.0 (+https://github.com/yuanyuli/ty-image-spider-node)"
+    )
     assert (
         re.search(
             r'^version = "([^"]+)"', Path("pyproject.toml").read_text("utf-8"), re.M

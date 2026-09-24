@@ -67,6 +67,7 @@ from ..providers.videos import (
     NasaVideoProvider,
     PrelingerClient,
     PrelingerProvider,
+    is_archive_download_host,
 )
 
 
@@ -223,7 +224,7 @@ def register_video_providers(registry: ProviderRegistry, cache_root: Path) -> No
     """构造并注册独立视频来源；只在组合根绑定具体下载策略。"""
     prelinger_policy = VideoDownloadPolicy(
         "prelinger",
-        lambda host: host == "archive.org",
+        is_archive_download_host,
         r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}",
     )
     commons_policy = VideoDownloadPolicy(

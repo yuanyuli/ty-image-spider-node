@@ -22,7 +22,7 @@ CATEGORIES = {
     "science": "incategory:Videos of science",
     "nature": "incategory:Nature videos",
 }
-_VIDEO_INFO = "url|size|mime|mediatype|extmetadata|derivatives|duration"
+_VIDEO_INFO = "url|size|mime|mediatype|extmetadata|derivatives"
 
 
 class CommonsVideoClient:

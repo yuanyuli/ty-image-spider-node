@@ -71,6 +71,7 @@ def test_commons_video_client_constrains_file_namespace_and_video_type():
     assert "city" in params["gsrsearch"][0]
     assert params["prop"] == ["videoinfo"]
     assert "derivatives" in params["viprop"][0]
+    assert "duration" not in params["viprop"][0]
 
 
 def test_commons_video_search_round_trips_cursor_and_metadata():

@@ -32,6 +32,11 @@ IMAGE_POLICY = HostDownloadPolicy(
 )
 
 
+def is_archive_download_host(host: str) -> bool:
+    """只接受 Internet Archive 主站及其官方点分子域。"""
+    return host == "archive.org" or host.endswith(".archive.org")
+
+
 class Downloader(Protocol):
     def download(
         self, resource: MediaResource, item_id: str, output_root: Path

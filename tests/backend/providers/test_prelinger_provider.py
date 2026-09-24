@@ -6,13 +6,17 @@ import json
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from ty_image_spider.domain import DownloadResult, SearchRequest
+import pytest
+
+from ty_image_spider.domain import DownloadResult, SearchRequest, SpiderError
+from ty_image_spider.infrastructure.video import VideoDownloadPolicy
 from ty_image_spider.providers.videos.prelinger import (
     PrelingerClient,
     PrelingerProvider,
     normalize_detail,
     normalize_search_item,
 )
+from ty_image_spider.providers.videos.prelinger import provider as prelinger_module
 
 
 FIXTURES = Path(__file__).resolve().parents[2] / "fixtures"
@@ -79,6 +83,19 @@ def test_prelinger_client_uses_fixed_endpoints_and_24_item_pages():
     assert params["page"] == ["2"]
     assert "collection:prelinger" in params["q"][0]
     assert "mediatype:movies" in params["q"][0]
+
+
+def test_prelinger_download_policy_accepts_only_archive_host_and_subdomains():
+    policy = VideoDownloadPolicy(
+        "prelinger",
+        prelinger_module.is_archive_download_host,
+        r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}",
+    )
+
+    policy.require_url("https://archive.org/download/item/item.mp4")
+    policy.require_url("https://dn801204.us.archive.org/0/items/item/item.mp4")
+    with pytest.raises(SpiderError):
+        policy.require_url("https://evilarchive.org/item.mp4")
 
 
 def test_prelinger_search_normalizes_video_and_numeric_pagination():
