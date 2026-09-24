@@ -17,6 +17,8 @@ from urllib.request import Request, urlopen
 
 from ...domain import SpiderError
 from ...infrastructure.security import read_limited, require_https_host
+
+
 class BehanceClient:
     def __init__(self, open_url: Callable[..., Any] = urlopen) -> None:
         from ..editorial.behance_projects import BehanceProjects

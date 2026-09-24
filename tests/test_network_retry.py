@@ -99,7 +99,9 @@ class Response(io.BytesIO):
 
 @pytest.mark.parametrize("source", ["public", "museum", "film"])
 def test_client_retries_503_but_not_malformed_json(source, monkeypatch):
-    monkeypatch.setattr("ty_image_spider.infrastructure.network_retry.time.sleep", lambda _: None)
+    monkeypatch.setattr(
+        "ty_image_spider.infrastructure.network_retry.time.sleep", lambda _: None
+    )
     calls = []
 
     def open_url(request, **kwargs):

@@ -64,7 +64,9 @@ class MetClient:
         if ids is None:
             return []
         if not isinstance(ids, list):
-            raise SpiderError("met_invalid_response", "大都会博物馆搜索结果无效", status=502)
+            raise SpiderError(
+                "met_invalid_response", "大都会博物馆搜索结果无效", status=502
+            )
         return [
             value
             for value in ids
@@ -76,7 +78,9 @@ class MetClient:
             raise SpiderError("invalid_asset", "大都会博物馆素材 ID 无效")
         data = self._client.get(f"objects/{object_id}", {}).data
         if not isinstance(data, Mapping):
-            raise SpiderError("met_invalid_response", "大都会博物馆作品详情无效", status=502)
+            raise SpiderError(
+                "met_invalid_response", "大都会博物馆作品详情无效", status=502
+            )
         return data
 
     def objects(self, object_ids: list[int]) -> list[Mapping[str, Any]]:
@@ -105,15 +109,24 @@ class MetProvider:
     def descriptor(self) -> ProviderDescriptor:
         return ProviderDescriptor(
             presentation=ProviderPresentation(
-                "collections", "艺术馆藏", "MET", "THE MET", 30, 70,
-                "按当前分类新增最多100件公共领域馆藏，已有缓存将跳过", True,
+                "collections",
+                "艺术馆藏",
+                "MET",
+                "THE MET",
+                30,
+                70,
+                "按当前分类新增最多100件公共领域馆藏，已有缓存将跳过",
+                True,
             ),
             id=self.id,
             label="纽约大都会艺术博物馆",
             description="浏览 The Met 有图片的公共领域馆藏",
             filters=(
                 FilterField(
-                    "category", "馆藏分类", "select", "all",
+                    "category",
+                    "馆藏分类",
+                    "select",
+                    "all",
                     tuple(
                         FilterOption(key, value[0])
                         for key, value in _CATEGORIES.items()
@@ -152,7 +165,9 @@ class MetProvider:
         verified = _artwork(self._client.object(int(item.id)))
         if verified is None or verified.id != item.id:
             raise SpiderError(
-                "met_invalid_response", "大都会博物馆作品不再提供公共领域图片", status=502
+                "met_invalid_response",
+                "大都会博物馆作品不再提供公共领域图片",
+                status=502,
             )
         original = str(verified.metadata["original_url"])
         return AssetDetail(
@@ -187,11 +202,15 @@ def _artwork(raw: Mapping[str, Any]) -> AssetItem | None:
     except SpiderError:
         return None
     tags_value = raw.get("tags")
-    tags = tuple(
-        text
-        for entry in tags_value
-        if isinstance(entry, Mapping) and (text := plain_text(entry.get("term")))
-    ) if isinstance(tags_value, list) else ()
+    tags = (
+        tuple(
+            text
+            for entry in tags_value
+            if isinstance(entry, Mapping) and (text := plain_text(entry.get("term")))
+        )
+        if isinstance(tags_value, list)
+        else ()
+    )
     object_url = plain_text(raw.get("objectURL"))
     if not object_url.startswith("https://www.metmuseum.org/art/collection/search/"):
         object_url = f"https://www.metmuseum.org/art/collection/search/{object_id}"

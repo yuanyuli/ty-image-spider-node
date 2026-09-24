@@ -32,7 +32,11 @@ class FakeClient:
 
     def object(self, object_id):
         self.object_calls.append(object_id)
-        return OBJECT if object_id == 436535 else {"objectID": object_id, "isPublicDomain": False}
+        return (
+            OBJECT
+            if object_id == 436535
+            else {"objectID": object_id, "isPublicDomain": False}
+        )
 
     def objects(self, object_ids):
         self.batch_calls.append(list(object_ids))

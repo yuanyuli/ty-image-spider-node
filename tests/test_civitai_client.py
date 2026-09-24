@@ -5,7 +5,7 @@ from urllib.error import HTTPError
 import pytest
 
 from ty_image_spider.domain import SpiderError
-from ty_image_spider.providers.civitai_client import CivitaiClient
+from ty_image_spider.providers.ai.civitai.client import CivitaiClient
 
 
 FIXTURE = json.loads(

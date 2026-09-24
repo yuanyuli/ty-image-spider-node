@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pytest
 
 from ty_image_spider.infrastructure.cache import JsonCache

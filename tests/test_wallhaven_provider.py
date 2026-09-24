@@ -3,8 +3,8 @@ from pathlib import Path
 
 from ty_image_spider.infrastructure.cache import JsonCache
 from ty_image_spider.domain import DownloadResult, SearchRequest, SpiderError
-from ty_image_spider.providers.wallhaven import WallhavenProvider
-from ty_image_spider.providers.wallhaven_client import WallhavenPage
+from ty_image_spider.providers.wallpapers.wallhaven import WallhavenProvider
+from ty_image_spider.providers.wallpapers.wallhaven.client import WallhavenPage
 
 
 FIXTURES = Path(__file__).parent / "fixtures"

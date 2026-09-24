@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from ..version import USER_AGENT
-from ..infrastructure.network_retry import retry_delay as _retry_delay
+from ....version import USER_AGENT
+from ....infrastructure.network_retry import retry_delay as _retry_delay
 
 import json
 import re
@@ -15,8 +15,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from ..domain import SpiderError
-from ..infrastructure.security import read_limited, require_https_host
+from ....domain import SpiderError
+from ....infrastructure.security import read_limited, require_https_host
 
 
 _API_ROOT = "https://wallhaven.cc/api/v1"

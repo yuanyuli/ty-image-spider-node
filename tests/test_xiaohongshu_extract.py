@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from ty_image_spider.providers.xiaohongshu_extract import (
+from ty_image_spider.providers.ai.xiaohongshu.extract import (
     build_card_extract_js,
     build_detail_extract_js,
     merge_search_rows,

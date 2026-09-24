@@ -6,16 +6,15 @@ import json
 import re
 from dataclasses import replace
 from pathlib import Path
-from typing import Any, Mapping, Protocol
+from typing import Mapping, Protocol
 
-from ..infrastructure.cache import JsonCache
-from ..domain import (
+from ....infrastructure.cache import JsonCache
+from ....domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
     FilterField,
     FilterOption,
-    JsonValue,
     ProviderCapabilities,
     ProviderDescriptor,
     ProviderPresentation,
@@ -24,7 +23,8 @@ from ..domain import (
     SearchRequest,
     SpiderError,
 )
-from .wallhaven_client import WallhavenClient
+from .client import WallhavenClient
+from .normalizer import normalize
 
 
 _SAFE_ID = re.compile(r"^[a-z0-9]{6}$")
@@ -37,7 +37,7 @@ _ORIENTATIONS = {
 }
 
 
-from .shared import HostDownloadPolicy
+from ...shared import HostDownloadPolicy
 
 IMAGE_POLICY = HostDownloadPolicy(
     "wallhaven",
@@ -176,7 +176,7 @@ class WallhavenProvider:
                 else None
             )
             page = SearchPage(
-                tuple(_normalize(raw) for raw in raw_page.items), next_cursor
+                tuple(normalize(raw) for raw in raw_page.items), next_cursor
             )
             self._cache.put(cache_key, page.to_dict())
             return page
@@ -204,7 +204,7 @@ class WallhavenProvider:
         )
 
     def _verified_detail(self, item_id: str) -> AssetItem:
-        verified = _normalize(self._client.detail(item_id))
+        verified = normalize(self._client.detail(item_id))
         if verified.id != item_id:
             raise SpiderError(
                 "wallhaven_invalid_response", "Wallhaven 详情 ID 不匹配", status=502
@@ -248,60 +248,6 @@ def _page_number(cursor: str | None) -> int:
     return max(1, page)
 
 
-def _normalize(raw: Mapping[str, Any]) -> AssetItem:
-    item_id = str(raw.get("id") or "")
-    if not _SAFE_ID.fullmatch(item_id) or str(raw.get("purity") or "") != "sfw":
-        raise SpiderError(
-            "wallhaven_invalid_response", "Wallhaven 返回了无效素材", status=502
-        )
-    raw_thumbs = raw.get("thumbs")
-    thumbs: Mapping[str, Any] = raw_thumbs if isinstance(raw_thumbs, Mapping) else {}
-    raw_uploader = raw.get("uploader")
-    uploader: Mapping[str, Any] = (
-        raw_uploader if isinstance(raw_uploader, Mapping) else {}
-    )
-    tags_value = raw.get("tags")
-    raw_tags: list[Any] = tags_value if isinstance(tags_value, list) else []
-    tags = tuple(
-        str(tag["name"])
-        for tag in raw_tags
-        if isinstance(tag, Mapping) and isinstance(tag.get("name"), str)
-    )
-    colors_value = raw.get("colors")
-    colors: list[JsonValue] = (
-        [str(value) for value in colors_value if isinstance(value, str)]
-        if isinstance(colors_value, list)
-        else []
-    )
-    metadata: dict[str, JsonValue] = {
-        "download_url": str(raw.get("path") or ""),
-        "category": str(raw.get("category") or ""),
-        "purity": "sfw",
-        "resolution": str(raw.get("resolution") or ""),
-        "ratio": str(raw.get("ratio") or ""),
-        "file_size": _integer_or_none(raw.get("file_size")),
-        "file_type": str(raw.get("file_type") or ""),
-        "colors": colors,
-        "original_source": str(raw.get("source") or ""),
-    }
-    return AssetItem(
-        provider="wallhaven",
-        id=item_id,
-        preview_url=str(thumbs.get("large") or raw.get("path") or "") or None,
-        source_url=str(raw.get("url") or f"https://wallhaven.cc/w/{item_id}"),
-        author=str(uploader.get("username") or "") or None,
-        created_at=str(raw.get("created_at") or "") or None,
-        width=_integer_or_none(raw.get("dimension_x")),
-        height=_integer_or_none(raw.get("dimension_y")),
-        stats={
-            "views": _integer_or_zero(raw.get("views")),
-            "favorites": _integer_or_zero(raw.get("favorites")),
-        },
-        tags=tags,
-        metadata=metadata,
-    )
-
-
 def _download_url(item: AssetItem) -> str:
     value = item.metadata.get("download_url")
     if not isinstance(value, str) or not value:
@@ -324,12 +270,3 @@ def _cached_page(value: object) -> SearchPage:
         stale=True,
         message="正在显示缓存结果",
     )
-
-
-def _integer_or_none(value: object) -> int | None:
-    return value if isinstance(value, int) and not isinstance(value, bool) else None
-
-
-def _integer_or_zero(value: object) -> int:
-    normalized = _integer_or_none(value)
-    return normalized if normalized is not None else 0

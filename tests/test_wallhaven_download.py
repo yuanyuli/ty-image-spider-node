@@ -4,7 +4,7 @@ import pytest
 from PIL import Image
 
 from ty_image_spider.domain import SpiderError
-from ty_image_spider.providers.wallhaven_download import WallhavenDownloader
+from ty_image_spider.providers.wallpapers.wallhaven.download import WallhavenDownloader
 
 
 def png_bytes():

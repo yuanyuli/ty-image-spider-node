@@ -6,15 +6,14 @@ import hashlib
 import re
 import time
 from contextlib import AbstractContextManager
-from dataclasses import replace
 from pathlib import Path
 from typing import Any, Mapping
-from urllib.parse import quote, urlparse, urlsplit, urlunsplit
+from urllib.parse import quote, urlparse
 
 from PIL import Image
 
-from ..infrastructure.cache import JsonCache
-from ..domain import (
+from ....infrastructure.cache import JsonCache
+from ....domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
@@ -28,9 +27,9 @@ from ..domain import (
     SearchRequest,
     SpiderError,
 )
-from ..infrastructure.opencli import OpenCliRunner
-from ..infrastructure.security import resolve_inside
-from .xiaohongshu_extract import (
+from ....infrastructure.opencli import OpenCliRunner
+from ....infrastructure.security import resolve_inside
+from .extract import (
     build_card_extract_js,
     build_detail_extract_js,
     build_search_extract_js,
@@ -38,6 +37,7 @@ from .xiaohongshu_extract import (
     merge_search_rows,
     trusted_images,
 )
+from .cache_codec import cache_key, cached_page, persistent_page
 
 
 _SAFE_NOTE_ID = re.compile(r"^[0-9a-zA-Z_-]{1,64}$")
@@ -196,8 +196,8 @@ class XiaohongshuProvider:
         sort = str(filters.get("sort") or "comprehensive")
         note_type = str(filters.get("note_type") or "image")
         publish_time = str(filters.get("publish_time") or "anytime")
-        cache_key = _cache_key(query, sort, note_type, publish_time, count)
-        recent = self._recent_pages.get(cache_key)
+        cache_key_value = cache_key(query, sort, note_type, publish_time, count)
+        recent = self._recent_pages.get(cache_key_value)
         if not request.refresh and recent and time.monotonic() - recent[0] < 30:
             return recent[1]
         args = [
@@ -226,14 +226,14 @@ class XiaohongshuProvider:
                 _search_item(value) for value in merge_search_rows(rows, cards)[:count]
             )
             page = SearchPage(items, message=message)
-            self._recent_pages[cache_key] = (time.monotonic(), page)
-            self._cache.put(cache_key, _persistent_page(page))
+            self._recent_pages[cache_key_value] = (time.monotonic(), page)
+            self._cache.put(cache_key_value, persistent_page(page))
             return page
         except SpiderError:
-            cached = self._cache.get(cache_key, max_age_seconds=300)
+            cached = self._cache.get(cache_key_value, max_age_seconds=300)
             if cached is None:
                 raise
-            return _cached_page(cached)
+            return cached_page(cached)
 
     def _read_search(self, args: list[str], query: str) -> tuple[Any, Any, str]:
         try:
@@ -434,35 +434,6 @@ def _note_id(url: str) -> str:
     if matched:
         return matched.group(1)
     return hashlib.sha256(url.encode("utf-8")).hexdigest()[:24]
-
-
-def _cache_key(
-    query: str, sort: str, note_type: str, publish_time: str, count: int
-) -> str:
-    raw = "\0".join((query, sort, note_type, publish_time, str(count)))
-    return "xiaohongshu:" + hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
-
-def _persistent_page(page: SearchPage) -> dict[str, object]:
-    items = []
-    for item in page.items:
-        preview = _without_query(item.preview_url) if item.preview_url else None
-        items.append(replace(item, preview_url=preview, source_url=None).to_dict())
-    return {"items": items}
-
-
-def _without_query(url: str) -> str:
-    parsed = urlsplit(url)
-    return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, "", ""))
-
-
-def _cached_page(value: object) -> SearchPage:
-    if not isinstance(value, Mapping) or not isinstance(value.get("items"), list):
-        raise SpiderError("cache_invalid", "小红书缓存数据无效", status=502)
-    items = tuple(AssetItem.from_untrusted(item) for item in value["items"])
-    return SearchPage(
-        items, stale=True, message="正在显示短期缓存结果，请重新搜索后查看详情"
-    )
 
 
 def _snapshot_images(directory: Path) -> set[Path]:

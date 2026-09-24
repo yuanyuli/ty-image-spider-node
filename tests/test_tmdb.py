@@ -67,8 +67,12 @@ def test_images_request_uses_safe_image_types_and_language(tmp_path):
         return Response(
             json.dumps(
                 {
-                    "backdrops": [{"file_path": "/backdrop.jpg", "width": 1920, "height": 1080}],
-                    "posters": [{"file_path": "/poster.jpg", "width": 500, "height": 750}],
+                    "backdrops": [
+                        {"file_path": "/backdrop.jpg", "width": 1920, "height": 1080}
+                    ],
+                    "posters": [
+                        {"file_path": "/poster.jpg", "width": 500, "height": 750}
+                    ],
                 }
             ).encode()
         )

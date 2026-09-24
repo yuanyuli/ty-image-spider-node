@@ -8,8 +8,8 @@ from PIL import Image
 
 from ty_image_spider.infrastructure.cache import JsonCache
 from ty_image_spider.domain import AssetItem, SearchRequest, SpiderError
-from ty_image_spider.providers.xiaohongshu import XiaohongshuProvider
-from ty_image_spider.providers.xiaohongshu_extract import (
+from ty_image_spider.providers.ai.xiaohongshu import XiaohongshuProvider
+from ty_image_spider.providers.ai.xiaohongshu.extract import (
     build_card_extract_js,
     build_search_extract_js,
 )

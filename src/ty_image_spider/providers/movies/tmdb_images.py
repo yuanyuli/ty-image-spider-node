@@ -113,14 +113,18 @@ class TmdbImageProvider:
         movie: Mapping[str, Any]
         if movie_id is None:
             if not query:
-                raise SpiderError("tmdb_query_required", "请输入电影名后再搜索 TMDB 图片")
+                raise SpiderError(
+                    "tmdb_query_required", "请输入电影名后再搜索 TMDB 图片"
+                )
             candidates = self._client.search(query)
             if not candidates:
                 raise SpiderError("tmdb_movie_not_found", "TMDB 没有找到匹配的电影")
             movie = candidates[0]
             movie_id = _movie_id(movie.get("id"))
             if movie_id is None:
-                raise SpiderError("tmdb_invalid_response", "TMDB 返回的电影 ID 无效", status=502)
+                raise SpiderError(
+                    "tmdb_invalid_response", "TMDB 返回的电影 ID 无效", status=502
+                )
         else:
             movie = self._client.movie(movie_id)
             query = str(movie.get("title") or query)
@@ -184,7 +188,9 @@ class TmdbImageProvider:
             ):
                 continue
             item_id = f"{movie_id}-{index}"
-            title = str(movie.get("title") or movie.get("original_title") or "未命名电影")
+            title = str(
+                movie.get("title") or movie.get("original_title") or "未命名电影"
+            )
             items.append(
                 AssetItem(
                     provider=self.id,

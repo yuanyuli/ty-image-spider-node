@@ -5,12 +5,12 @@ from __future__ import annotations
 import json
 from dataclasses import replace
 from pathlib import Path
-from typing import Any, Callable, Mapping
+from typing import Callable, Mapping
 
-from ..infrastructure.cache import JsonCache
-from ..infrastructure.downloads import ImageDownloader
-from ..infrastructure.metadata import extract_prompts
-from ..domain import (
+from ....infrastructure.cache import JsonCache
+from ....infrastructure.downloads import ImageDownloader
+from ....infrastructure.metadata import extract_prompts
+from ....domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
@@ -24,7 +24,8 @@ from ..domain import (
     SearchRequest,
     SpiderError,
 )
-from .civitai_client import CivitaiClient
+from .client import CivitaiClient
+from .normalizer import metadata_classification, normalize
 
 
 _TAGS = {
@@ -38,7 +39,7 @@ _MAX_PROMPT_SCAN_PAGES = 5
 _MAX_PROMPT_ENRICH_ITEMS = 24
 
 
-from .shared import HostDownloadPolicy
+from ...shared import HostDownloadPolicy
 
 IMAGE_POLICY = HostDownloadPolicy(
     "civitai",
@@ -152,7 +153,7 @@ class CivitaiProvider:
             while True:
                 pages_scanned += 1
                 for raw in raw_page.items:
-                    item = self._normalize(raw, site)
+                    item = normalize(raw, site)
                     cached = (
                         self._cached_asset(item)
                         if self._cached_asset and not request.refresh
@@ -229,7 +230,7 @@ class CivitaiProvider:
             metadata.pop("prompt", None)
             metadata.pop("negativePrompt", None)
             metadata.pop("negative_prompt", None)
-        metadata["classification"] = _metadata_classification(prompt, metadata)
+        metadata["classification"] = metadata_classification(prompt, metadata)
         return replace(
             item,
             prompt=prompt or None,
@@ -273,49 +274,6 @@ class CivitaiProvider:
         return site, params, bool(filters.get("only_with_prompt", False))
 
     @staticmethod
-    def _normalize(raw: Mapping[str, Any], site: str) -> AssetItem:
-        item_id = str(raw.get("id", ""))
-        raw_meta = raw.get("meta")
-        meta: Mapping[str, Any] = raw_meta if isinstance(raw_meta, Mapping) else {}
-        prompt, negative = extract_prompts(meta)
-        resources = meta.get("resources", [])
-        models: list[dict[str, str]] = []
-        loras: list[dict[str, str]] = []
-        if isinstance(resources, list):
-            for resource in resources:
-                if not isinstance(resource, Mapping):
-                    continue
-                resource_type = str(resource.get("type", "")).lower()
-                name = resource.get("name")
-                if not isinstance(name, str) or not name:
-                    continue
-                normalized = {"type": resource_type, "name": name}
-                if resource_type == "model":
-                    models.append(normalized)
-                elif resource_type == "lora":
-                    loras.append(normalized)
-        metadata: dict[str, Any] = dict(meta)
-        metadata.update({"site": site, "models": models, "loras": loras})
-        metadata["classification"] = _metadata_classification(prompt, meta)
-        source_url = f"https://{site}/images/{item_id}" if item_id else None
-        return AssetItem(
-            provider="civitai",
-            id=item_id,
-            preview_url=str(raw["url"]) if raw.get("url") else None,
-            source_url=source_url,
-            author=str(raw["username"]) if raw.get("username") else None,
-            created_at=str(raw["createdAt"]) if raw.get("createdAt") else None,
-            width=_integer_or_none(raw.get("width")),
-            height=_integer_or_none(raw.get("height")),
-            has_prompt=bool(prompt),
-            prompt=prompt or None,
-            negative_prompt=negative or None,
-            stats=dict(raw["stats"]) if isinstance(raw.get("stats"), Mapping) else {},
-            metadata=metadata,
-            download_mode="single",
-        )
-
-    @staticmethod
     def _cache_key(
         site: str, params: Mapping[str, object], only_with_prompt: bool
     ) -> str:
@@ -345,18 +303,3 @@ class CivitaiProvider:
     def _require_item(item: AssetItem) -> None:
         if item.provider != "civitai" or not item.id.isdigit():
             raise SpiderError("invalid_asset", "Civitai 素材数据无效")
-
-
-def _integer_or_none(value: object) -> int | None:
-    return value if isinstance(value, int) and not isinstance(value, bool) else None
-
-
-def _metadata_classification(prompt: str, metadata: Mapping[str, Any]) -> str:
-    """沿用旧节点 A/B/C 规则，同时忽略本节点附加的辅助字段。"""
-    if metadata.get("workflow"):
-        return "A"
-    if prompt or any(
-        key not in {"site", "models", "loras", "classification"} for key in metadata
-    ):
-        return "B"
-    return "C"

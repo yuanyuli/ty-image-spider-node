@@ -2,7 +2,10 @@ from pathlib import Path
 
 from ty_image_spider.infrastructure.cache import JsonCache
 from ty_image_spider.domain import DownloadResult, SearchRequest, SpiderError
-from ty_image_spider.providers.bizhi99 import Bizhi99ListPage, Bizhi99Provider
+from ty_image_spider.providers.wallpapers.bizhi99 import (
+    Bizhi99ListPage,
+    Bizhi99Provider,
+)
 
 
 FIXTURES = Path(__file__).parent / "fixtures"

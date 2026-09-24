@@ -10,8 +10,8 @@ from ty_image_spider.domain import (
     SpiderError,
 )
 from ty_image_spider.infrastructure.asset_index import AssetIndex
-from ty_image_spider.providers.civitai import CivitaiProvider
-from ty_image_spider.providers.civitai_client import CivitaiPage
+from ty_image_spider.providers.ai.civitai import CivitaiProvider
+from ty_image_spider.providers.ai.civitai.client import CivitaiPage
 
 
 FIXTURE = json.loads(
@@ -270,7 +270,9 @@ def test_civitai_legacy_tags_remain_available_and_map_to_api_ids(tmp_path):
     }
     client = FakeClient()
     provider = make_provider(tmp_path, client)
-    field = next(field for field in provider.descriptor().filters if field.name == "tag")
+    field = next(
+        field for field in provider.descriptor().filters if field.name == "tag"
+    )
 
     assert {option.value for option in field.options} == {"", *expected}
     for name, tag_id in expected.items():

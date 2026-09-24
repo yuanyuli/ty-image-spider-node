@@ -5,7 +5,7 @@ from urllib.error import HTTPError
 import pytest
 
 from ty_image_spider.domain import SpiderError
-from ty_image_spider.providers.wallhaven_client import WallhavenClient
+from ty_image_spider.providers.wallpapers.wallhaven.client import WallhavenClient
 
 
 FIXTURES = Path(__file__).parent / "fixtures"

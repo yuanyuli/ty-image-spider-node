@@ -2,7 +2,10 @@ from pathlib import Path
 
 from ty_image_spider.infrastructure.cache import JsonCache
 from ty_image_spider.domain import DownloadResult, SearchRequest, SpiderError
-from ty_image_spider.providers.netbian import NetbianListPage, NetbianProvider
+from ty_image_spider.providers.wallpapers.netbian import (
+    NetbianListPage,
+    NetbianProvider,
+)
 
 
 FIXTURES = Path(__file__).parent / "fixtures"

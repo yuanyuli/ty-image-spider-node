@@ -15,9 +15,7 @@ from ..movies.filmgrab_directory import FilmGrabDirectory
 from ..movies.mapping_store import MovieMappingStore
 from ..movies.resolution import MovieResolution
 from ..movies.tmdb import TmdbClient
-from ..providers.bizhi99 import Bizhi99Client, Bizhi99Provider
-from ..providers.civitai import CivitaiProvider
-from ..providers.civitai_client import CivitaiClient
+from ..providers.ai import CivitaiClient, CivitaiProvider, XiaohongshuProvider
 from ..providers.commons import CommonsClient, CommonsProvider
 from ..providers.collections import (
     ArticProvider,
@@ -40,7 +38,6 @@ from ..providers.editorial import (
 )
 from ..providers.local import LocalProvider
 from ..providers.met import MetClient, MetProvider
-from ..providers.netbian import NetbianClient, NetbianProvider
 from ..providers.movies import FilmGrabProvider, TmdbImageProvider
 from ..providers.shared import (
     BehanceClient,
@@ -49,11 +46,17 @@ from ..providers.shared import (
     ProviderRegistry,
     PublicJsonClient,
 )
-from ..providers.wallhaven import WallhavenProvider
-from ..providers.wallhaven_client import WallhavenClient
-from ..providers.wallhaven_download import WallhavenDownloader
-from ..providers.wallpaperscraft import WallpapersCraftClient, WallpapersCraftProvider
-from ..providers.xiaohongshu import XiaohongshuProvider
+from ..providers.wallpapers import (
+    Bizhi99Client,
+    Bizhi99Provider,
+    NetbianClient,
+    NetbianProvider,
+    WallhavenClient,
+    WallhavenDownloader,
+    WallhavenProvider,
+    WallpapersCraftClient,
+    WallpapersCraftProvider,
+)
 
 
 def register_ai_providers(
@@ -69,9 +72,7 @@ def register_ai_providers(
     )
 
 
-def register_wallpaper_providers(
-    registry: ProviderRegistry, cache_root: Path
-) -> None:
+def register_wallpaper_providers(registry: ProviderRegistry, cache_root: Path) -> None:
     registry.register(
         WallhavenProvider(
             WallhavenClient(),
@@ -102,9 +103,7 @@ def register_wallpaper_providers(
     )
 
 
-def register_editorial_providers(
-    registry: ProviderRegistry, cache_root: Path
-) -> None:
+def register_editorial_providers(registry: ProviderRegistry, cache_root: Path) -> None:
     registry.register(BehanceProvider(BehanceClient()))
     for source in (
         COLOSSAL,
@@ -135,9 +134,7 @@ def register_editorial_providers(
     )
 
 
-def register_archive_providers(
-    registry: ProviderRegistry, cache_root: Path
-) -> None:
+def register_archive_providers(registry: ProviderRegistry, cache_root: Path) -> None:
     registry.register(
         LocProvider(
             PublicJsonClient(
@@ -166,9 +163,7 @@ def register_movie_providers(registry: ProviderRegistry, cache_root: Path) -> No
     )
     movies = MovieResolution(
         tmdb_client,
-        FilmGrabDirectory(
-            filmgrab_client, JsonCache(cache_root / "film-directory")
-        ),
+        FilmGrabDirectory(filmgrab_client, JsonCache(cache_root / "film-directory")),
         MovieMappingStore(cache_root / "movie-mappings.sqlite3"),
     )
     registry.register(
@@ -183,9 +178,7 @@ def register_movie_providers(registry: ProviderRegistry, cache_root: Path) -> No
     )
 
 
-def register_collection_providers(
-    registry: ProviderRegistry, cache_root: Path
-) -> None:
+def register_collection_providers(registry: ProviderRegistry, cache_root: Path) -> None:
     registry.register(VamProvider(MuseumClient("vam", JsonCache(cache_root / "vam"))))
     registry.register(
         ArticProvider(MuseumClient("artic", JsonCache(cache_root / "artic")))

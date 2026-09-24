@@ -63,3 +63,17 @@ def test_provider_category_packages_export_composition_types():
             PublicJsonClient,
         )
     )
+
+
+def test_large_provider_packages_have_separate_adapters():
+    root = Path("src/ty_image_spider/providers")
+    for relative in (
+        "ai/civitai/client.py",
+        "ai/civitai/normalizer.py",
+        "ai/xiaohongshu/extract.py",
+        "wallpapers/wallhaven/client.py",
+        "wallpapers/netbian/parser.py",
+        "wallpapers/bizhi99/parser.py",
+        "wallpapers/wallpaperscraft/parser.py",
+    ):
+        assert (root / relative).is_file(), relative

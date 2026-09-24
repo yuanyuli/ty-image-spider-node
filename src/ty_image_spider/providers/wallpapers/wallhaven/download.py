@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ..version import USER_AGENT
+from ....version import USER_AGENT
 
 import os
 import re
@@ -13,8 +13,8 @@ from urllib.request import Request, urlopen
 
 from PIL import Image
 
-from ..domain import DownloadResult, SpiderError
-from ..infrastructure.security import read_limited, require_https_host, resolve_inside
+from ....domain import DownloadResult, SpiderError
+from ....infrastructure.security import read_limited, require_https_host, resolve_inside
 
 
 _MAX_IMAGE_BYTES = 64 * 1024 * 1024

@@ -3,7 +3,7 @@ from io import BytesIO
 
 from ty_image_spider.infrastructure.cache import JsonCache
 from ty_image_spider.domain import DownloadResult, SearchRequest
-from ty_image_spider.providers.wallpaperscraft import (
+from ty_image_spider.providers.wallpapers.wallpaperscraft import (
     WallpapersCraftClient,
     WallpapersCraftPage,
     WallpapersCraftProvider,
