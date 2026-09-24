@@ -23,8 +23,8 @@ def test_public_route_and_provider_contracts_are_stable(tmp_path):
     assert tuple((method, path) for method, path, _ in ROUTES) == EXPECTED_ROUTES
     services = build_services(tmp_path / "output", tmp_path / "cache")
     descriptors = services.providers.descriptors()
-    assert len(descriptors) == 24
-    assert sum(item.presentation.visible for item in descriptors) == 23
+    assert len(descriptors) == 27
+    assert sum(item.presentation.visible for item in descriptors) == 26
     assert [item.id for item in descriptors] == list(
         __import__("json").loads(
             Path("tests/fixtures/provider_descriptors.json").read_text("utf-8")

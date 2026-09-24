@@ -1652,6 +1652,179 @@
     "search_presets": [],
     "search_placeholder": "可留空浏览；作品名或作者建议使用英文"
   },
+  "prelinger": {
+    "id": "prelinger",
+    "label": "Prelinger Archives",
+    "description": "浏览 Internet Archive 的经典广告、工业与文化影片",
+    "presentation": {
+      "group_id": "videos",
+      "group_label": "视频素材",
+      "short_label": "PRE",
+      "detail_label": "PRELINGER ARCHIVES",
+      "group_order": 35,
+      "source_order": 10,
+      "cache_description": "按当前条件新增最多100条封面与资料；视频按需播放和下载",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "sort",
+        "label": "排序",
+        "kind": "select",
+        "default": "popular",
+        "options": [
+          {
+            "value": "popular",
+            "label": "热门"
+          },
+          {
+            "value": "newest",
+            "label": "最新"
+          },
+          {
+            "value": "oldest",
+            "label": "最早"
+          },
+          {
+            "value": "relevance",
+            "label": "相关"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": false,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "输入英文主题，如 design、travel、industry"
+  },
+  "commons-video": {
+    "id": "commons-video",
+    "label": "Wikimedia Commons 视频",
+    "description": "搜索 Wikimedia Commons 的开放许可视频",
+    "presentation": {
+      "group_id": "videos",
+      "group_label": "视频素材",
+      "short_label": "WMC",
+      "detail_label": "WIKIMEDIA COMMONS VIDEO",
+      "group_order": 35,
+      "source_order": 20,
+      "cache_description": "按当前条件新增最多100条封面与资料；视频按需播放和下载",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "视频分类",
+        "kind": "select",
+        "default": "all",
+        "options": [
+          {
+            "value": "all",
+            "label": "全部视频"
+          },
+          {
+            "value": "film",
+            "label": "电影"
+          },
+          {
+            "value": "animation",
+            "label": "动画"
+          },
+          {
+            "value": "science",
+            "label": "科学"
+          },
+          {
+            "value": "nature",
+            "label": "自然"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": false,
+      "pagination": "cursor",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "支持中文或英文关键词"
+  },
+  "nasa-video": {
+    "id": "nasa-video",
+    "label": "NASA 视频",
+    "description": "浏览 NASA 官方太空、地球与航天历史视频",
+    "presentation": {
+      "group_id": "videos",
+      "group_label": "视频素材",
+      "short_label": "NASA",
+      "detail_label": "NASA VIDEO LIBRARY",
+      "group_order": 35,
+      "source_order": 30,
+      "cache_description": "按当前条件新增最多100条封面与资料；视频按需播放和下载",
+      "visible": true
+    },
+    "filters": [
+      {
+        "name": "category",
+        "label": "视频分类",
+        "kind": "select",
+        "default": "space",
+        "options": [
+          {
+            "value": "space",
+            "label": "太空"
+          },
+          {
+            "value": "earth",
+            "label": "地球"
+          },
+          {
+            "value": "moon",
+            "label": "月球"
+          },
+          {
+            "value": "mars",
+            "label": "火星"
+          },
+          {
+            "value": "apollo",
+            "label": "阿波罗计划"
+          },
+          {
+            "value": "telescopes",
+            "label": "太空望远镜"
+          },
+          {
+            "value": "astronauts",
+            "label": "宇航员"
+          },
+          {
+            "value": "all",
+            "label": "全部视频"
+          }
+        ]
+      }
+    ],
+    "capabilities": {
+      "detail": true,
+      "download": true,
+      "bulk_download": false,
+      "pagination": "page",
+      "cache": true,
+      "movie_lookup": false
+    },
+    "search_presets": [],
+    "search_placeholder": "可留空浏览分类；任务、天体和人物建议使用英文"
+  },
   "xiaohongshu": {
     "id": "xiaohongshu",
     "label": "小红书",

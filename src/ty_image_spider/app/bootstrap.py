@@ -24,6 +24,7 @@ from .provider_factories import (
     register_local_provider,
     register_movie_providers,
     register_optional_providers,
+    register_video_providers,
     register_wallpaper_providers,
 )
 from .services import ApplicationServices
@@ -43,6 +44,7 @@ def build_services(output_root: Path, cache_root: Path) -> ApplicationServices:
     register_archive_providers(providers, cache)
     register_movie_providers(providers, cache)
     register_collection_providers(providers, cache)
+    register_video_providers(providers, cache)
     opencli = register_optional_providers(providers, cache, browser_lock)
     register_local_provider(providers, output)
 

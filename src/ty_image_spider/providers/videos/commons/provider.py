@@ -62,7 +62,7 @@ class CommonsVideoProvider:
                 "视频素材",
                 "WMC",
                 "WIKIMEDIA COMMONS VIDEO",
-                60,
+                35,
                 20,
                 "按当前条件新增最多100条封面与资料；视频按需播放和下载",
             ),
@@ -131,4 +131,3 @@ def _pages(raw: Mapping[str, object]) -> tuple[Mapping[str, object], ...]:
     if not isinstance(pages, list):
         return ()
     return tuple(page for page in pages if isinstance(page, Mapping))
-

@@ -1,5 +1,7 @@
 import pytest
 
+from ty_image_spider.app import build_services
+
 from ty_image_spider.domain import (
     AssetDetail,
     AssetItem,
@@ -68,3 +70,17 @@ def test_registry_uses_domain_error_for_unknown_provider():
         ProviderRegistry().get("unknown")
 
     assert caught.value.code == "provider_not_found"
+
+
+def test_application_registry_exposes_27_providers_and_hides_only_optional_source(
+    tmp_path,
+):
+    descriptors = build_services(
+        tmp_path / "output", tmp_path / "cache"
+    ).providers.descriptors()
+
+    assert len(descriptors) == 27
+    assert sum(item.presentation.visible for item in descriptors) == 26
+    assert [item.id for item in descriptors if not item.presentation.visible] == [
+        "xiaohongshu"
+    ]

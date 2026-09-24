@@ -65,7 +65,7 @@ class NasaVideoProvider:
                 "视频素材",
                 "NASA",
                 "NASA VIDEO LIBRARY",
-                60,
+                35,
                 30,
                 "按当前条件新增最多100条封面与资料；视频按需播放和下载",
             ),
@@ -142,4 +142,3 @@ def _page(cursor: str | None) -> int:
     if not cursor.isdigit() or not 1 <= int(cursor) <= 10000:
         raise SpiderError("invalid_cursor", "NASA 视频分页游标无效")
     return int(cursor)
-

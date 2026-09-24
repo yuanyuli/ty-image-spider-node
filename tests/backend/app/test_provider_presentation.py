@@ -63,3 +63,32 @@ def test_frontend_descriptor_fixture_matches_backend(tmp_path):
     assert fixture == {
         descriptor.id: descriptor.to_dict() for descriptor in descriptors
     }
+
+
+def test_video_sources_form_one_group_between_collections_and_cinema(tmp_path):
+    descriptors = build_services(
+        tmp_path / "out", tmp_path / "cache"
+    ).providers.descriptors()
+    videos = [
+        descriptor
+        for descriptor in descriptors
+        if descriptor.id in {"prelinger", "commons-video", "nasa-video"}
+    ]
+
+    assert len(videos) == 3
+    assert {item.presentation.group_id for item in videos} == {"videos"}
+    assert [item.presentation.source_order for item in videos] == [10, 20, 30]
+    assert all(item.capabilities.cache for item in videos)
+    assert all(not item.capabilities.bulk_download for item in videos)
+    assert all("封面" in item.presentation.cache_description for item in videos)
+    collections_order = next(
+        item.presentation.group_order
+        for item in descriptors
+        if item.presentation.group_id == "collections"
+    )
+    cinema_order = next(
+        item.presentation.group_order
+        for item in descriptors
+        if item.presentation.group_id == "cinema"
+    )
+    assert collections_order < videos[0].presentation.group_order < cinema_order

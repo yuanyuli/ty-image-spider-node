@@ -32,6 +32,9 @@ def test_build_services_composes_independent_providers(tmp_path):
         "cleveland",
         "commons",
         "met",
+        "prelinger",
+        "commons-video",
+        "nasa-video",
         "xiaohongshu",
         "local",
     ]
@@ -56,6 +59,9 @@ def test_build_services_creates_source_specific_cache_directories(tmp_path):
     assert (cache_root / "tmdb-images").is_dir()
     assert (cache_root / "commons").is_dir()
     assert (cache_root / "met").is_dir()
+    assert (cache_root / "prelinger").is_dir()
+    assert (cache_root / "commons-video").is_dir()
+    assert (cache_root / "nasa-video").is_dir()
     assert (cache_root / "xiaohongshu").is_dir()
 
 

@@ -55,7 +55,7 @@ class PrelingerProvider:
                 "视频素材",
                 "PRE",
                 "PRELINGER ARCHIVES",
-                60,
+                35,
                 10,
                 "按当前条件新增最多100条封面与资料；视频按需播放和下载",
             ),

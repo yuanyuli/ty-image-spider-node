@@ -10,6 +10,7 @@ from ..infrastructure.asset_index import AssetIndex
 from ..infrastructure.cache import JsonCache
 from ..infrastructure.downloads import ImageDownloader
 from ..infrastructure.opencli import OpenCliRunner
+from ..infrastructure.video import VideoDownloader, VideoDownloadPolicy
 from ..movies.credentials import TmdbCredentials
 from ..movies.filmgrab_directory import FilmGrabDirectory
 from ..movies.mapping_store import MovieMappingStore
@@ -58,6 +59,14 @@ from ..providers.wallpapers import (
     WallhavenProvider,
     WallpapersCraftClient,
     WallpapersCraftProvider,
+)
+from ..providers.videos import (
+    CommonsVideoClient,
+    CommonsVideoProvider,
+    NasaVideoClient,
+    NasaVideoProvider,
+    PrelingerClient,
+    PrelingerProvider,
 )
 
 
@@ -206,6 +215,43 @@ def register_collection_providers(registry: ProviderRegistry, cache_root: Path) 
                 )
             ),
             CuratedDownloader(MetProvider.image_policy),
+        )
+    )
+
+
+def register_video_providers(registry: ProviderRegistry, cache_root: Path) -> None:
+    """构造并注册独立视频来源；只在组合根绑定具体下载策略。"""
+    prelinger_policy = VideoDownloadPolicy(
+        "prelinger",
+        lambda host: host == "archive.org",
+        r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}",
+    )
+    commons_policy = VideoDownloadPolicy(
+        "commons-video",
+        lambda host: host == "upload.wikimedia.org",
+        r"[1-9][0-9]*",
+    )
+    nasa_policy = VideoDownloadPolicy(
+        "nasa-video",
+        lambda host: host == "images-assets.nasa.gov",
+        r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}",
+    )
+    registry.register(
+        PrelingerProvider(
+            PrelingerClient(JsonCache(cache_root / "prelinger")),
+            VideoDownloader(prelinger_policy),
+        )
+    )
+    registry.register(
+        CommonsVideoProvider(
+            CommonsVideoClient(JsonCache(cache_root / "commons-video")),
+            VideoDownloader(commons_policy),
+        )
+    )
+    registry.register(
+        NasaVideoProvider(
+            NasaVideoClient(JsonCache(cache_root / "nasa-video")),
+            VideoDownloader(nasa_policy),
         )
     )
 
