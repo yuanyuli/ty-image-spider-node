@@ -15,6 +15,7 @@ from urllib.request import Request, urlopen
 from PIL import Image
 
 from ...domain import DownloadResult, SpiderError
+from ...infrastructure.image_files import find_valid_image
 from ...infrastructure.security import read_limited, resolve_inside
 
 
@@ -69,17 +70,8 @@ class CuratedDownloader:
         self._policy.validate_asset_id(item_id)
         self._policy.validate_url(url)
         directory = resolve_inside(output_root, Path("ty-image-spider") / provider)
-        for suffix in (".jpg", ".png", ".webp", ".gif"):
-            existing = resolve_inside(
-                output_root, Path("ty-image-spider") / provider / f"{item_id}{suffix}"
-            )
-            if not existing.is_file():
-                continue
-            try:
-                with Image.open(existing) as image:
-                    image.load()
-            except (OSError, ValueError, SyntaxError):
-                continue
+        existing = find_valid_image(directory, item_id)
+        if existing is not None:
             return DownloadResult(
                 (existing.relative_to(output_root.resolve()).as_posix(),),
                 "图片已存在，已复用",

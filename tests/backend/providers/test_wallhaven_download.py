@@ -57,6 +57,40 @@ def test_wallhaven_downloader_writes_verified_image(tmp_path):
     assert timeouts == [60]
 
 
+def test_wallhaven_downloader_reuses_existing_valid_image_without_network(tmp_path):
+    target = tmp_path / "ty-image-spider/wallhaven/zp9vkg.png"
+    target.parent.mkdir(parents=True)
+    target.write_bytes(png_bytes())
+    downloader = WallhavenDownloader(
+        open_url=lambda *_args, **_kwargs: pytest.fail("已有图片不应重新联网")
+    )
+
+    result = downloader.download(
+        "https://w.wallhaven.cc/full/zp/wallhaven-zp9vkg.png", "zp9vkg", tmp_path
+    )
+
+    assert result.files == ("ty-image-spider/wallhaven/zp9vkg.png",)
+    assert result.message == "图片已存在，已复用"
+    assert [path.name for path in target.parent.iterdir()] == ["zp9vkg.png"]
+
+
+def test_wallhaven_downloader_replaces_corrupt_existing_image_without_suffix(tmp_path):
+    target = tmp_path / "ty-image-spider/wallhaven/zp9vkg.png"
+    target.parent.mkdir(parents=True)
+    target.write_bytes(b"broken")
+    url = "https://w.wallhaven.cc/full/zp/wallhaven-zp9vkg.png"
+    downloader = WallhavenDownloader(
+        open_url=lambda *_args, **_kwargs: Response(png_bytes(), url)
+    )
+
+    result = downloader.download(url, "zp9vkg", tmp_path)
+
+    assert result.files == ("ty-image-spider/wallhaven/zp9vkg.png",)
+    assert [path.name for path in target.parent.iterdir()] == ["zp9vkg.png"]
+    with Image.open(target) as image:
+        assert image.size == (4, 3)
+
+
 def test_wallhaven_downloader_rejects_untrusted_host_id_and_redirect(tmp_path):
     downloader = WallhavenDownloader(open_url=lambda *_: pytest.fail("不应访问网络"))
     with pytest.raises(SpiderError, match="Wallhaven"):

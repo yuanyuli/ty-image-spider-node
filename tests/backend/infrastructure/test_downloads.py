@@ -59,6 +59,41 @@ def test_image_downloader_writes_verified_image_inside_output(tmp_path):
     assert timeouts == [60]
 
 
+def test_image_downloader_reuses_existing_valid_image_without_network(tmp_path):
+    target = tmp_path / "ty-image-spider/civitai/101.png"
+    target.parent.mkdir(parents=True)
+    target.write_bytes(png_bytes())
+
+    downloader = ImageDownloader(
+        open_url=lambda *_args, **_kwargs: pytest.fail("已有图片不应重新联网")
+    )
+
+    result = downloader.download(
+        "https://image.civitai.com/assets/cat.png", "101", tmp_path
+    )
+
+    assert result.files == ("ty-image-spider/civitai/101.png",)
+    assert result.message == "图片已存在，已复用"
+    assert [path.name for path in target.parent.iterdir()] == ["101.png"]
+
+
+def test_image_downloader_replaces_corrupt_existing_image_without_suffix(tmp_path):
+    target = tmp_path / "ty-image-spider/civitai/101.png"
+    target.parent.mkdir(parents=True)
+    target.write_bytes(b"broken")
+    url = "https://image.civitai.com/assets/cat.png"
+    downloader = ImageDownloader(
+        open_url=lambda *_args, **_kwargs: Response(png_bytes(), url)
+    )
+
+    result = downloader.download(url, "101", tmp_path)
+
+    assert result.files == ("ty-image-spider/civitai/101.png",)
+    assert [path.name for path in target.parent.iterdir()] == ["101.png"]
+    with Image.open(target) as image:
+        assert image.size == (3, 2)
+
+
 def test_image_downloader_rejects_untrusted_url_and_item_id(tmp_path):
     downloader = ImageDownloader(open_url=lambda *_: pytest.fail("不应访问网络"))
     with pytest.raises(SpiderError, match="素材源"):

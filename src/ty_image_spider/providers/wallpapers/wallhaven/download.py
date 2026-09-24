@@ -14,6 +14,7 @@ from urllib.request import Request, urlopen
 from PIL import Image
 
 from ....domain import DownloadResult, SpiderError
+from ....infrastructure.image_files import find_valid_image
 from ....infrastructure.security import read_limited, require_https_host, resolve_inside
 
 
@@ -42,6 +43,10 @@ class WallhavenDownloader:
             raise SpiderError("invalid_asset", "Wallhaven 素材 ID 无效")
 
         directory = resolve_inside(output_root, Path("ty-image-spider/wallhaven"))
+        existing = find_valid_image(directory, item_id, (".jpg", ".png", ".webp"))
+        if existing is not None:
+            relative = existing.relative_to(Path(output_root).resolve()).as_posix()
+            return DownloadResult((relative,), "图片已存在，已复用")
         directory.mkdir(parents=True, exist_ok=True)
         request = Request(url, headers={"User-Agent": USER_AGENT, "Accept": "image/*"})
         try:
@@ -72,7 +77,7 @@ class WallhavenDownloader:
                 handle.flush()
                 os.fsync(handle.fileno())
             extension = _verify_image(temp)
-            target = _available_target(directory, item_id, extension)
+            target = directory / f"{item_id}{extension}"
             os.replace(temp, target)
         finally:
             temp.unlink(missing_ok=True)
@@ -92,15 +97,3 @@ def _verify_image(path: Path) -> str:
     if extension is None:
         raise SpiderError("invalid_image", "下载内容不是支持的有效图片", status=502)
     return extension
-
-
-def _available_target(directory: Path, item_id: str, extension: str) -> Path:
-    target = directory / f"{item_id}{extension}"
-    if not target.exists():
-        return target
-    counter = 2
-    while True:
-        candidate = directory / f"{item_id}-{counter}{extension}"
-        if not candidate.exists():
-            return candidate
-        counter += 1
