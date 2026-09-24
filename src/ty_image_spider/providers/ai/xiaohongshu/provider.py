@@ -69,7 +69,7 @@ class XiaohongshuProvider:
         return ProviderDescriptor(
             presentation=ProviderPresentation(
                 "inspiration",
-                "AI 与壁纸",
+                "AI",
                 "RED",
                 "小红书",
                 10,

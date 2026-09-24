@@ -72,7 +72,7 @@ class CivitaiProvider:
         return ProviderDescriptor(
             presentation=ProviderPresentation(
                 "inspiration",
-                "AI 与壁纸",
+                "AI",
                 "C",
                 "CIVITAI",
                 10,

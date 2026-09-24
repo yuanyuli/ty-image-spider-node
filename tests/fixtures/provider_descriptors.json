@@ -5,7 +5,7 @@
     "description": "浏览 civitai.com 与 civitai.red 的公开图片",
     "presentation": {
       "group_id": "inspiration",
-      "group_label": "AI 与壁纸",
+      "group_label": "AI",
       "short_label": "C",
       "detail_label": "CIVITAI",
       "group_order": 10,
@@ -1658,7 +1658,7 @@
     "description": "通过 OpenCLI 与已登录的 Chrome 浏览公开笔记图片",
     "presentation": {
       "group_id": "inspiration",
-      "group_label": "AI 与壁纸",
+      "group_label": "AI",
       "short_label": "RED",
       "detail_label": "小红书",
       "group_order": 10,
