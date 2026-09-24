@@ -6,7 +6,7 @@ import {
   createRequestGuard,
   createSpiderState,
   serializeWorkflowState,
-} from "../web/core/state.js";
+} from "../../web/core/state.js";
 
 test("小红书持久状态移除结果和签名链接", () => {
   const saved = serializeWorkflowState({

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 test("同一来源不同条件独立启动、恢复进度和取消，相同条件不重复请求", async () => {
-  const { createCacheTasks } = await import("../web/features/cache/tasks.js");
+  const { createCacheTasks } = await import("../../web/features/cache/tasks.js");
   const calls = [];
   const jobs = new Map();
   const view = createCacheTasks({
@@ -40,7 +40,7 @@ test("同一来源不同条件独立启动、恢复进度和取消，相同条�
 });
 
 test("切换来源仍保存各自的缓存任务，取消和轮询只作用于指定任务", async () => {
-  const { createCacheTasks } = await import("../web/features/cache/tasks.js");
+  const { createCacheTasks } = await import("../../web/features/cache/tasks.js");
   const cancelled = [];
   const scheduled = new Map();
   let serial = 0;
@@ -88,7 +88,7 @@ test("切换来源仍保存各自的缓存任务，取消和轮询只作用于�
 });
 
 test("重复任务接管已有任务 ID，移除节点后迟到响应不再安排轮询", async () => {
-  const { createCacheTasks } = await import("../web/features/cache/tasks.js");
+  const { createCacheTasks } = await import("../../web/features/cache/tasks.js");
   let respond;
   let scheduled = 0;
   const updates = [];

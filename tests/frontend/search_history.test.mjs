@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
 
-import { createSearchHistory } from "../web/search_history.js";
+import { createSearchHistory } from "../../web/search_history.js";
 
 test("最近关键词按来源保存并去重，且不保存笔记链接", () => {
   const { localStorage } = new JSDOM("", { url: "https://localhost/" }).window;

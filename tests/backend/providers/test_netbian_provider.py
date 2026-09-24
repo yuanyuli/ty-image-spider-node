@@ -8,7 +8,7 @@ from ty_image_spider.providers.wallpapers.netbian import (
 )
 
 
-FIXTURES = Path(__file__).parent / "fixtures"
+FIXTURES = Path(__file__).resolve().parents[2] / "fixtures"
 
 
 class FakeClient:

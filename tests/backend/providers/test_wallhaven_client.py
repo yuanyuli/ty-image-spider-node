@@ -8,7 +8,7 @@ from ty_image_spider.domain import SpiderError
 from ty_image_spider.providers.wallpapers.wallhaven.client import WallhavenClient
 
 
-FIXTURES = Path(__file__).parent / "fixtures"
+FIXTURES = Path(__file__).resolve().parents[2] / "fixtures"
 SEARCH = json.loads((FIXTURES / "wallhaven_search.json").read_text())
 DETAIL = json.loads((FIXTURES / "wallhaven_detail.json").read_text())
 

@@ -13,7 +13,7 @@ import pytest
 @pytest.fixture
 def release_module():
     spec = importlib.util.spec_from_file_location(
-        "release", Path(__file__).resolve().parents[1] / "scripts/build_release.py"
+        "release", Path(__file__).resolve().parents[2] / "scripts/release/build.py"
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -61,7 +61,7 @@ def repo(tmp_path):
         "SECURITY.md": "# 安全\n",
         "CODE_OF_CONDUCT.md": "# 行为\n",
         "THIRD_PARTY_NOTICES.md": "# 第三方\n",
-        "docs/compatibility.md": "# 兼容性\n",
+        "docs/guides/compatibility.md": "# 兼容性\n",
         "tests/private.py": "development only",
         "docs/superpowers/plan.md": "development only",
         "scripts/dev.py": "development only",

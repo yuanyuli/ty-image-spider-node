@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { JSDOM } from "jsdom";
 
-import { createGallery } from "../web/ui/gallery/index.js";
+import { createGallery } from "../../web/ui/gallery/index.js";
 
 function item(overrides = {}) {
   return {
@@ -24,7 +24,10 @@ function item(overrides = {}) {
 test("小红书画廊隐藏整页下载并显示多图数量", () => {
   const dom = new JSDOM("<!doctype html><body></body>");
   const style = dom.window.document.createElement("style");
-  style.textContent = readFileSync(new URL("../web/ty_image_spider.css", import.meta.url), "utf8");
+  style.textContent = readFileSync(
+    new URL("../../web/ty_image_spider.css", import.meta.url),
+    "utf8",
+  );
   dom.window.document.head.append(style);
   const view = createGallery({
     document: dom.window.document,

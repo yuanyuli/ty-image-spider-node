@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
-import { createMovieSearch } from "../web/features/movie/movie_search.js";
-import { openMoviePicker } from "../web/features/movie/movie_picker.js";
+import { createMovieSearch } from "../../web/features/movie/movie_search.js";
+import { openMoviePicker } from "../../web/features/movie/movie_picker.js";
 
 test("弹窗反向 Tab 跳过折叠帮助中的链接", () => {
   const dom = new JSDOM("<body></body>");

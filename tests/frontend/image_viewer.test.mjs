@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
 
-import { openImageViewer } from "../web/ui/image_viewer.js";
+import { openImageViewer } from "../../web/ui/image_viewer.js";
 
 function wheel(window, target, options) {
   const event = new window.WheelEvent("wheel", { bubbles: true, cancelable: true, ...options });

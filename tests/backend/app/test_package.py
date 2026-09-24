@@ -4,7 +4,7 @@ import importlib.util
 from pathlib import Path
 
 
-ROOT = Path(__file__).parents[1]
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def load_root_package():

@@ -8,7 +8,7 @@ from ty_image_spider.providers.ai.xiaohongshu.extract import (
 )
 
 
-FIXTURES = Path(__file__).parent / "fixtures"
+FIXTURES = Path(__file__).resolve().parents[2] / "fixtures"
 ROWS = json.loads((FIXTURES / "xiaohongshu_search.json").read_text(encoding="utf-8"))
 CARDS = json.loads((FIXTURES / "xiaohongshu_cards.json").read_text(encoding="utf-8"))
 

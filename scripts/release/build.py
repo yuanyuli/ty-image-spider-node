@@ -31,14 +31,14 @@ ROOT_FILES = frozenset(
 )
 USER_DOCS = frozenset(
     {
-        "docs/compatibility.md",
+        "docs/guides/compatibility.md",
         "docs/source-rights.md",
-        "docs/editorial-sources.md",
-        "docs/curated-sources-cache.md",
-        "docs/loc-source.md",
-        "docs/museum-sources.md",
-        "docs/nasa-source.md",
-        "docs/tmdb-movie-mapping.md",
+        "docs/sources/editorial.md",
+        "docs/guides/cache.md",
+        "docs/sources/loc.md",
+        "docs/sources/museum.md",
+        "docs/sources/nasa.md",
+        "docs/guides/tmdb.md",
     }
 )
 FORBIDDEN_PARTS = frozenset(
@@ -195,7 +195,7 @@ def main() -> None:
     args = parser.parse_args()
     try:
         path = build_release(
-            Path(__file__).resolve().parents[1],
+            Path(__file__).resolve().parents[2],
             args.output,
             ref=args.ref,
             check=args.check,

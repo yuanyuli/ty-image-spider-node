@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node scripts/test_frontend.mjs",
+    "test": "node scripts/quality/test_frontend.mjs",
     "format:check": "prettier --check --ignore-unknown \"web/**/*.{js,css,svg}\" \"tests/**/*.test.mjs\""
   },
   "devDependencies": {

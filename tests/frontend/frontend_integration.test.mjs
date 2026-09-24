@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
 
-import { createImageSpiderExtension } from "../web/ty_image_spider.js";
+import { createImageSpiderExtension } from "../../web/ty_image_spider.js";
 
 const providers = [
   {

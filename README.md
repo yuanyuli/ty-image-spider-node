@@ -105,12 +105,12 @@ OpenCLI 守护进程、等待 Chrome 扩展恢复连接并确认登录账号；�
 - 除本地历史外，当前显示的来源均支持“新增缓存100张”：只将本次新增素材计入100张，已缓存的跳过；显示新增、跳过和失败数量。每组来源、搜索词和筛选条件独立保存断点，再次点击从断点继续，来源耗尽时按实际数量结束。
 - 缓存按来源、站点与素材 ID 建立持久索引，再次检索复用本地预览、详情和提示词。每项缓存一张预览，高清原图和图集其余图片按需联网加载。小红书暂不支持此批量缓存。
 - Behance 精选画廊与关键词搜索均支持上下页，每页24项，使用来源返回的真实游标。
-- FilmGrab 可直接选择中文精选片单；配置 TMDB 后也支持片单以外的中文电影名。先确认电影及上映年份，再匹配 FilmGrab 条目，确认的映射会保存在本机。“查找电影版本”可重新选择同名电影。清空关键词则浏览全部电影。详见 [中文电影查询与配置](docs/tmdb-movie-mapping.md)。
+- FilmGrab 可直接选择中文精选片单；配置 TMDB 后也支持片单以外的中文电影名。先确认电影及上映年份，再匹配 FilmGrab 条目，确认的映射会保存在本机。“查找电影版本”可重新选择同名电影。清空关键词则浏览全部电影。详见 [中文电影查询与配置](docs/guides/tmdb.md)。
 - TMDB 图片来源直接使用同一份本地读取令牌，按中文或英文片名读取公开海报和横幅剧照；默认显示横幅剧照，令牌缺失时来源会明确显示未配置，不影响 FilmGrab 的中文片单。
-- 五家馆藏来源可直接用中文分类浏览，搜索框留空即可；作品名和作者建议使用英文，例如 `Monet`、`landscape`、`portrait`。Wikimedia Commons 也支持中文关键词，其他馆藏暂未提供关键词自动翻译。五家均无需注册、密钥或浏览器扩展；图片规格与来源说明见 [馆藏素材源](docs/museum-sources.md)。
-- Colossal、Design Milk、Feature Shoot、My Modern Met、Aperture 与 PRINT Magazine 每张卡片是一个专题，右上角显示图集张数，“下载图集”保存整组图片。缓存100张指100个专题封面及图集资料，图集原图按需下载。Are.na 每张卡片是一张公开图片，可直接用中文精选频道浏览。详见 [摄影与设计素材源](docs/editorial-sources.md)。
-- 美国国会图书馆使用中文分类浏览公开视觉档案，详情保留来源提供的作者、媒介和使用条件；英文关键词可继续缩小范围。详见 [美国国会图书馆素材源](docs/loc-source.md)。
-- NASA 使用中文分类浏览官方图片库，预览选择不超过800像素的版本，详情与下载优先来源标记的原图。详见 [NASA 图片素材源](docs/nasa-source.md)。
+- 五家馆藏来源可直接用中文分类浏览，搜索框留空即可；作品名和作者建议使用英文，例如 `Monet`、`landscape`、`portrait`。Wikimedia Commons 也支持中文关键词，其他馆藏暂未提供关键词自动翻译。五家均无需注册、密钥或浏览器扩展；图片规格与来源说明见 [馆藏素材源](docs/sources/museum.md)。
+- Colossal、Design Milk、Feature Shoot、My Modern Met、Aperture 与 PRINT Magazine 每张卡片是一个专题，右上角显示图集张数，“下载图集”保存整组图片。缓存100张指100个专题封面及图集资料，图集原图按需下载。Are.na 每张卡片是一张公开图片，可直接用中文精选频道浏览。详见 [摄影与设计素材源](docs/sources/editorial.md)。
+- 美国国会图书馆使用中文分类浏览公开视觉档案，详情保留来源提供的作者、媒介和使用条件；英文关键词可继续缩小范围。详见 [美国国会图书馆素材源](docs/sources/loc.md)。
+- NASA 使用中文分类浏览官方图片库，预览选择不超过800像素的版本，详情与下载优先来源标记的原图。详见 [NASA 图片素材源](docs/sources/nasa.md)。
 - 画廊在窄节点中显示两列，在宽节点中显示三列；详情弹窗支持图集缩略图、提示词复制和来源跳转。
 - 详情和全屏预览支持 **← 上一张、→ 下一张、↓ 保存当前单张**。多图作品先在图集内切换，到边界后进入本页相邻作品；不自动翻页或循环。切图恢复全图显示，保留全屏状态。输入区及组合快捷键不拦截，长按保存不重复下载，保存状态与完整路径直接显示在预览里。
 - 首次更新此快捷键功能后需重启 ComfyUI 并强制刷新页面，以加载新的单张保存接口。原“下载图集”仍保存整组，本地历史中的图片已经在磁盘上，不重复显示保存按钮。
@@ -166,7 +166,7 @@ TMDB 图片使用 `api.themoviedb.org` 的电影图片接口和 `image.tmdb.org`
 - [TMDB](https://www.themoviedb.org/) 提供电影身份与译名资料；非商业用途免费但须遵守署名要求，商业使用请核对其许可。[官方说明](https://developer.themoviedb.org/docs/faq)。This product uses the TMDB API but is not endorsed or certified by TMDB.
 - [OpenCLI](https://github.com/jackwener/opencli) 使用 Apache License 2.0。本项目只通过用户安装的 `opencli` 命令调用它，不打包其源码或浏览器扩展。
 - [Wallhaven API](https://wallhaven.cc/help/api) 用于访问公开 SFW 素材。图片版权与使用许可由原作者、上传者及原始来源决定，下载前请自行确认使用范围。
-- V&A、芝加哥艺术博物馆、克利夫兰艺术博物馆、Wikimedia Commons 和纽约大都会艺术博物馆提供馆藏资料及图片；详情展示来源链接与可用的版权标记，具体许可以各作品页面为准。官方接口资料见 [馆藏素材源](docs/museum-sources.md)。
+- V&A、芝加哥艺术博物馆、克利夫兰艺术博物馆、Wikimedia Commons 和纽约大都会艺术博物馆提供馆藏资料及图片；详情展示来源链接与可用的版权标记，具体许可以各作品页面为准。官方接口资料见 [馆藏素材源](docs/sources/museum.md)。
 - Colossal、Design Milk、Feature Shoot、My Modern Met 和 Are.na 提供公开摄影、设计与收藏内容；图片署名及使用条件以原专题、作品来源为准。节点保留来源入口，Are.na 的收藏者不标作摄影师或设计师。
 - 美国国会图书馆接口提供作品资料和可用图片；每件作品的版权与复制限制以详情中的官方说明为准。
 - [Pillow](https://python-pillow.org/) 用于图片格式与 metadata 校验。
@@ -175,4 +175,4 @@ TMDB 图片使用 `api.themoviedb.org` 的电影图片接口和 `image.tmdb.org`
 
 ## 开源与维护
 
-代码采用 [MIT](LICENSE)，外部素材不包含在该授权内。请阅读 [素材权利](docs/source-rights.md)、[第三方声明](THIRD_PARTY_NOTICES.md)、[兼容性](docs/compatibility.md)、[贡献指南](CONTRIBUTING.md)、[安全政策](SECURITY.md) 和 [行为准则](CODE_OF_CONDUCT.md)。
+代码采用 [MIT](LICENSE)，外部素材不包含在该授权内。请阅读 [素材权利](docs/source-rights.md)、[第三方声明](THIRD_PARTY_NOTICES.md)、[兼容性](docs/guides/compatibility.md)、[贡献指南](CONTRIBUTING.md)、[安全政策](SECURITY.md) 和 [行为准则](CODE_OF_CONDUCT.md)。

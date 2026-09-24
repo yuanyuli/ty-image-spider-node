@@ -11,7 +11,7 @@ py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements-dev.txt
 npm ci
-python scripts/check_quality.py
+python scripts/quality/check.py
 ```
 
 Linux 使用 `python3 -m venv .venv` 和 `source .venv/bin/activate`，后续命令相同。开发需要 Python 3.10+、Git 和 Node 20.19+ 或 22.12+；用户安装节点不需要 Node。安装包不含开发文件，请从源码仓库贡献。
@@ -33,4 +33,4 @@ PR 说明具体问题、修复后的行为、测试命令与结果；UI 变化�
 
 不得提交 `.local/`、访问令牌、Cookie、输出图片、缓存、个人绝对路径或带签名的笔记链接。不要在 Issue 或测试 fixture 放真实凭据。修改 Python 后重启测试 ComfyUI；重启前确认运行和等待队列均为空。
 
-发布前运行 `python scripts/build_release.py --check`，提交后以目标提交构建 ZIP；重复构建应产生相同 SHA256。最终验证记录和兼容边界见 [兼容性](docs/compatibility.md)。
+发布前运行 `python scripts/release/build.py --check`，提交后以目标提交构建 ZIP；重复构建应产生相同 SHA256。最终验证记录和兼容边界见 [兼容性](docs/guides/compatibility.md)。

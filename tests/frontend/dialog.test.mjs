@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
 
-import { openAssetDialog } from "../web/ui/dialog/index.js";
+import { openAssetDialog } from "../../web/ui/dialog/index.js";
 
 function key(document, value, options = {}, target = document) {
   const event = new document.defaultView.KeyboardEvent("keydown", {

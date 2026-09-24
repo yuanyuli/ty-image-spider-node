@@ -9,7 +9,7 @@ from ty_image_spider.providers.ai.civitai.client import CivitaiClient
 
 
 FIXTURE = json.loads(
-    (Path(__file__).parent / "fixtures/civitai_images.json").read_text()
+    (Path(__file__).resolve().parents[2] / "fixtures/civitai_images.json").read_text()
 )
 
 
