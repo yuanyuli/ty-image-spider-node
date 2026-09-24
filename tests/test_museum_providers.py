@@ -5,10 +5,10 @@ from urllib.parse import parse_qs, urlsplit
 import pytest
 
 from ty_image_spider.domain import SearchRequest, SpiderError
-from ty_image_spider.providers.museum_client import MuseumClient
-from ty_image_spider.providers.artic import ArticProvider
-from ty_image_spider.providers.cleveland import ClevelandProvider
-from ty_image_spider.providers.vam import VamProvider
+from ty_image_spider.providers.collections.client import MuseumClient
+from ty_image_spider.providers.collections.artic import ArticProvider
+from ty_image_spider.providers.collections.cleveland import ClevelandProvider
+from ty_image_spider.providers.collections.vam import VamProvider
 
 
 class Response(BytesIO):

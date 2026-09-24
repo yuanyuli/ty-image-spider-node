@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from ..domain import ProviderStatus, SpiderError
-from ..providers.registry import ProviderRegistry
+from ..providers.shared import ProviderRegistry
 
 
 class StatusService:

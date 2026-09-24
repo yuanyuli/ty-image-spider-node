@@ -10,9 +10,9 @@ import pytest
 
 from ty_image_spider.infrastructure.network_retry import retry_call, retry_delay
 from ty_image_spider.domain import SpiderError
-from ty_image_spider.providers.public_json_client import PublicJsonClient
-from ty_image_spider.providers.museum_client import MuseumClient
-from ty_image_spider.providers.curated_client import FilmGrabClient
+from ty_image_spider.providers.shared.public_json_client import PublicJsonClient
+from ty_image_spider.providers.collections.client import MuseumClient
+from ty_image_spider.providers.shared.curated_client import FilmGrabClient
 
 
 def error(code, delay=None):

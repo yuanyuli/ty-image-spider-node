@@ -6,7 +6,7 @@ from pathlib import Path
 from .download_policy import DownloadPolicy
 from typing import Protocol
 
-from ..domain import (
+from ...domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,

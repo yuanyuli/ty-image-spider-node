@@ -11,7 +11,7 @@ from ty_image_spider.domain import (
     SearchPage,
     SpiderError,
 )
-from ty_image_spider.providers.registry import ProviderRegistry
+from ty_image_spider.providers.shared.registry import ProviderRegistry
 
 
 class FakeProvider:

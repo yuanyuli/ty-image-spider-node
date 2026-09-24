@@ -29,7 +29,7 @@ from ..domain import (
 )
 from ..infrastructure.security import read_limited, require_https_host
 from ..version import USER_AGENT
-from .download_policy import HostDownloadPolicy
+from .shared import HostDownloadPolicy
 
 
 _ROOT = "https://www.bizhi99.com"

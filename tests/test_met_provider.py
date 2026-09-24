@@ -2,7 +2,7 @@ from threading import Barrier
 
 from ty_image_spider.domain import DownloadResult, SearchRequest
 from ty_image_spider.providers.met import MetClient, MetProvider
-from ty_image_spider.providers.public_json_client import JsonResponse
+from ty_image_spider.providers.shared.public_json_client import JsonResponse
 
 
 OBJECT = {

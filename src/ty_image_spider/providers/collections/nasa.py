@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, Mapping
 from urllib.parse import quote, urlsplit
 
-from ..domain import (
+from ...domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
@@ -21,8 +21,8 @@ from ..domain import (
     SearchPage,
     SearchRequest,
 )
-from .curated_download import CuratedDownloader
-from .museum_assets import (
+from ..shared.curated_download import CuratedDownloader
+from .assets import (
     category,
     collection_detail,
     image_url,
@@ -31,7 +31,7 @@ from .museum_assets import (
     page_number,
     plain_text,
 )
-from .public_json_client import PublicJsonClient
+from ..shared.public_json_client import PublicJsonClient
 
 
 _CATEGORIES = {
@@ -49,7 +49,7 @@ _SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 _IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png", ".webp")
 
 
-from .download_policy import HostDownloadPolicy
+from ..shared.download_policy import HostDownloadPolicy
 
 IMAGE_POLICY = HostDownloadPolicy(
     "nasa",

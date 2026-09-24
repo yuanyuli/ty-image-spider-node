@@ -5,8 +5,8 @@ from __future__ import annotations
 from html.parser import HTMLParser
 from urllib.parse import urlsplit
 
-from .museum_assets import image_url
-from .download_policy import DownloadPolicy
+from ..collections.assets import image_url
+from ..shared.download_policy import DownloadPolicy
 
 
 def article_images(

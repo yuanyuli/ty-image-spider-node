@@ -8,7 +8,7 @@ from typing import Mapping, Sequence
 
 from ..domain import AssetItem, DownloadResult, SpiderError
 from ..infrastructure.asset_index import AssetIndex
-from ..providers.registry import ProviderRegistry
+from ..providers.shared import ProviderRegistry
 from .selected_download import download_selected_image
 
 

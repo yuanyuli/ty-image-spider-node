@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, Mapping
 from urllib.parse import urlsplit
 
-from ..domain import (
+from ...domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
@@ -22,8 +22,8 @@ from ..domain import (
     SearchRequest,
     SpiderError,
 )
-from .curated_download import CuratedDownloader
-from .museum_assets import (
+from ..shared.curated_download import CuratedDownloader
+from ..collections.assets import (
     category,
     image_url,
     integer,
@@ -32,7 +32,7 @@ from .museum_assets import (
     plain_text,
     require_item,
 )
-from .public_json_client import PublicJsonClient
+from ..shared.public_json_client import PublicJsonClient
 
 
 _CHANNELS = {
@@ -42,7 +42,7 @@ _CHANNELS = {
 }
 
 
-from .download_policy import HostDownloadPolicy
+from ..shared.download_policy import HostDownloadPolicy
 
 IMAGE_POLICY = HostDownloadPolicy(
     "arena", lambda host: host in {"images.are.na", "d2w9rnfcy7mm78.cloudfront.net"}

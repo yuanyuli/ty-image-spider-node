@@ -40,3 +40,26 @@ def test_runtime_entrypoints_are_idempotent():
     assert register_routes() in {True, False}
     assert TyImageSpider.FUNCTION == "browse"
     assert callable(build_services)
+
+
+def test_provider_category_packages_export_composition_types():
+    from ty_image_spider.providers.collections import ArticProvider, NasaProvider
+    from ty_image_spider.providers.editorial import ArenaProvider, BehanceProvider
+    from ty_image_spider.providers.local import LocalProvider
+    from ty_image_spider.providers.movies import FilmGrabProvider, TmdbImageProvider
+    from ty_image_spider.providers.shared import ProviderRegistry, PublicJsonClient
+
+    assert all(
+        value is not None
+        for value in (
+            ArticProvider,
+            NasaProvider,
+            ArenaProvider,
+            BehanceProvider,
+            LocalProvider,
+            FilmGrabProvider,
+            TmdbImageProvider,
+            ProviderRegistry,
+            PublicJsonClient,
+        )
+    )

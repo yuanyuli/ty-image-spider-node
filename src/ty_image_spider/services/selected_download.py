@@ -3,8 +3,7 @@
 from pathlib import Path
 
 from ..domain import AssetItem, DownloadResult, SpiderError
-from ..providers.base import AssetProvider
-from ..providers.curated_download import CuratedDownloader
+from ..providers.shared import AssetProvider, CuratedDownloader
 
 
 def download_selected_image(

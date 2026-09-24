@@ -6,9 +6,9 @@ import json
 import time
 from typing import Any, Mapping
 
-from ..infrastructure.cache import JsonCache
-from ..domain import SpiderError
-from .curated_client import FilmGrabClient
+from ...infrastructure.cache import JsonCache
+from ...domain import SpiderError
+from ..shared.curated_client import FilmGrabClient
 
 
 class FilmGrabArticles:

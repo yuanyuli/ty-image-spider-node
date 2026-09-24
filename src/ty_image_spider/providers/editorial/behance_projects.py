@@ -9,10 +9,10 @@ from typing import Any, Callable, Mapping
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from ..domain import SpiderError
-from ..infrastructure.network_retry import retry_call
-from ..version import USER_AGENT
-from ..infrastructure.security import read_limited, require_https_host
+from ...domain import SpiderError
+from ...infrastructure.network_retry import retry_call
+from ...version import USER_AGENT
+from ...infrastructure.security import read_limited, require_https_host
 
 
 _FIELDS = """

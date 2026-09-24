@@ -6,7 +6,7 @@ import pytest
 
 from ty_image_spider.infrastructure.cache import JsonCache
 from ty_image_spider.domain import SpiderError
-from ty_image_spider.providers.museum_client import MuseumClient
+from ty_image_spider.providers.collections.client import MuseumClient
 
 
 def test_museum_metadata_cache_separates_pages_and_refreshes(tmp_path):

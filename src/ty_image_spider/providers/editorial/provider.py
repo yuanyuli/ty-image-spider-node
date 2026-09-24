@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Mapping
 from urllib.parse import urlsplit
 
-from ..domain import (
+from ...domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
@@ -20,10 +20,10 @@ from ..domain import (
     SearchRequest,
     SpiderError,
 )
-from .curated_download import CuratedDownloader
-from .editorial_images import article_images
-from .editorial_sources import EditorialSource
-from .museum_assets import (
+from ..shared.curated_download import CuratedDownloader
+from .images import article_images
+from .sources import EditorialSource
+from ..collections.assets import (
     category,
     image_url,
     integer,
@@ -32,7 +32,7 @@ from .museum_assets import (
     plain_text,
     require_item,
 )
-from .public_json_client import PublicJsonClient
+from ..shared.public_json_client import PublicJsonClient
 
 
 class EditorialProvider:

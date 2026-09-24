@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Mapping
 from urllib.parse import parse_qs, urlsplit
 
-from ..domain import (
+from ...domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
@@ -20,8 +20,8 @@ from ..domain import (
     SearchPage,
     SearchRequest,
 )
-from .curated_download import CuratedDownloader
-from .museum_assets import (
+from ..shared.curated_download import CuratedDownloader
+from .assets import (
     category,
     collection_detail,
     image_url,
@@ -31,7 +31,7 @@ from .museum_assets import (
     plain_text,
     records,
 )
-from .public_json_client import PublicJsonClient
+from ..shared.public_json_client import PublicJsonClient
 
 
 _CATEGORIES = {
@@ -51,7 +51,7 @@ _CATEGORIES = {
 _SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
 
-from .download_policy import HostDownloadPolicy
+from ..shared.download_policy import HostDownloadPolicy
 
 IMAGE_POLICY = HostDownloadPolicy(
     "loc",

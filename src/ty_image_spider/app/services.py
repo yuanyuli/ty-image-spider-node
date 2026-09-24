@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from ..providers.registry import ProviderRegistry
+from ..providers.shared import ProviderRegistry
 from ..services.cache_job import CacheJobService
 from ..services.detail import DetailService
 from ..services.download import DownloadService

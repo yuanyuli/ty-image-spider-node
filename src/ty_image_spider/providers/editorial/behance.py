@@ -6,7 +6,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Mapping
 
-from ..domain import (
+from ...domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
@@ -20,11 +20,11 @@ from ..domain import (
     SearchRequest,
     SpiderError,
 )
-from .curated_client import BehanceClient
-from .curated_download import CuratedDownloader
+from ..shared.curated_client import BehanceClient
+from ..shared.curated_download import CuratedDownloader
 
 
-from .download_policy import HostDownloadPolicy
+from ..shared.download_policy import HostDownloadPolicy
 
 IMAGE_POLICY = HostDownloadPolicy(
     "behance", lambda host: host.startswith("mir-") and host.endswith(".behance.net")

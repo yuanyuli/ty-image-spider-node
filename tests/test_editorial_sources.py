@@ -7,17 +7,17 @@ import pytest
 
 from ty_image_spider.domain import DownloadResult, SearchRequest, SpiderError
 from ty_image_spider.infrastructure.cache import JsonCache
-from ty_image_spider.providers.public_json_client import PublicJsonClient
+from ty_image_spider.providers.shared.public_json_client import PublicJsonClient
 from ty_image_spider.providers.editorial import EditorialProvider
-from ty_image_spider.providers.editorial_images import article_images
-from ty_image_spider.providers import editorial_sources as source_config
-from ty_image_spider.providers.editorial_sources import (
+from ty_image_spider.providers.editorial.images import article_images
+from ty_image_spider.providers.editorial import sources as source_config
+from ty_image_spider.providers.editorial.sources import (
     COLOSSAL,
     DESIGN_MILK,
     FEATURE_SHOOT,
     MY_MODERN_MET,
 )
-from ty_image_spider.providers.arena import ArenaProvider
+from ty_image_spider.providers.editorial.arena import ArenaProvider
 
 
 class Response(BytesIO):

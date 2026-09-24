@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 
-from ..domain import FilterOption, SpiderError
+from ...domain import FilterOption, SpiderError
 
 
 FILMS = (

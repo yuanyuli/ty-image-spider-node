@@ -5,7 +5,7 @@ from urllib.parse import parse_qs, urlparse
 import pytest
 
 from ty_image_spider.domain import SpiderError
-from ty_image_spider.providers.curated_client import FilmGrabClient
+from ty_image_spider.providers.shared.curated_client import FilmGrabClient
 
 
 class Response(BytesIO):

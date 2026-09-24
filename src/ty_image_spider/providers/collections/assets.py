@@ -6,7 +6,7 @@ import re
 from html.parser import HTMLParser
 from typing import Any, Mapping
 
-from ..domain import (
+from ...domain import (
     AssetDetail,
     AssetItem,
     FilterField,
@@ -14,7 +14,7 @@ from ..domain import (
     SearchRequest,
     SpiderError,
 )
-from .download_policy import DownloadPolicy
+from ..shared.download_policy import DownloadPolicy
 
 
 def page_number(request: SearchRequest) -> int:

@@ -8,8 +8,8 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Mapping, Protocol
 
-from ..infrastructure.cache import JsonCache
-from ..domain import (
+from ...infrastructure.cache import JsonCache
+from ...domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
@@ -23,9 +23,9 @@ from ..domain import (
     SearchRequest,
     SpiderError,
 )
-from ..movies.tmdb import TmdbClient
-from .curated_download import CuratedDownloader
-from .download_policy import HostDownloadPolicy
+from ...movies.tmdb import TmdbClient
+from ..shared.curated_download import CuratedDownloader
+from ..shared.download_policy import HostDownloadPolicy
 
 
 _SAFE_ID = re.compile(r"^(\d+)-(\d+)$")

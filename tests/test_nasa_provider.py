@@ -4,8 +4,8 @@ import re
 from urllib.parse import parse_qs, urlsplit
 
 from ty_image_spider.domain import DownloadResult, SearchRequest
-from ty_image_spider.providers.nasa import NasaProvider
-from ty_image_spider.providers.public_json_client import PublicJsonClient
+from ty_image_spider.providers.collections.nasa import NasaProvider
+from ty_image_spider.providers.shared.public_json_client import PublicJsonClient
 
 
 class Response(BytesIO):

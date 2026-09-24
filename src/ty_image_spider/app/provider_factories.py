@@ -15,36 +15,40 @@ from ..movies.filmgrab_directory import FilmGrabDirectory
 from ..movies.mapping_store import MovieMappingStore
 from ..movies.resolution import MovieResolution
 from ..movies.tmdb import TmdbClient
-from ..providers.arena import ArenaProvider
-from ..providers.artic import ArticProvider
-from ..providers.behance import BehanceProvider
 from ..providers.bizhi99 import Bizhi99Client, Bizhi99Provider
 from ..providers.civitai import CivitaiProvider
 from ..providers.civitai_client import CivitaiClient
-from ..providers.cleveland import ClevelandProvider
 from ..providers.commons import CommonsClient, CommonsProvider
-from ..providers.curated_client import BehanceClient, FilmGrabClient
-from ..providers.curated_download import CuratedDownloader
-from ..providers.editorial import EditorialProvider
-from ..providers.editorial_sources import (
+from ..providers.collections import (
+    ArticProvider,
+    ClevelandProvider,
+    LocProvider,
+    MuseumClient,
+    NasaProvider,
+    VamProvider,
+)
+from ..providers.editorial import (
     APERTURE,
     COLOSSAL,
     DESIGN_MILK,
     FEATURE_SHOOT,
     MY_MODERN_MET,
     PRINT_MAGAZINE,
+    ArenaProvider,
+    BehanceProvider,
+    EditorialProvider,
 )
-from ..providers.filmgrab import FilmGrabProvider
-from ..providers.loc import LocProvider
 from ..providers.local import LocalProvider
 from ..providers.met import MetClient, MetProvider
-from ..providers.museum_client import MuseumClient
-from ..providers.nasa import NasaProvider
 from ..providers.netbian import NetbianClient, NetbianProvider
-from ..providers.public_json_client import PublicJsonClient
-from ..providers.registry import ProviderRegistry
-from ..providers.tmdb_images import TmdbImageProvider
-from ..providers.vam import VamProvider
+from ..providers.movies import FilmGrabProvider, TmdbImageProvider
+from ..providers.shared import (
+    BehanceClient,
+    CuratedDownloader,
+    FilmGrabClient,
+    ProviderRegistry,
+    PublicJsonClient,
+)
 from ..providers.wallhaven import WallhavenProvider
 from ..providers.wallhaven_client import WallhavenClient
 from ..providers.wallhaven_download import WallhavenDownloader

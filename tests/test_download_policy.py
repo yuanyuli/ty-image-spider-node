@@ -4,12 +4,12 @@ import pytest
 from PIL import Image
 
 from ty_image_spider.domain import SpiderError
-from ty_image_spider.providers import curated_download
+from ty_image_spider.providers.shared import curated_download
 
 
 def test_new_source_policy_needs_no_central_mapping(tmp_path):
-    from ty_image_spider.providers.download_policy import HostDownloadPolicy
-    from ty_image_spider.providers.image_readers import ImageReaderRegistry
+    from ty_image_spider.providers.shared.download_policy import HostDownloadPolicy
+    from ty_image_spider.providers.shared.image_readers import ImageReaderRegistry
 
     policy = HostDownloadPolicy(
         "newsource", lambda host: host == "images.example.org", r"[0-9]+", "/%,!"
@@ -47,7 +47,7 @@ def test_new_source_policy_needs_no_central_mapping(tmp_path):
 
 
 def test_download_policy_rejects_credentials_and_non_https():
-    from ty_image_spider.providers.download_policy import HostDownloadPolicy
+    from ty_image_spider.providers.shared.download_policy import HostDownloadPolicy
 
     policy = HostDownloadPolicy(
         "newsource", lambda host: host == "images.example.org", r"[0-9]+"

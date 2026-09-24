@@ -4,7 +4,7 @@ import pytest
 
 from ty_image_spider.infrastructure.cache import JsonCache
 from ty_image_spider.domain import DownloadResult, SearchRequest, SpiderError
-from ty_image_spider.providers.tmdb_images import TmdbImageProvider
+from ty_image_spider.providers.movies.tmdb_images import TmdbImageProvider
 
 
 class FakeClient:

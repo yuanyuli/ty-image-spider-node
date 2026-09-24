@@ -38,7 +38,7 @@ _MAX_PROMPT_SCAN_PAGES = 5
 _MAX_PROMPT_ENRICH_ITEMS = 24
 
 
-from .download_policy import HostDownloadPolicy
+from .shared import HostDownloadPolicy
 
 IMAGE_POLICY = HostDownloadPolicy(
     "civitai",

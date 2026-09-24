@@ -7,9 +7,7 @@ from pathlib import Path
 
 from ..infrastructure.asset_index import AssetIndex
 from ..infrastructure.cache import JsonCache
-from ..providers.curated_download import CuratedDownloader
-from ..providers.image_readers import ImageReaderRegistry
-from ..providers.registry import ProviderRegistry
+from ..providers.shared import CuratedDownloader, ImageReaderRegistry, ProviderRegistry
 from ..services.cache_job import CacheJobService
 from ..services.cache_progress import CacheProgress
 from ..services.cache_runner import CacheJobRunner

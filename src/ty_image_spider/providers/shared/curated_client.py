@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from ..version import USER_AGENT
-from ..infrastructure.network_retry import retry_call
+from ...version import USER_AGENT
+from ...infrastructure.network_retry import retry_call
 
 import json
 import re
@@ -15,14 +15,12 @@ from urllib.parse import urlencode
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
-from ..domain import SpiderError
-from ..infrastructure.security import read_limited, require_https_host
-from .behance_projects import BehanceProjects
-from .film_catalog import film_post_id
-
-
+from ...domain import SpiderError
+from ...infrastructure.security import read_limited, require_https_host
 class BehanceClient:
     def __init__(self, open_url: Callable[..., Any] = urlopen) -> None:
+        from ..editorial.behance_projects import BehanceProjects
+
         self._open_url = open_url
         self._projects = BehanceProjects(open_url)
 
@@ -67,6 +65,8 @@ class FilmGrabClient:
     def posts(
         self, query: str, page: int, post_id: int | None = None
     ) -> tuple[list[Mapping[str, Any]], int]:
+        from ..movies.catalog import film_post_id
+
         params = {"per_page": 1, "page": page, "_fields": "id,link,title,content"}
         movie_id = post_id or film_post_id(query)
         if movie_id:

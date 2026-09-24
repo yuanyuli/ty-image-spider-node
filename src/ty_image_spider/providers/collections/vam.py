@@ -7,7 +7,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Mapping
 
-from ..domain import (
+from ...domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
@@ -19,9 +19,9 @@ from ..domain import (
     SearchRequest,
     SpiderError,
 )
-from .curated_download import CuratedDownloader
-from .museum_client import MuseumClient
-from .museum_assets import (
+from ..shared.curated_download import CuratedDownloader
+from .client import MuseumClient
+from .assets import (
     category,
     category_field,
     collection_detail,
@@ -46,7 +46,7 @@ _CATEGORIES = {
 }
 
 
-from .download_policy import HostDownloadPolicy
+from ..shared.download_policy import HostDownloadPolicy
 
 IMAGE_POLICY = HostDownloadPolicy(
     "vam",

@@ -4,7 +4,7 @@ import json
 import pytest
 
 from ty_image_spider.domain import SpiderError
-from ty_image_spider.providers.behance_projects import BehanceProjects
+from ty_image_spider.providers.editorial.behance_projects import BehanceProjects
 
 
 class Response(io.BytesIO):

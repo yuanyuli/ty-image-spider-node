@@ -37,7 +37,7 @@ _ORIENTATIONS = {
 }
 
 
-from .download_policy import HostDownloadPolicy
+from .shared import HostDownloadPolicy
 
 IMAGE_POLICY = HostDownloadPolicy(
     "wallhaven",

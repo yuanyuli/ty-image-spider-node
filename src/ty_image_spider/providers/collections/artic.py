@@ -7,7 +7,7 @@ import re
 from pathlib import Path
 from typing import Any, Mapping
 
-from ..domain import (
+from ...domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
@@ -18,9 +18,9 @@ from ..domain import (
     SearchPage,
     SearchRequest,
 )
-from .curated_download import CuratedDownloader
-from .museum_client import MuseumClient
-from .museum_assets import (
+from ..shared.curated_download import CuratedDownloader
+from .client import MuseumClient
+from .assets import (
     category,
     category_field,
     collection_detail,
@@ -47,7 +47,7 @@ _CATEGORIES = {
 _FIELDS = "id,title,image_id,artist_display,date_display,medium_display,dimensions,description,is_public_domain,copyright_notice,artwork_type_title,department_title"
 
 
-from .download_policy import HostDownloadPolicy
+from ..shared.download_policy import HostDownloadPolicy
 
 IMAGE_POLICY = HostDownloadPolicy(
     "artic", lambda host: host == "www.artic.edu", safe_path_chars="/%,!"

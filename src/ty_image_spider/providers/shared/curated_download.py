@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ..version import USER_AGENT
+from ...version import USER_AGENT
 
 import os
 import tempfile
@@ -14,8 +14,8 @@ from urllib.request import Request, urlopen
 
 from PIL import Image
 
-from ..domain import DownloadResult, SpiderError
-from ..infrastructure.security import read_limited, resolve_inside
+from ...domain import DownloadResult, SpiderError
+from ...infrastructure.security import read_limited, resolve_inside
 
 
 from .download_policy import DownloadPolicy

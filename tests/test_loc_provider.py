@@ -5,8 +5,8 @@ from urllib.parse import parse_qs, urlsplit
 import pytest
 
 from ty_image_spider.domain import DownloadResult, SearchRequest, SpiderError
-from ty_image_spider.providers.loc import LocProvider
-from ty_image_spider.providers.public_json_client import PublicJsonClient
+from ty_image_spider.providers.collections.loc import LocProvider
+from ty_image_spider.providers.shared.public_json_client import PublicJsonClient
 
 
 class Response(BytesIO):

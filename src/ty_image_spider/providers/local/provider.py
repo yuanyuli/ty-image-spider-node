@@ -6,8 +6,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlencode
 
-from ..infrastructure.metadata import extract_prompts, read_image_metadata
-from ..domain import (
+from ...infrastructure.metadata import extract_prompts, read_image_metadata
+from ...domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
@@ -20,7 +20,7 @@ from ..domain import (
     SearchRequest,
     SpiderError,
 )
-from ..infrastructure.security import resolve_inside
+from ...infrastructure.security import resolve_inside
 
 
 _ROOT_NAMES = ("ty-image-spider", "ty-node")

@@ -6,7 +6,7 @@ from typing import Mapping
 
 from ..domain import AssetDetail, AssetItem
 from ..infrastructure.asset_index import AssetIndex
-from ..providers.registry import ProviderRegistry
+from ..providers.shared import ProviderRegistry
 
 
 class DetailService:

@@ -21,9 +21,8 @@ from ..domain import (
     SearchRequest,
     SpiderError,
 )
-from .download_policy import HostDownloadPolicy
-from .museum_assets import plain_text
-from .public_json_client import PublicJsonClient
+from .collections.assets import plain_text
+from .shared import HostDownloadPolicy, PublicJsonClient
 
 
 _SAFE_ID = re.compile(r"^[1-9][0-9]*$")

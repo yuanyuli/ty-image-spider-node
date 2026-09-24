@@ -7,7 +7,7 @@ from html import unescape
 from typing import Any, Mapping
 
 from ..infrastructure.cache import JsonCache
-from ..providers.curated_client import FilmGrabClient
+from ..providers.shared import FilmGrabClient
 from .matching import normalize_title
 
 

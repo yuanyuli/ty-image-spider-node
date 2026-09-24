@@ -1,7 +1,7 @@
 from ty_image_spider.domain import SearchRequest
-from ty_image_spider.providers.behance import BehanceProvider
-from ty_image_spider.providers.filmgrab import FilmGrabProvider
-from ty_image_spider.providers.curated_client import parse_project_images
+from ty_image_spider.providers.editorial.behance import BehanceProvider
+from ty_image_spider.providers.movies.filmgrab import FilmGrabProvider
+from ty_image_spider.providers.shared.curated_client import parse_project_images
 from ty_image_spider.infrastructure.cache import JsonCache
 from ty_image_spider.domain import SpiderError
 import pytest

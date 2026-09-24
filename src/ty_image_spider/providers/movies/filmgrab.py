@@ -8,9 +8,9 @@ from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Mapping
 
-from ..infrastructure.cache import JsonCache
-from ..movies.resolution import MovieResolution
-from ..domain import (
+from ...infrastructure.cache import JsonCache
+from ...movies.resolution import MovieResolution
+from ...domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
@@ -22,16 +22,16 @@ from ..domain import (
     SearchRequest,
     SpiderError,
 )
-from .curated_client import FilmGrabClient
-from .curated_download import CuratedDownloader
+from ..shared.curated_client import FilmGrabClient
+from ..shared.curated_download import CuratedDownloader
 from .filmgrab_articles import FilmGrabArticles
-from .film_catalog import display_film_title, film_presets, resolve_film_query
+from .catalog import display_film_title, film_presets, resolve_film_query
 
 
 _FRAME_ID = re.compile(r"^[0-9]+-[0-9]+$")
 
 
-from .download_policy import HostDownloadPolicy
+from ..shared.download_policy import HostDownloadPolicy
 
 IMAGE_POLICY = HostDownloadPolicy("filmgrab", lambda host: host == "film-grab.com")
 

@@ -9,10 +9,10 @@ from aiohttp.test_utils import TestClient, TestServer
 
 from ty_image_spider.infrastructure.asset_index import AssetIndex
 from ty_image_spider.domain import AssetItem, SpiderError
-from ty_image_spider.providers.curated_download import CuratedDownloader
+from ty_image_spider.providers.shared.curated_download import CuratedDownloader
 from ty_image_spider.providers.editorial import EditorialProvider
-from ty_image_spider.providers.editorial_sources import COLOSSAL
-from ty_image_spider.providers.registry import ProviderRegistry
+from ty_image_spider.providers.editorial.sources import COLOSSAL
+from ty_image_spider.providers.shared.registry import ProviderRegistry
 from ty_image_spider.services.download import DownloadService
 from ty_image_spider.api import ROUTES
 
