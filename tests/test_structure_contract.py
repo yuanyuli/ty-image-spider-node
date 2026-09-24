@@ -77,3 +77,9 @@ def test_large_provider_packages_have_separate_adapters():
         "wallpapers/wallpaperscraft/parser.py",
     ):
         assert (root / relative).is_file(), relative
+
+
+def test_frontend_entrypoint_only_composes_extension():
+    entry = Path("web/ty_image_spider.js")
+
+    assert len(entry.read_text("utf-8").splitlines()) <= 40

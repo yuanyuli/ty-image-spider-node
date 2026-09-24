@@ -1,10 +1,19 @@
-import { element } from "./core/dom.js";
-import { normalizePresentation } from "./core/presentation.js";
-import { createIcon, createIconButton } from "./ui/icons.js";
-import { openImageViewer } from "./ui/image_viewer.js";
-import { renderCollectionDetails } from "./features/detail/collection_detail.js";
-import { renderEditorialDetails } from "./features/detail/editorial_detail.js";
-import { createPreviewActions, handlePreviewKey } from "./features/preview/preview_actions.js";
+import { element } from "../../core/dom.js";
+import { normalizePresentation } from "../../core/presentation.js";
+import { createIcon, createIconButton } from "../icons.js";
+import { openImageViewer } from "../image_viewer.js";
+import { renderCollectionDetails } from "../../features/detail/collection_detail.js";
+import { renderEditorialDetails } from "../../features/detail/editorial_detail.js";
+import { createPreviewActions, handlePreviewKey } from "../../features/preview/preview_actions.js";
+import { renderFacts } from "./facts.js";
+import { defaultCopy, defaultOpenSource, sectionWithTitle, textSection } from "./actions.js";
+import {
+  renderCivitai,
+  renderLocal,
+  renderWallhaven,
+  renderXiaohongshu,
+} from "./source_details.js";
+import { createDialogShell } from "./shell.js";
 
 export function openAssetDialog(context) {
   const {
@@ -29,12 +38,7 @@ export function openAssetDialog(context) {
   let saving = false;
   let saveMessage = "";
   const priorFocus = document.activeElement;
-  const overlay = element(document, "div", "tyis-dialog-backdrop");
-  const dialog = element(document, "section", "tyis-dialog");
-  dialog.tabIndex = -1;
-  dialog.setAttribute("role", "dialog");
-  dialog.setAttribute("aria-modal", "true");
-  dialog.setAttribute("aria-label", item.title || "素材详情");
+  const { overlay, dialog } = createDialogShell(document, item.title || "素材详情");
 
   const header = element(document, "header", "tyis-dialog-header");
   const heading = element(document, "div", "tyis-dialog-heading");
@@ -270,137 +274,4 @@ export function openAssetDialog(context) {
   syncPreview();
   if (startFullscreen) openFullscreen();
   return { overlay, dialog, mainImage, close, selectImage, update };
-}
-
-function renderFacts(document, item) {
-  const section = element(document, "section", "tyis-detail-section");
-  const list = element(document, "dl", "tyis-facts");
-  fact(document, list, "作者", item.author || "未知");
-  if (item.created_at) fact(document, list, "时间", item.created_at);
-  if (item.width && item.height) fact(document, list, "尺寸", `${item.width} × ${item.height}`);
-  if (item.image_count > 1) fact(document, list, "图集", `${item.image_count} 张`);
-  section.append(list);
-  return section;
-}
-
-function renderCivitai(document, item, detail, copyText) {
-  const root = document.createDocumentFragment();
-  if (item.prompt)
-    root.append(textSection(document, "正向提示词", item.prompt, copyText, "copy-prompt"));
-  else root.append(element(document, "p", "tyis-prompt-unavailable", "该素材未提供公开提示词"));
-  if (item.negative_prompt)
-    root.append(textSection(document, "负向提示词", item.negative_prompt, copyText));
-  const resources = [...(item.metadata?.models || []), ...(item.metadata?.loras || [])];
-  if (resources.length) {
-    const section = sectionWithTitle(document, "使用资源");
-    const chips = element(document, "div", "tyis-resource-list");
-    for (const resource of resources) {
-      chips.append(element(document, "span", `tyis-resource is-${resource.type}`, resource.name));
-    }
-    section.append(chips);
-    root.append(section);
-  }
-  if (detail.workflow) root.append(codeSection(document, "Workflow", detail.workflow));
-  return root;
-}
-
-function renderXiaohongshu(document, item, detail) {
-  const root = document.createDocumentFragment();
-  if (detail.content) {
-    const section = sectionWithTitle(document, "笔记正文");
-    section.append(element(document, "p", "tyis-detail-copy", detail.content));
-    root.append(section);
-  }
-  const stats = element(document, "div", "tyis-stat-row");
-  for (const [key, label] of [
-    ["likes", "赞"],
-    ["collects", "收藏"],
-    ["comments", "评论"],
-  ]) {
-    if (item.stats?.[key] !== undefined) {
-      stats.append(element(document, "span", "", `${item.stats[key]} ${label}`));
-    }
-  }
-  if (stats.children.length) root.append(stats);
-  return root;
-}
-
-function renderWallhaven(document, item) {
-  const root = document.createDocumentFragment();
-  const stats = element(document, "div", "tyis-stat-row");
-  if (item.stats?.views !== undefined) {
-    stats.append(element(document, "span", "", `${item.stats.views} 浏览`));
-  }
-  if (item.stats?.favorites !== undefined) {
-    stats.append(element(document, "span", "", `${item.stats.favorites} 收藏`));
-  }
-  if (item.metadata?.category) {
-    stats.append(element(document, "span", "", item.metadata.category));
-  }
-  if (stats.children.length) root.append(stats);
-
-  if (item.tags?.length) {
-    const section = sectionWithTitle(document, "标签");
-    const tags = element(document, "div", "tyis-resource-list");
-    for (const tag of item.tags) tags.append(element(document, "span", "tyis-resource", tag));
-    section.append(tags);
-    root.append(section);
-  }
-
-  const colors = (item.metadata?.colors || []).filter((value) => /^#[0-9a-f]{6}$/i.test(value));
-  if (colors.length) {
-    const section = sectionWithTitle(document, "色板");
-    const palette = element(document, "div", "tyis-color-palette");
-    for (const color of colors) {
-      const swatch = element(document, "span", "tyis-color-swatch");
-      swatch.style.backgroundColor = color;
-      swatch.title = color;
-      swatch.setAttribute("aria-label", color);
-      palette.append(swatch);
-    }
-    section.append(palette);
-    root.append(section);
-  }
-  return root;
-}
-
-function renderLocal(document, detail) {
-  return codeSection(document, "图片 Metadata", detail.metadata || {});
-}
-
-function textSection(document, title, value, copyText, action) {
-  const section = sectionWithTitle(document, title);
-  const head = section.querySelector(".tyis-detail-section-title");
-  const copy = createIconButton(document, "copy", `复制${title}`);
-  if (action) copy.dataset.action = action;
-  copy.addEventListener("click", async () => copyText(value, document));
-  head.append(copy);
-  section.append(element(document, "p", "tyis-prompt-copy", value));
-  return section;
-}
-
-function codeSection(document, title, value) {
-  const details = element(document, "details", "tyis-code-section");
-  const summary = element(document, "summary", "", title);
-  const code = element(document, "pre", "", JSON.stringify(value, null, 2));
-  details.append(summary, code);
-  return details;
-}
-
-function sectionWithTitle(document, title) {
-  const section = element(document, "section", "tyis-detail-section");
-  section.append(element(document, "div", "tyis-detail-section-title", title));
-  return section;
-}
-
-function fact(document, list, key, value) {
-  list.append(element(document, "dt", "", key), element(document, "dd", "", value));
-}
-
-async function defaultCopy(value, document) {
-  await document.defaultView?.navigator?.clipboard?.writeText(value);
-}
-
-function defaultOpenSource(url, document) {
-  document.defaultView?.open(url, "_blank", "noopener,noreferrer");
 }

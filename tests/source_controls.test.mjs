@@ -29,7 +29,7 @@ test("手动修改电影名后片单选择同步，不保留上一部电影", ()
   view.query.dispatchEvent(new dom.window.Event("input"));
   assert.equal(view.root.querySelector('[name="search_preset"]').value, "花样年华");
 });
-import { renderSourceControls } from "../web/source_controls.js";
+import { renderSourceControls } from "../web/ui/source_controls/index.js";
 
 test("中文片单选择后填充中文搜索词并只发起一次搜索", () => {
   const dom = new JSDOM("<!doctype html><body></body>");

@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
-import { renderSourceControls } from "../web/source_controls.js";
-import { createGallery } from "../web/gallery.js";
-import { openAssetDialog } from "../web/dialog.js";
+import { renderSourceControls } from "../web/ui/source_controls/index.js";
+import { createGallery } from "../web/ui/gallery/index.js";
+import { openAssetDialog } from "../web/ui/dialog/index.js";
 
 function source(id, group, order, extra = {}) {
   return {

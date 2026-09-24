@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { JSDOM } from "jsdom";
 
-import { createGallery } from "../web/gallery.js";
+import { createGallery } from "../web/ui/gallery/index.js";
 
 function item(overrides = {}) {
   return {
