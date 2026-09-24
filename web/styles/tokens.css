@@ -1,0 +1,32 @@
+:root {
+  --tyis-bg: #151719;
+  --tyis-panel: #1d2023;
+  --tyis-raised: #25292d;
+  --tyis-line: rgba(233, 239, 238, 0.14);
+  --tyis-line-strong: rgba(233, 239, 238, 0.25);
+  --tyis-text: #f1f4f3;
+  --tyis-muted: #9ca5a3;
+  --tyis-green: #65d58c;
+  --tyis-green-dark: #153e25;
+  --tyis-red: #df5a62;
+  --tyis-amber: #e1b35a;
+  --tyis-danger: #ff878c;
+}
+
+.tyis-workspace,
+.tyis-dialog {
+  color: var(--tyis-text);
+  font:
+    12px/1.45 Bahnschrift,
+    "Microsoft YaHei UI",
+    "Segoe UI",
+    sans-serif;
+  letter-spacing: 0;
+}
+
+.tyis-workspace [hidden],
+.tyis-dialog [hidden],
+.tyis-gallery [hidden],
+.tyis-image-viewer [hidden] {
+  display: none !important;
+}

@@ -1,0 +1,259 @@
+.tyis-grid {
+  scrollbar-gutter: stable;
+}
+
+.tyis-field:disabled,
+.tyis-subtle-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tyis-gallery {
+  display: flex;
+  flex-direction: column;
+}
+
+.tyis-gallery-toolbar {
+  min-height: 39px;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 12px;
+  border-bottom: 1px solid var(--tyis-line);
+}
+
+.tyis-result-count {
+  color: var(--tyis-muted);
+  font-size: 10px;
+}
+
+.tyis-gallery-actions {
+  display: flex;
+  min-width: 0;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.tyis-gallery-actions > button {
+  flex: 0 0 auto;
+}
+
+.tyis-grid {
+  display: grid;
+  min-height: 0;
+  flex: 1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: max-content;
+  align-content: start;
+  gap: 9px;
+  padding: 10px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.tyis-card {
+  display: flex;
+  min-width: 0;
+  min-height: 280px;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--tyis-panel);
+  border: 1px solid var(--tyis-line);
+  border-radius: 7px;
+}
+
+.tyis-card:focus-within,
+.tyis-card:hover {
+  border-color: var(--tyis-line-strong);
+}
+
+.tyis-card-media {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  padding: 0;
+  background: #0d0f10;
+  border: 0;
+  cursor: zoom-in;
+  flex: 0 0 auto;
+}
+
+.tyis-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 180ms ease;
+}
+
+.tyis-card.is-filmgrab {
+  min-height: 0;
+}
+
+.tyis-card.is-filmgrab .tyis-card-media {
+  aspect-ratio: 16 / 9;
+}
+
+.tyis-card.is-filmgrab .tyis-card-image,
+.tyis-card.is-colossal .tyis-card-image,
+.tyis-card.is-designmilk .tyis-card-image,
+.tyis-card.is-featureshoot .tyis-card-image,
+.tyis-card.is-mymodernmet .tyis-card-image,
+.tyis-card.is-arena .tyis-card-image,
+.tyis-card.is-loc .tyis-card-image,
+.tyis-card.is-vam .tyis-card-image,
+.tyis-card.is-artic .tyis-card-image,
+.tyis-card.is-cleveland .tyis-card-image {
+  object-fit: contain;
+}
+
+.tyis-card:hover .tyis-card-image {
+  transform: scale(1.025);
+}
+
+.tyis-card-image.is-empty,
+.tyis-card-image.is-error {
+  visibility: hidden;
+}
+
+.tyis-card-topline,
+.tyis-card-actions {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+}
+
+.tyis-card-topline {
+  inset: 7px 7px auto;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.tyis-card-actions {
+  right: 7px;
+  bottom: 7px;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+.tyis-card:hover .tyis-card-actions,
+.tyis-card:focus-within .tyis-card-actions {
+  opacity: 1;
+}
+
+.tyis-card-actions .tyis-icon-button {
+  color: #fff;
+  background: rgba(12, 14, 15, 0.84);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.tyis-source-mark,
+.tyis-image-count,
+.tyis-prompt-badge {
+  padding: 3px 6px;
+  color: #fff;
+  background: rgba(12, 14, 15, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.tyis-prompt-badge {
+  margin-left: auto;
+  color: #0b1c10;
+  background: var(--tyis-green);
+  border-color: rgba(101, 213, 140, 0.8);
+}
+
+.tyis-prompt-badge.is-empty {
+  color: #d4d9d8;
+  background: rgba(12, 14, 15, 0.78);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.tyis-source-mark.is-xiaohongshu {
+  background: rgba(195, 48, 58, 0.9);
+}
+
+.tyis-source-mark.is-wallhaven {
+  background: #277da1;
+}
+
+.tyis-source-mark.is-behance {
+  background: #1769ff;
+}
+
+.tyis-source-mark.is-filmgrab {
+  color: #151719;
+  background: #d8c59c;
+}
+
+.tyis-source-mark.is-local {
+  color: #151719;
+  background: var(--tyis-amber);
+}
+
+.tyis-card-footer {
+  min-height: 54px;
+  box-sizing: border-box;
+  padding: 8px 9px;
+  flex: 0 0 54px;
+}
+
+.tyis-card-title {
+  display: block;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tyis-card-meta {
+  min-height: 17px;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 3px;
+  color: var(--tyis-muted);
+  font-size: 9px;
+}
+
+.tyis-card-meta span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tyis-card-meta .has-prompt {
+  color: var(--tyis-green);
+}
+
+.tyis-skeleton {
+  aspect-ratio: 4 / 5;
+  border: 1px solid var(--tyis-line);
+  border-radius: 7px;
+  background: #23272a;
+  animation: tyis-pulse 1.25s ease-in-out infinite alternate;
+}
+
+.tyis-empty {
+  display: flex;
+  min-height: 180px;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 3px;
+  color: var(--tyis-muted);
+  border: 1px dashed var(--tyis-line-strong);
+  border-radius: 7px;
+  text-align: center;
+}
+
+.tyis-empty strong {
+  color: #d8dcdb;
+  font-size: 12px;
+}

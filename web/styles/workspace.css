@@ -1,0 +1,79 @@
+.tyis-workspace {
+  container-type: inline-size;
+  display: flex;
+  min-width: 0;
+  height: 100%;
+  min-height: 620px;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: var(--tyis-bg);
+  border: 1px solid var(--tyis-line);
+  border-radius: 7px;
+}
+
+.tyis-masthead,
+.tyis-source-bar,
+.tyis-search-row,
+.tyis-gallery-toolbar,
+.tyis-card-meta,
+.tyis-detail-actions,
+.tyis-dialog-header,
+.tyis-stat-row {
+  display: flex;
+  align-items: center;
+}
+
+.tyis-masthead {
+  min-height: 48px;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--tyis-line);
+  background: #191c1e;
+}
+
+.tyis-brand {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.tyis-brand strong {
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tyis-brand span {
+  color: var(--tyis-muted);
+  font-size: 10px;
+}
+
+.tyis-activity {
+  max-width: 48%;
+  overflow: hidden;
+  color: var(--tyis-green);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tyis-activity.is-error,
+.tyis-source-status.is-unavailable {
+  color: var(--tyis-danger);
+}
+
+.tyis-download-location {
+  max-height: 72px;
+  flex: 0 0 auto;
+  overflow: auto;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--tyis-line);
+  color: var(--tyis-green);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
