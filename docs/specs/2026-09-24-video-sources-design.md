@@ -55,6 +55,29 @@ Provider ID 为 `nasa-video`。复用 NASA Image and Video Library 搜索接口�
 
 每个来源拆分为 Client、Normalizer/Parser 和 Provider：Client 只负责受限 HTTP 与短时 JSON 缓存，Normalizer 只负责上游数据转换，Provider 只负责业务组合、描述符和下载入口。
 
+### 六项设计原则
+
+本功能把六项设计原则作为可检查的约束：
+
+- 单一职责：领域值对象、HTTP Client、来源解析、Provider 编排、视频签名识别、流式写入、前端播放器和卡片展示分别实现，不创建同时处理多个阶段的大管家类。
+- 开闭原则：通用服务只依据 `AssetItem.kind`、`AssetDetail.media` 和 Provider 能力工作；新增视频来源通过注册独立 Provider 完成，不向通用服务加入来源 ID 分支。
+- 里氏替换：三个视频 Provider 遵守现有 `AssetProvider` 行为契约；不可用、无结果、分页结束、详情失败和下载失败使用与图片来源相同的领域结果和错误语义。
+- 接口隔离：缓存封面读取与视频文件下载使用不同协议。Provider 的静态封面策略只服务缓存，`VideoDownloader` 只服务用户明确触发的视频下载。
+- 依赖倒置：Provider 依赖 Client、Normalizer 和下载协议，通过构造函数注入具体实现；领域层不导入网络、文件系统、ComfyUI 或浏览器代码。
+- 迪米特法则：前端卡片和详情只读取领域契约字段，不解析来源私有 JSON；通用服务不访问 Client 内部缓存或 Provider 私有方法。
+
+### 目录边界
+
+新增目录必须在包文档或边界文档中声明职责和禁止依赖，并由结构测试检查：
+
+- `src/ty_image_spider/domain/` 只定义序列化领域契约，不执行 HTTP、文件系统或来源选择。
+- `src/ty_image_spider/infrastructure/video/` 只负责受策略约束的视频 URL、文件签名、流式写入和已有文件复用；不得导入任何具体 Provider。
+- `src/ty_image_spider/providers/videos/` 只包含视频来源及其共享选择函数；不得导入 API 路由、服务定位器或 ComfyUI 适配器。每个来源只能导入自身子包、`videos/shared`、领域和共享基础设施，不能导入其他具体来源。
+- `web/features/video/` 只负责视频卡片装饰、资源选择和播放器生命周期；不得发起后端请求、持久化工作流状态或识别具体来源 ID。
+- `web/ui/` 只组合可复用界面组件，视频来源差异必须在后端领域数据中归一化，不能在这里增加 `prelinger`、`commons-video` 或 `nasa-video` 条件分支。
+
+依赖方向固定为 `app/api -> services -> provider protocols/domain`，具体 Provider 依赖 `domain + infrastructure`，基础设施依赖 `domain`，领域层不反向依赖任何外层目录。前端固定为 `app -> ui/features -> core`，视频功能不得反向导入 `app`。
+
 新增通用 `VideoDownloader`，但来源规则仍由各 Provider 注入：
 
 - 验证素材 ID、HTTPS 主机、重定向目标和允许的 MIME 类型。
