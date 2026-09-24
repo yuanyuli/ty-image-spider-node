@@ -10,6 +10,65 @@ from .json_types import JsonValue
 
 
 @dataclass(frozen=True, slots=True)
+class MediaResource:
+    """来源归一化后的可播放或可下载媒体资源。"""
+
+    kind: str
+    url: str
+    mime_type: str
+    role: str
+    width: int | None = None
+    height: int | None = None
+    duration_seconds: int | None = None
+    size_bytes: int | None = None
+    label: str = ""
+
+    def to_dict(self) -> dict[str, JsonValue]:
+        result: dict[str, JsonValue] = {
+            "kind": self.kind,
+            "url": self.url,
+            "mime_type": self.mime_type,
+            "role": self.role,
+            "label": self.label,
+        }
+        for name in ("width", "height", "duration_seconds", "size_bytes"):
+            value = getattr(self, name)
+            if value is not None:
+                result[name] = value
+        return result
+
+    @classmethod
+    def from_untrusted(cls, value: object) -> "MediaResource":
+        if not isinstance(value, Mapping):
+            raise SpiderError("invalid_media", "媒体资源必须是对象")
+        kind = value.get("kind")
+        url = value.get("url")
+        mime_type = value.get("mime_type")
+        role = value.get("role")
+        if (
+            kind != "video"
+            or not isinstance(url, str)
+            or not url
+            or not isinstance(mime_type, str)
+            or not mime_type.startswith("video/")
+            or role not in {"playback", "download"}
+        ):
+            raise SpiderError("invalid_media", "媒体资源字段无效")
+        integers: dict[str, int | None] = {}
+        for name in ("width", "height", "duration_seconds", "size_bytes"):
+            raw = value.get(name)
+            if raw is not None and (
+                not isinstance(raw, int) or isinstance(raw, bool) or raw < 0
+            ):
+                raise SpiderError("invalid_media", f"媒体资源字段 {name} 无效")
+            integers[name] = raw
+        label = value.get("label", "")
+        if not isinstance(label, str):
+            raise SpiderError("invalid_media", "媒体资源标签必须是字符串")
+        return cls(kind, url, mime_type, role, label=label, **integers)
+
+
+@dataclass(frozen=True, slots=True)
 class AssetItem:
     provider: str
     id: str
@@ -21,6 +80,7 @@ class AssetItem:
     created_at: str | None = None
     width: int | None = None
     height: int | None = None
+    duration_seconds: int | None = None
     has_prompt: bool = False
     prompt: str | None = None
     negative_prompt: str | None = None
@@ -55,6 +115,7 @@ class AssetItem:
             "created_at",
             "width",
             "height",
+            "duration_seconds",
             "prompt",
             "negative_prompt",
         ):
@@ -97,7 +158,7 @@ class AssetItem:
                         "invalid_asset", f"素材数据字段 {name} 必须是字符串"
                     )
                 kwargs[name] = raw
-        for name in ("width", "height", "image_count"):
+        for name in ("width", "height", "duration_seconds", "image_count"):
             raw = value.get(name)
             if raw is not None:
                 if not isinstance(raw, int) or isinstance(raw, bool):
@@ -137,11 +198,13 @@ class AssetDetail:
     content: str = ""
     workflow: JsonValue = None
     metadata: Mapping[str, JsonValue] = field(default_factory=dict)
+    media: tuple[MediaResource, ...] = ()
 
     def to_dict(self) -> dict[str, JsonValue]:
         result: dict[str, JsonValue] = {
             "item": self.item.to_dict(),
             "images": list(self.images),
+            "media": [resource.to_dict() for resource in self.media],
             "content": self.content,
             "metadata": dict(self.metadata),
         }

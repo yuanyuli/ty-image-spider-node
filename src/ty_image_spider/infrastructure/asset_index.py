@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Iterator
 from urllib.parse import urlencode
 
-from ..domain import AssetDetail, AssetItem, JsonValue
+from ..domain import AssetDetail, AssetItem, JsonValue, MediaResource
 
 
 class AssetIndex:
@@ -133,10 +133,17 @@ class AssetIndex:
             else ()
         )
         metadata = data.get("metadata")
+        raw_media = data.get("media")
+        media = (
+            tuple(MediaResource.from_untrusted(value) for value in raw_media)
+            if isinstance(raw_media, list)
+            else ()
+        )
         return AssetDetail(
             self.overlay(item),
             resolved_images or (url,),
             content=str(data.get("content") or ""),
             workflow=data.get("workflow"),
             metadata=metadata if isinstance(metadata, dict) else {},
+            media=media,
         )

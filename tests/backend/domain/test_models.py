@@ -4,6 +4,7 @@ from ty_image_spider.domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
+    MediaResource,
     ProviderStatus,
     SearchPage,
     SearchRequest,
@@ -36,6 +37,44 @@ def test_asset_item_serializes_without_none_values():
 def test_asset_item_rejects_untrusted_shape():
     with pytest.raises(SpiderError, match="素材数据"):
         AssetItem.from_untrusted({"provider": "local", "id": ["not-a-string"]})
+
+
+def test_video_media_resource_round_trips():
+    resource = MediaResource(
+        kind="video",
+        url="https://archive.org/download/item/video.mp4",
+        mime_type="video/mp4",
+        role="playback",
+        width=1280,
+        height=720,
+        duration_seconds=42,
+        size_bytes=1024,
+        label="720p MP4",
+    )
+    item = AssetItem("prelinger", "item", kind="video", duration_seconds=42)
+    detail = AssetDetail(item, media=(resource,))
+
+    assert AssetItem.from_untrusted(item.to_dict()) == item
+    assert MediaResource.from_untrusted(resource.to_dict()) == resource
+    assert detail.to_dict()["media"] == [resource.to_dict()]
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        {"kind": "video", "url": [], "mime_type": "video/mp4", "role": "other"},
+        {
+            "kind": "video",
+            "url": "https://example.com/video.mp4",
+            "mime_type": "video/mp4",
+            "role": "playback",
+            "size_bytes": -1,
+        },
+    ],
+)
+def test_media_resource_rejects_invalid_role_url_and_metrics(value):
+    with pytest.raises(SpiderError, match="媒体资源"):
+        MediaResource.from_untrusted(value)
 
 
 def test_domain_results_serialize_nested_values():

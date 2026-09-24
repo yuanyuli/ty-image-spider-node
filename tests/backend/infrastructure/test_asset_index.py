@@ -1,5 +1,8 @@
+import json
+import sqlite3
+
 from ty_image_spider.infrastructure.asset_index import AssetIndex
-from ty_image_spider.domain import AssetDetail, AssetItem
+from ty_image_spider.domain import AssetDetail, AssetItem, MediaResource
 
 
 def test_index_persists_image_and_prompt_and_preserves_fresh_source_url(tmp_path):
@@ -63,3 +66,51 @@ def test_cached_preview_does_not_add_duplicate_thumbnail_to_original_gallery(tmp
         AssetDetail(item, ("https://film-grab.com/original.jpg",)), b"image", ".jpg"
     )
     assert index.detail(item).images == ("https://film-grab.com/original.jpg",)
+
+
+def test_index_round_trips_video_detail_without_rewriting_remote_media_url(tmp_path):
+    root = tmp_path / "output"
+    index = AssetIndex(root)
+    item = AssetItem(
+        "prelinger",
+        "movie-1",
+        kind="video",
+        preview_url="https://archive.org/services/img/movie-1",
+        duration_seconds=42,
+    )
+    resource = MediaResource(
+        "video",
+        "https://archive.org/download/movie-1/movie-1.mp4",
+        "video/mp4",
+        "playback",
+        duration_seconds=42,
+    )
+    index.store(AssetDetail(item, media=(resource,)), b"image", ".jpg")
+
+    restored = AssetIndex(root).detail(item)
+
+    assert restored is not None
+    assert restored.item.duration_seconds == 42
+    assert restored.media == (resource,)
+    assert restored.media[0].url == resource.url
+
+
+def test_index_restores_legacy_image_detail_without_media_field(tmp_path):
+    index = AssetIndex(tmp_path)
+    item = AssetItem("local", "legacy", preview_url="https://example.com/legacy.jpg")
+    index.store(AssetDetail(item, (item.preview_url,)), b"image", ".jpg")
+    database = tmp_path / "ty-node" / "ty-image-spider" / "cache" / "index.sqlite3"
+    with sqlite3.connect(database) as connection:
+        row = connection.execute("SELECT key, detail_json FROM assets").fetchone()
+        payload = json.loads(row[1])
+        payload.pop("media", None)
+        connection.execute(
+            "UPDATE assets SET detail_json = ? WHERE key = ?",
+            (json.dumps(payload), row[0]),
+        )
+
+    restored = index.detail(item)
+
+    assert restored is not None
+    assert restored.media == ()
+    assert restored.images[0].startswith("/view?")

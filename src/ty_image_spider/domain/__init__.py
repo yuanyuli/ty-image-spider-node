@@ -1,6 +1,6 @@
 """TY Image Spider 的稳定领域模型。"""
 
-from .assets import AssetDetail, AssetItem
+from .assets import AssetDetail, AssetItem, MediaResource
 from .errors import SpiderError
 from .json_types import JsonValue
 from .operations import DownloadResult, SearchPage, SearchRequest
@@ -20,6 +20,7 @@ __all__ = [
     "FilterField",
     "FilterOption",
     "JsonValue",
+    "MediaResource",
     "ProviderCapabilities",
     "ProviderDescriptor",
     "ProviderPresentation",
