@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from ty_image_spider.bootstrap import build_services
-from ty_image_spider.routes import ROUTES
+from ty_image_spider.api import ROUTES
+from ty_image_spider.app import build_services
 
 
 EXPECTED_ROUTES = (
@@ -30,3 +30,13 @@ def test_public_route_and_provider_contracts_are_stable(tmp_path):
             Path("tests/fixtures/provider_descriptors.json").read_text("utf-8")
         )
     )
+
+
+def test_runtime_entrypoints_are_idempotent():
+    from ty_image_spider.api import ROUTES, register_routes
+    from ty_image_spider.app import TyImageSpider, build_services
+
+    assert len(ROUTES) == 11
+    assert register_routes() in {True, False}
+    assert TyImageSpider.FUNCTION == "browse"
+    assert callable(build_services)

@@ -14,7 +14,8 @@ from ty_image_spider.domain import (
     SearchPage,
     SpiderError,
 )
-from ty_image_spider import routes
+from ty_image_spider import api as routes
+from ty_image_spider.api import registration
 
 
 def test_error_details_preserve_job_id_and_redact_nested_credentials():
@@ -22,7 +23,7 @@ def test_error_details_preserve_job_id_and_redact_nested_credentials():
         "job_id": "safe",
         "nested": [{"access_token": "secret", "note": "cookie=secret"}],
     }
-    response = routes._error(
+    response = routes.error(
         SpiderError("cache_duplicate", "重复", status=409, details=details)
     )
     payload = json.loads(response.body)
@@ -32,7 +33,7 @@ def test_error_details_preserve_job_id_and_redact_nested_credentials():
 
 
 def test_error_response_redacts_prefixed_keys_and_bearer_values():
-    response = routes._error(
+    response = routes.error(
         SpiderError(
             "test",
             "access_token=private-token Authorization: Bearer private-bearer",
@@ -42,7 +43,7 @@ def test_error_response_redacts_prefixed_keys_and_bearer_values():
     assert "private-" not in response.text
 
 
-from ty_image_spider.routes import (
+from ty_image_spider.api import (
     get_providers,
     post_detail,
     post_download,
@@ -198,7 +199,7 @@ async def _assert_routes_cover_malformed_json_status_and_download_page():
 
 
 def test_register_routes_is_idempotent_and_safe_without_comfyui(monkeypatch):
-    monkeypatch.setattr(routes, "_routes_registered", False)
+    monkeypatch.setattr(registration, "_routes_registered", False)
     monkeypatch.delitem(sys.modules, "server", raising=False)
     assert routes.register_routes() is False
 

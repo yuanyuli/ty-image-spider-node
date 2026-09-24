@@ -2,7 +2,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from ty_image_spider.bootstrap import ApplicationServices, build_services
+from ty_image_spider.app import ApplicationServices, build_services
 
 
 def test_build_services_composes_independent_providers(tmp_path):

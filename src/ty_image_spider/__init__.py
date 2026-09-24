@@ -1,7 +1,7 @@
 """TY Image Spider 业务包。"""
 
-from .nodes import TyImageSpider
-from .routes import register_routes
+from .api import register_routes
+from .app import TyImageSpider
 
 
 NODE_CLASS_MAPPINGS = {"TyImageSpider": TyImageSpider}

@@ -1,4 +1,4 @@
-from ty_image_spider.nodes import TyImageSpider
+from ty_image_spider.app import TyImageSpider
 
 
 def test_node_is_zero_output_and_serializes_only_state():

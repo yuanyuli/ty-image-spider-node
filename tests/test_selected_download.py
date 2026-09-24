@@ -14,7 +14,7 @@ from ty_image_spider.providers.editorial import EditorialProvider
 from ty_image_spider.providers.editorial_sources import COLOSSAL
 from ty_image_spider.providers.registry import ProviderRegistry
 from ty_image_spider.services.download import DownloadService
-from ty_image_spider.routes import ROUTES
+from ty_image_spider.api import ROUTES
 
 
 def setup_gallery(tmp_path, monkeypatch, *, cached=False):

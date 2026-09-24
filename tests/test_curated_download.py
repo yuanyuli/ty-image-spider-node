@@ -5,7 +5,7 @@ from PIL import Image
 
 from ty_image_spider.domain import SpiderError
 from ty_image_spider.providers.curated_download import CuratedDownloader
-from ty_image_spider.bootstrap import build_services
+from ty_image_spider.app import build_services
 from tempfile import TemporaryDirectory
 from pathlib import Path
 

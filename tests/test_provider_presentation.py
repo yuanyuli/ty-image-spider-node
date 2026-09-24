@@ -2,8 +2,8 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from ty_image_spider.bootstrap import build_services
 from ty_image_spider import domain
+from ty_image_spider.app import build_services
 
 
 def test_presentation_serializes_and_is_immutable():
