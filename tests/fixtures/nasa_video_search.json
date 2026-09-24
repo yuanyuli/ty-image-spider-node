@@ -1,0 +1,29 @@
+{
+  "collection": {
+    "metadata": {"total_hits": 49},
+    "items": [
+      {
+        "href": "https://images-assets.nasa.gov/video/NHQ_2020_0427_Earth/collection.json",
+        "data": [
+          {
+            "center": "HQ",
+            "date_created": "2020-04-27T00:00:00Z",
+            "description": "Earth science mission overview.",
+            "keywords": ["Earth", "science", "mission"],
+            "media_type": "video",
+            "nasa_id": "NHQ_2020_0427_Earth",
+            "secondary_creator": "NASA",
+            "title": "Earth Science Mission"
+          }
+        ],
+        "links": [
+          {
+            "href": "https://images-assets.nasa.gov/video/NHQ_2020_0427_Earth/NHQ_2020_0427_Earth~thumb.jpg",
+            "rel": "preview",
+            "render": "image"
+          }
+        ]
+      }
+    ]
+  }
+}
