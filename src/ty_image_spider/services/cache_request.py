@@ -6,7 +6,7 @@ import json
 import math
 from dataclasses import dataclass
 from typing import Mapping
-from ..models import SpiderError
+from ..domain import SpiderError
 
 
 def _validate_json(value: object, depth: int = 0) -> None:

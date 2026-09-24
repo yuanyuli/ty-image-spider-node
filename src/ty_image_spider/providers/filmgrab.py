@@ -8,9 +8,9 @@ from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Mapping
 
-from ..cache import JsonCache
+from ..infrastructure.cache import JsonCache
 from ..movies.resolution import MovieResolution
-from ..models import (
+from ..domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,

@@ -12,10 +12,10 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
-from ..cache import JsonCache
-from ..models import SpiderError
-from ..network_retry import retry_call
-from ..security import read_limited
+from ..infrastructure.cache import JsonCache
+from ..domain import SpiderError
+from ..infrastructure.network_retry import retry_call
+from ..infrastructure.security import read_limited
 from .credentials import TmdbCredentials
 
 

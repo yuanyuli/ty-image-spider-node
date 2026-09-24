@@ -8,8 +8,8 @@ from urllib.error import HTTPError
 
 import pytest
 
-from ty_image_spider.network_retry import retry_call, retry_delay
-from ty_image_spider.models import SpiderError
+from ty_image_spider.infrastructure.network_retry import retry_call, retry_delay
+from ty_image_spider.domain import SpiderError
 from ty_image_spider.providers.public_json_client import PublicJsonClient
 from ty_image_spider.providers.museum_client import MuseumClient
 from ty_image_spider.providers.curated_client import FilmGrabClient
@@ -99,7 +99,7 @@ class Response(io.BytesIO):
 
 @pytest.mark.parametrize("source", ["public", "museum", "film"])
 def test_client_retries_503_but_not_malformed_json(source, monkeypatch):
-    monkeypatch.setattr("ty_image_spider.network_retry.time.sleep", lambda _: None)
+    monkeypatch.setattr("ty_image_spider.infrastructure.network_retry.time.sleep", lambda _: None)
     calls = []
 
     def open_url(request, **kwargs):

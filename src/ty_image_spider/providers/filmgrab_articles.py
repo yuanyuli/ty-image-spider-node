@@ -6,8 +6,8 @@ import json
 import time
 from typing import Any, Mapping
 
-from ..cache import JsonCache
-from ..models import SpiderError
+from ..infrastructure.cache import JsonCache
+from ..domain import SpiderError
 from .curated_client import FilmGrabClient
 
 

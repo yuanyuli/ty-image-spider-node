@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from typing import Callable, Protocol
 from urllib.parse import quote, urlsplit, urlunsplit
 
-from ..models import SpiderError
-from ..security import require_https_host
+from ..domain import SpiderError
+from ..infrastructure.security import require_https_host
 
 
 class DownloadPolicy(Protocol):

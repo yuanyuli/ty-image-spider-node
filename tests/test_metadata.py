@@ -1,6 +1,6 @@
 from PIL import Image, PngImagePlugin
 
-from ty_image_spider.metadata import extract_prompts, read_image_metadata
+from ty_image_spider.infrastructure.metadata import extract_prompts, read_image_metadata
 
 
 def test_workflow_json_is_not_treated_as_prompt():

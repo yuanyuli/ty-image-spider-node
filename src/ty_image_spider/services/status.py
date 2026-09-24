@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ..models import ProviderStatus, SpiderError
+from ..domain import ProviderStatus, SpiderError
 from ..providers.registry import ProviderRegistry
 
 

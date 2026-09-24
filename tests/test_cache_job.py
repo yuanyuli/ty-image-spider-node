@@ -3,12 +3,12 @@ import threading
 
 import pytest
 
-from ty_image_spider.asset_index import AssetIndex
-from ty_image_spider.models import AssetDetail, AssetItem, SearchPage, SpiderError
+from ty_image_spider.infrastructure.asset_index import AssetIndex
+from ty_image_spider.domain import AssetDetail, AssetItem, SearchPage, SpiderError
 from ty_image_spider.services.cache_job import CacheJobService
 from ty_image_spider.services.cache_runner import CacheJobRunner
 from ty_image_spider.services.cache_progress import CacheProgress
-from ty_image_spider.cache import JsonCache
+from ty_image_spider.infrastructure.cache import JsonCache
 
 
 class SearchStub:

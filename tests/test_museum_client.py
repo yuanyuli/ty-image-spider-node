@@ -4,8 +4,8 @@ from urllib.error import HTTPError
 
 import pytest
 
-from ty_image_spider.cache import JsonCache
-from ty_image_spider.models import SpiderError
+from ty_image_spider.infrastructure.cache import JsonCache
+from ty_image_spider.domain import SpiderError
 from ty_image_spider.providers.museum_client import MuseumClient
 
 

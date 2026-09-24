@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Iterator
 from urllib.parse import urlencode
 
-from .models import AssetDetail, AssetItem, JsonValue
+from ..domain import AssetDetail, AssetItem, JsonValue
 
 
 class AssetIndex:

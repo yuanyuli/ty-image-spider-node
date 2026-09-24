@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Mapping, Protocol
 
-from ..models import (
+from ..domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,

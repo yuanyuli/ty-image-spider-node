@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Sequence
 
-from .models import SpiderError
+from ..domain import SpiderError
 
 
 _MINIMUM_VERSION = (1, 8, 8)

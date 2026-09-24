@@ -7,10 +7,10 @@ import threading
 from dataclasses import dataclass
 from pathlib import Path
 
-from .cache import JsonCache
-from .asset_index import AssetIndex
-from .downloads import ImageDownloader
-from .opencli import OpenCliRunner
+from .infrastructure.cache import JsonCache
+from .infrastructure.asset_index import AssetIndex
+from .infrastructure.downloads import ImageDownloader
+from .infrastructure.opencli import OpenCliRunner
 from .providers.civitai import CivitaiProvider
 from .providers.civitai_client import CivitaiClient
 from .providers.behance import BehanceProvider

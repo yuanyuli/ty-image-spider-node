@@ -7,7 +7,7 @@ from typing import Mapping
 
 from aiohttp import web
 
-from .models import SpiderError
+from .domain import SpiderError
 
 MAX_JSON_BYTES = 1024 * 1024
 

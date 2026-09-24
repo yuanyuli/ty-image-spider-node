@@ -1,5 +1,5 @@
-from ty_image_spider.asset_index import AssetIndex
-from ty_image_spider.models import AssetDetail, AssetItem
+from ty_image_spider.infrastructure.asset_index import AssetIndex
+from ty_image_spider.domain import AssetDetail, AssetItem
 
 
 def test_index_persists_image_and_prompt_and_preserves_fresh_source_url(tmp_path):

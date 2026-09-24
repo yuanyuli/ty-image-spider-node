@@ -7,7 +7,7 @@ from aiohttp import web
 from aiohttp.test_utils import TestClient, TestServer
 
 from ty_image_spider import routes
-from ty_image_spider.models import SearchPage
+from ty_image_spider.domain import SearchPage
 
 LIMIT = 1024 * 1024
 

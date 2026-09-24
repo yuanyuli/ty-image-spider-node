@@ -1,8 +1,8 @@
 import threading
 from concurrent.futures import ThreadPoolExecutor
 
-from ty_image_spider.asset_index import AssetIndex
-from ty_image_spider.models import AssetDetail, AssetItem, SearchPage
+from ty_image_spider.infrastructure.asset_index import AssetIndex
+from ty_image_spider.domain import AssetDetail, AssetItem, SearchPage
 from ty_image_spider.services.cache_request import CacheRequest
 from ty_image_spider.services.cache_runner import CacheJobRunner
 

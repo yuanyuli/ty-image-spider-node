@@ -8,8 +8,8 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Mapping, Protocol
 
-from ..cache import JsonCache
-from ..models import (
+from ..infrastructure.cache import JsonCache
+from ..domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,

@@ -1,7 +1,7 @@
 import json
 import os
 import time
-from ty_image_spider.cache import JsonCache
+from ty_image_spider.infrastructure.cache import JsonCache
 
 
 def test_cache_uses_atomic_hashed_paths_and_expires(tmp_path, monkeypatch):

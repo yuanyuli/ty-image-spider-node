@@ -5,8 +5,8 @@ from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
-from ty_image_spider.models import DownloadResult, SearchRequest, SpiderError
-from ty_image_spider.cache import JsonCache
+from ty_image_spider.domain import DownloadResult, SearchRequest, SpiderError
+from ty_image_spider.infrastructure.cache import JsonCache
 from ty_image_spider.providers.public_json_client import PublicJsonClient
 from ty_image_spider.providers.editorial import EditorialProvider
 from ty_image_spider.providers.editorial_images import article_images

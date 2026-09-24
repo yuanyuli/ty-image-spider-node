@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from ty_image_spider.models import SpiderError
-from ty_image_spider.security import (
+from ty_image_spider.domain import SpiderError
+from ty_image_spider.infrastructure.security import (
     read_limited,
     redact_secrets,
     require_https_host,

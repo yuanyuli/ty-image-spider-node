@@ -3,7 +3,7 @@ import json
 import re
 from urllib.parse import parse_qs, urlsplit
 
-from ty_image_spider.models import DownloadResult, SearchRequest
+from ty_image_spider.domain import DownloadResult, SearchRequest
 from ty_image_spider.providers.nasa import NasaProvider
 from ty_image_spider.providers.public_json_client import PublicJsonClient
 

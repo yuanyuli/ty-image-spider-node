@@ -7,7 +7,7 @@ import re
 from pathlib import Path
 from typing import Any, Mapping
 
-from ..models import (
+from ..domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,

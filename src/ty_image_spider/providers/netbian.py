@@ -12,8 +12,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin
 from urllib.request import Request, urlopen
 
-from ..cache import JsonCache
-from ..models import (
+from ..infrastructure.cache import JsonCache
+from ..domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
@@ -27,7 +27,7 @@ from ..models import (
     SearchRequest,
     SpiderError,
 )
-from ..security import read_limited, require_https_host
+from ..infrastructure.security import read_limited, require_https_host
 from ..version import USER_AGENT
 from .download_policy import HostDownloadPolicy
 

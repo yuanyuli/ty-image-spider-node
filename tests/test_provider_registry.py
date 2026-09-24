@@ -1,6 +1,6 @@
 import pytest
 
-from ty_image_spider.models import (
+from ty_image_spider.domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,

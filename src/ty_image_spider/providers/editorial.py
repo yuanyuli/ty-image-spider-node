@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Mapping
 from urllib.parse import urlsplit
 
-from ..models import (
+from ..domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,

@@ -2,7 +2,7 @@
 
 from typing import Protocol
 
-from ..models import SpiderError
+from ..domain import SpiderError
 
 
 class ImageReader(Protocol):

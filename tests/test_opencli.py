@@ -3,8 +3,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from ty_image_spider.models import SpiderError
-from ty_image_spider.opencli import CommandResult, OpenCliRunner
+from ty_image_spider.domain import SpiderError
+from ty_image_spider.infrastructure.opencli import CommandResult, OpenCliRunner
 
 
 class FakeRun:
@@ -201,7 +201,7 @@ def test_runner_invokes_windows_cmd_shim_through_node_for_browser_scripts(
     entry.write_text("", encoding="utf-8")
     fake_run = FakeRun(completed(0, "[]"))
     # 仅模拟被测模块的平台视图，避免污染 pathlib 和 pytest 的全局 os.name。
-    monkeypatch.setattr("ty_image_spider.opencli.os", SimpleNamespace(name="nt"))
+    monkeypatch.setattr("ty_image_spider.infrastructure.opencli.os", SimpleNamespace(name="nt"))
     opencli = OpenCliRunner(run=fake_run, which=lambda _: str(cmd))
 
     opencli.run_json(["browser", "site:xiaohongshu", "eval", "(() => [])()"], 30)

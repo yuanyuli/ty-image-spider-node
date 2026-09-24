@@ -13,9 +13,9 @@ from typing import Awaitable, Callable, Mapping
 from aiohttp import web
 
 from .bootstrap import ApplicationServices, build_services
-from .models import SpiderError, JsonValue
+from .domain import SpiderError, JsonValue
 from .http_json import JsonBodyReader
-from .diagnostics import log_failure
+from .infrastructure.diagnostics import log_failure
 
 
 _LOGGER = logging.getLogger(__name__)

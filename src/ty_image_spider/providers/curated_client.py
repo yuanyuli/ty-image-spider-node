@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from ..version import USER_AGENT
-from ..network_retry import retry_call
+from ..infrastructure.network_retry import retry_call
 
 import json
 import re
@@ -15,8 +15,8 @@ from urllib.parse import urlencode
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
-from ..models import SpiderError
-from ..security import read_limited, require_https_host
+from ..domain import SpiderError
+from ..infrastructure.security import read_limited, require_https_host
 from .behance_projects import BehanceProjects
 from .film_catalog import film_post_id
 

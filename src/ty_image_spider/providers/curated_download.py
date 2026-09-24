@@ -14,8 +14,8 @@ from urllib.request import Request, urlopen
 
 from PIL import Image
 
-from ..models import DownloadResult, SpiderError
-from ..security import read_limited, resolve_inside
+from ..domain import DownloadResult, SpiderError
+from ..infrastructure.security import read_limited, resolve_inside
 
 
 from .download_policy import DownloadPolicy

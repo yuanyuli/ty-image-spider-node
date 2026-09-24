@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 from typing import Mapping
 
-from ..models import SpiderError
+from ..domain import SpiderError
 
 
 class TmdbCredentials:

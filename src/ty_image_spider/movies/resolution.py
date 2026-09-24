@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
-from ..models import SearchPage, SpiderError
+from ..domain import SearchPage, SpiderError
 from .filmgrab_directory import FilmGrabDirectory
 from .mapping_store import MovieMappingStore
 from .matching import match_movies

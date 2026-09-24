@@ -6,8 +6,8 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Mapping, Sequence
 
-from ..models import AssetItem, DownloadResult, SpiderError
-from ..asset_index import AssetIndex
+from ..domain import AssetItem, DownloadResult, SpiderError
+from ..infrastructure.asset_index import AssetIndex
 from ..providers.registry import ProviderRegistry
 from .selected_download import download_selected_image
 

@@ -1,15 +1,15 @@
 import json
 from pathlib import Path
 
-from ty_image_spider.cache import JsonCache
-from ty_image_spider.models import (
+from ty_image_spider.infrastructure.cache import JsonCache
+from ty_image_spider.domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
     SearchRequest,
     SpiderError,
 )
-from ty_image_spider.asset_index import AssetIndex
+from ty_image_spider.infrastructure.asset_index import AssetIndex
 from ty_image_spider.providers.civitai import CivitaiProvider
 from ty_image_spider.providers.civitai_client import CivitaiPage
 

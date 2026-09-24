@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from aiohttp import web
 from aiohttp.test_utils import TestClient, TestServer
 
-from ty_image_spider.models import (
+from ty_image_spider.domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,

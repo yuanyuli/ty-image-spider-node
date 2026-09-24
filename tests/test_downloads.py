@@ -2,8 +2,8 @@ from io import BytesIO
 import pytest
 from PIL import Image
 
-from ty_image_spider.downloads import ImageDownloader
-from ty_image_spider.models import SpiderError
+from ty_image_spider.infrastructure.downloads import ImageDownloader
+from ty_image_spider.domain import SpiderError
 
 
 def png_bytes():

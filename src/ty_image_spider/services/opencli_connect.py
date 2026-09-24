@@ -6,8 +6,8 @@ import time
 import threading
 from typing import Callable, Mapping
 
-from ..models import SpiderError
-from ..opencli import OpenCliRunner
+from ..domain import SpiderError
+from ..infrastructure.opencli import OpenCliRunner
 
 
 class OpenCliConnectService:

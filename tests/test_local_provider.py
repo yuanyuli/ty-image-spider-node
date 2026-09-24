@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from PIL import Image, PngImagePlugin
 
-from ty_image_spider.models import SearchRequest, SpiderError
+from ty_image_spider.domain import SearchRequest, SpiderError
 from ty_image_spider.providers.local import LocalProvider
 
 

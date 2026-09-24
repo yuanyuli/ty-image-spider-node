@@ -1,6 +1,6 @@
 import pytest
 
-from ty_image_spider.models import (
+from ty_image_spider.domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
@@ -64,3 +64,13 @@ def test_search_request_copies_mutable_filters():
     filters["count"] = 1
 
     assert request.filters == {"count": 9}
+
+
+def test_domain_package_does_not_import_runtime_adapters():
+    import sys
+
+    import ty_image_spider.domain
+
+    assert "folder_paths" not in sys.modules
+    assert "server" not in sys.modules
+    assert ty_image_spider.domain.AssetItem(provider="local", id="1").id == "1"

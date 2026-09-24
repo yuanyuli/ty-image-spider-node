@@ -2,7 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from threading import Barrier
 
-from ty_image_spider.cache import JsonCache
+from ty_image_spider.infrastructure.cache import JsonCache
 from ty_image_spider.services.cache_progress import CacheProgress
 
 

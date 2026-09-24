@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
 
-from ty_image_spider.cache import JsonCache
-from ty_image_spider.models import DownloadResult, SearchRequest, SpiderError
+from ty_image_spider.infrastructure.cache import JsonCache
+from ty_image_spider.domain import DownloadResult, SearchRequest, SpiderError
 from ty_image_spider.providers.wallhaven import WallhavenProvider
 from ty_image_spider.providers.wallhaven_client import WallhavenPage
 

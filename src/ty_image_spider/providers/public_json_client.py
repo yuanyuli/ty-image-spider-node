@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from ..version import USER_AGENT
-from ..network_retry import retry_call
+from ..infrastructure.network_retry import retry_call
 
 import json
 import re
@@ -14,9 +14,9 @@ from urllib.error import HTTPError
 from urllib.parse import urlencode, urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
-from ..cache import JsonCache
-from ..models import SpiderError
-from ..security import read_limited, require_https_host
+from ..infrastructure.cache import JsonCache
+from ..domain import SpiderError
+from ..infrastructure.security import read_limited, require_https_host
 
 
 @dataclass(frozen=True)

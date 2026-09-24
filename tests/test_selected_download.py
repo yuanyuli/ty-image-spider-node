@@ -7,8 +7,8 @@ from PIL import Image
 from aiohttp import web
 from aiohttp.test_utils import TestClient, TestServer
 
-from ty_image_spider.asset_index import AssetIndex
-from ty_image_spider.models import AssetItem, SpiderError
+from ty_image_spider.infrastructure.asset_index import AssetIndex
+from ty_image_spider.domain import AssetItem, SpiderError
 from ty_image_spider.providers.curated_download import CuratedDownloader
 from ty_image_spider.providers.editorial import EditorialProvider
 from ty_image_spider.providers.editorial_sources import COLOSSAL

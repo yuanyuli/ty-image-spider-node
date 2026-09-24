@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import Mapping
 
-from ..models import ProviderPresentation
+from ..domain import ProviderPresentation
 from .download_policy import DownloadPolicy, HostDownloadPolicy
 
 

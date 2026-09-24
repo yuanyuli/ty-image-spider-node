@@ -4,7 +4,7 @@ from urllib.error import HTTPError
 
 import pytest
 
-from ty_image_spider.models import SpiderError
+from ty_image_spider.domain import SpiderError
 from ty_image_spider.providers.civitai_client import CivitaiClient
 
 

@@ -1,5 +1,5 @@
 from ty_image_spider.services.opencli_connect import OpenCliConnectService
-from ty_image_spider.models import SpiderError
+from ty_image_spider.domain import SpiderError
 
 
 class Runner:

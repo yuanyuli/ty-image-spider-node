@@ -4,7 +4,7 @@ from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
-from ty_image_spider.models import DownloadResult, SearchRequest, SpiderError
+from ty_image_spider.domain import DownloadResult, SearchRequest, SpiderError
 from ty_image_spider.providers.commons import (
     CommonsClient,
     CommonsPage,

@@ -6,7 +6,7 @@ from pathlib import Path, PureWindowsPath
 from typing import Any, Callable
 from urllib.parse import ParseResult, urlparse
 
-from .models import SpiderError
+from ..domain import SpiderError
 
 
 _SECRET_PARTS = ("key", "token", "secret", "cookie", "authorization")

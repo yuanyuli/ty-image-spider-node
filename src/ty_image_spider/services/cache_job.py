@@ -7,7 +7,7 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from typing import Callable, Mapping, Protocol
-from ..models import SpiderError
+from ..domain import SpiderError
 from .cache_request import CacheRequest
 
 _LOGGER = logging.getLogger(__name__)

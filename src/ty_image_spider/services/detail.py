@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import Mapping
 
-from ..models import AssetDetail, AssetItem
-from ..asset_index import AssetIndex
+from ..domain import AssetDetail, AssetItem
+from ..infrastructure.asset_index import AssetIndex
 from ..providers.registry import ProviderRegistry
 
 

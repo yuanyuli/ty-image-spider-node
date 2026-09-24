@@ -6,7 +6,7 @@ import re
 from html.parser import HTMLParser
 from typing import Any, Mapping
 
-from ..models import (
+from ..domain import (
     AssetDetail,
     AssetItem,
     FilterField,

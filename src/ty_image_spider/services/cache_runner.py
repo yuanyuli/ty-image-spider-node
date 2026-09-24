@@ -6,9 +6,9 @@ import logging
 import threading
 from typing import Mapping, Protocol, Callable
 
-from ..asset_index import AssetIndex
-from ..diagnostics import log_failure
-from ..models import AssetDetail, SearchPage, SpiderError
+from ..infrastructure.asset_index import AssetIndex
+from ..infrastructure.diagnostics import log_failure
+from ..domain import AssetDetail, SearchPage, SpiderError
 from .cache_progress import CacheProgress
 from .cache_request import CacheRequest
 from .asset_locks import AssetLocks

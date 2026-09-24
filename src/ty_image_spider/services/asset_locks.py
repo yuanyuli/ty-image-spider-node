@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from threading import Lock
 from typing import Iterator
 
-from ..models import AssetItem
+from ..domain import AssetItem
 
 
 class AssetLocks:

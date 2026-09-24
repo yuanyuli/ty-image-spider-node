@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from ..version import USER_AGENT
-from ..network_retry import retry_delay as _retry_delay
+from ..infrastructure.network_retry import retry_delay as _retry_delay
 
 import json
 import re
@@ -15,8 +15,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from ..models import SpiderError
-from ..security import read_limited, require_https_host
+from ..domain import SpiderError
+from ..infrastructure.security import read_limited, require_https_host
 
 
 _ALLOWED_SITES = frozenset({"civitai.com", "civitai.red"})

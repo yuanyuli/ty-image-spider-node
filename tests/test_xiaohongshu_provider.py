@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 from PIL import Image
 
-from ty_image_spider.cache import JsonCache
-from ty_image_spider.models import AssetItem, SearchRequest, SpiderError
+from ty_image_spider.infrastructure.cache import JsonCache
+from ty_image_spider.domain import AssetItem, SearchRequest, SpiderError
 from ty_image_spider.providers.xiaohongshu import XiaohongshuProvider
 from ty_image_spider.providers.xiaohongshu_extract import (
     build_card_extract_js,

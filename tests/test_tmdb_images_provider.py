@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
-from ty_image_spider.cache import JsonCache
-from ty_image_spider.models import DownloadResult, SearchRequest, SpiderError
+from ty_image_spider.infrastructure.cache import JsonCache
+from ty_image_spider.domain import DownloadResult, SearchRequest, SpiderError
 from ty_image_spider.providers.tmdb_images import TmdbImageProvider
 
 

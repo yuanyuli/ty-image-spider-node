@@ -7,10 +7,10 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
-from ..cache import JsonCache
-from ..downloads import ImageDownloader
-from ..metadata import extract_prompts
-from ..models import (
+from ..infrastructure.cache import JsonCache
+from ..infrastructure.downloads import ImageDownloader
+from ..infrastructure.metadata import extract_prompts
+from ..domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,

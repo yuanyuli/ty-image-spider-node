@@ -13,8 +13,8 @@ from urllib.parse import quote, urlparse, urlsplit, urlunsplit
 
 from PIL import Image
 
-from ..cache import JsonCache
-from ..models import (
+from ..infrastructure.cache import JsonCache
+from ..domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
@@ -28,8 +28,8 @@ from ..models import (
     SearchRequest,
     SpiderError,
 )
-from ..opencli import OpenCliRunner
-from ..security import resolve_inside
+from ..infrastructure.opencli import OpenCliRunner
+from ..infrastructure.security import resolve_inside
 from .xiaohongshu_extract import (
     build_card_extract_js,
     build_detail_extract_js,

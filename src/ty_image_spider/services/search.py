@@ -5,8 +5,8 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Mapping
 
-from ..models import SearchPage, SearchRequest, SpiderError
-from ..asset_index import AssetIndex
+from ..domain import SearchPage, SearchRequest, SpiderError
+from ..infrastructure.asset_index import AssetIndex
 from ..providers.registry import ProviderRegistry
 
 

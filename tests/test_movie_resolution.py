@@ -1,6 +1,6 @@
 import pytest
 
-from ty_image_spider.models import SearchPage, SpiderError
+from ty_image_spider.domain import SearchPage, SpiderError
 from ty_image_spider.movies.mapping_store import MovieMappingStore
 from ty_image_spider.movies.resolution import MovieResolution
 

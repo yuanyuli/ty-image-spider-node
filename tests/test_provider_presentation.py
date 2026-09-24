@@ -2,12 +2,12 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from ty_image_spider import models
 from ty_image_spider.bootstrap import build_services
+from ty_image_spider import domain
 
 
 def test_presentation_serializes_and_is_immutable():
-    value = models.ProviderPresentation(
+    value = domain.ProviderPresentation(
         "collections",
         "艺术馆藏",
         "AIC",
@@ -17,7 +17,7 @@ def test_presentation_serializes_and_is_immutable():
         "新增100件馆藏",
         True,
     )
-    descriptor = models.ProviderDescriptor("artic", "芝加哥艺术", presentation=value)
+    descriptor = domain.ProviderDescriptor("artic", "芝加哥艺术", presentation=value)
     assert descriptor.to_dict()["presentation"] == {
         "group_id": "collections",
         "group_label": "艺术馆藏",

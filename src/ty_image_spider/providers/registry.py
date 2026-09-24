@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ..models import ProviderDescriptor, SpiderError
+from ..domain import ProviderDescriptor, SpiderError
 from .base import AssetProvider
 
 
