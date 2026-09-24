@@ -67,7 +67,7 @@ class FilmGrabClient:
     def posts(
         self, query: str, page: int, post_id: int | None = None
     ) -> tuple[list[Mapping[str, Any]], int]:
-        from ..movies.catalog import film_post_id
+        from ..movies.filmgrab.catalog import film_post_id
 
         params = {"per_page": 1, "page": page, "_fields": "id,link,title,content"}
         movie_id = post_id or film_post_id(query)

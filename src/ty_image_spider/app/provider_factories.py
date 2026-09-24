@@ -16,11 +16,14 @@ from ..movies.mapping_store import MovieMappingStore
 from ..movies.resolution import MovieResolution
 from ..movies.tmdb import TmdbClient
 from ..providers.ai import CivitaiClient, CivitaiProvider, XiaohongshuProvider
-from ..providers.commons import CommonsClient, CommonsProvider
 from ..providers.collections import (
     ArticProvider,
     ClevelandProvider,
+    CommonsClient,
+    CommonsProvider,
     LocProvider,
+    MetClient,
+    MetProvider,
     MuseumClient,
     NasaProvider,
     VamProvider,
@@ -37,7 +40,6 @@ from ..providers.editorial import (
     EditorialProvider,
 )
 from ..providers.local import LocalProvider
-from ..providers.met import MetClient, MetProvider
 from ..providers.movies import FilmGrabProvider, TmdbImageProvider
 from ..providers.shared import (
     BehanceClient,

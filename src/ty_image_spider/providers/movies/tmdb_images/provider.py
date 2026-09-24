@@ -8,8 +8,8 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Mapping, Protocol
 
-from ...infrastructure.cache import JsonCache
-from ...domain import (
+from ....infrastructure.cache import JsonCache
+from ....domain import (
     AssetDetail,
     AssetItem,
     DownloadResult,
@@ -23,14 +23,13 @@ from ...domain import (
     SearchRequest,
     SpiderError,
 )
-from ...movies.tmdb import TmdbClient
-from ..shared.curated_download import CuratedDownloader
-from ..shared.download_policy import HostDownloadPolicy
+from ....movies.tmdb import TmdbClient
+from ...shared.curated_download import CuratedDownloader
+from ...shared.download_policy import HostDownloadPolicy
+from .normalizer import IMAGE_ROOT, SAFE_FILE_PATH, normalize_gallery
 
 
 _SAFE_ID = re.compile(r"^(\d+)-(\d+)$")
-_SAFE_FILE_PATH = re.compile(r"^/[A-Za-z0-9._-]+$")
-_IMAGE_ROOT = "https://image.tmdb.org"
 _PAGE_SIZE = 24
 
 IMAGE_POLICY = HostDownloadPolicy(
@@ -165,53 +164,7 @@ class TmdbImageProvider:
     def _load_gallery(
         self, movie_id: int, movie: Mapping[str, Any], kind: str
     ) -> dict[str, Any]:
-        rows = self._client.images(movie_id)
-        items: list[dict[str, Any]] = []
-        for index, raw in enumerate(rows):
-            if not isinstance(raw, Mapping):
-                continue
-            media_type = str(raw.get("type") or "")
-            if kind != "all" and media_type != kind:
-                continue
-            file_path = raw.get("file_path")
-            width = raw.get("width")
-            height = raw.get("height")
-            if (
-                not isinstance(file_path, str)
-                or not _SAFE_FILE_PATH.fullmatch(file_path)
-                or not isinstance(width, int)
-                or isinstance(width, bool)
-                or not isinstance(height, int)
-                or isinstance(height, bool)
-                or width < 1
-                or height < 1
-            ):
-                continue
-            item_id = f"{movie_id}-{index}"
-            title = str(
-                movie.get("title") or movie.get("original_title") or "未命名电影"
-            )
-            items.append(
-                AssetItem(
-                    provider=self.id,
-                    id=item_id,
-                    preview_url=f"{_IMAGE_ROOT}/t/p/w780{file_path}",
-                    source_url=f"https://www.themoviedb.org/movie/{movie_id}",
-                    title=title,
-                    created_at=str(movie.get("year") or "") or None,
-                    width=width,
-                    height=height,
-                    tags=(media_type,),
-                    metadata={
-                        "movie_id": movie_id,
-                        "file_path": file_path,
-                        "media_type": media_type,
-                        "original_url": f"{_IMAGE_ROOT}/t/p/original{file_path}",
-                        "original_title": str(movie.get("original_title") or ""),
-                    },
-                ).to_dict()
-            )
-        return {"movie": dict(movie), "items": items}
+        return normalize_gallery(movie_id, movie, kind, self._client.images(movie_id))
 
     def _verified_item(self, item: AssetItem) -> AssetItem:
         match = _SAFE_ID.fullmatch(item.id)
@@ -220,7 +173,7 @@ class TmdbImageProvider:
         movie_id = int(match.group(1))
         index = int(match.group(2))
         file_path = item.metadata.get("file_path")
-        if not isinstance(file_path, str) or not _SAFE_FILE_PATH.fullmatch(file_path):
+        if not isinstance(file_path, str) or not SAFE_FILE_PATH.fullmatch(file_path):
             raise SpiderError("invalid_asset", "TMDB 图片路径无效")
         rows = self._client.images(movie_id)
         if index >= len(rows) or not isinstance(rows[index], Mapping):
@@ -237,7 +190,7 @@ class TmdbImageProvider:
             {
                 "movie_id": movie_id,
                 "file_path": file_path,
-                "original_url": f"{_IMAGE_ROOT}/t/p/original{file_path}",
+                "original_url": f"{IMAGE_ROOT}/t/p/original{file_path}",
             }
         )
         return replace(item, width=width, height=height, metadata=metadata)

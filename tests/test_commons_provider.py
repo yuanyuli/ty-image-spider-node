@@ -5,11 +5,12 @@ from urllib.parse import parse_qs, urlsplit
 import pytest
 
 from ty_image_spider.domain import DownloadResult, SearchRequest, SpiderError
-from ty_image_spider.providers.commons import (
+from ty_image_spider.providers.collections.commons import (
     CommonsClient,
     CommonsPage,
     CommonsProvider,
 )
+from ty_image_spider.providers.collections.commons.normalizer import normalize_file
 
 
 ROW = {
@@ -72,6 +73,16 @@ def test_commons_normalizes_featured_image_license_and_pagination():
     assert item.author == "Michal Klajban"
     assert item.metadata["rights"] == "CC BY-SA 4.0"
     assert item.metadata["attribution_required"] is True
+
+
+def test_commons_normalizer_preserves_license_and_original_image():
+    item = normalize_file(ROW)
+
+    assert item is not None
+    assert item.id == "89274662"
+    assert item.author == "Michal Klajban"
+    assert item.metadata["rights"] == "CC BY-SA 4.0"
+    assert item.metadata["original_url"].endswith("/artwork.jpg")
 
 
 def test_commons_detail_reverifies_file_and_downloads_original(tmp_path):

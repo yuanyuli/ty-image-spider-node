@@ -1,7 +1,8 @@
 from threading import Barrier
 
 from ty_image_spider.domain import DownloadResult, SearchRequest
-from ty_image_spider.providers.met import MetClient, MetProvider
+from ty_image_spider.providers.collections.met import MetClient, MetProvider
+from ty_image_spider.providers.collections.met.normalizer import normalize_artwork
 from ty_image_spider.providers.shared.public_json_client import JsonResponse
 
 
@@ -68,6 +69,16 @@ def test_met_search_only_returns_public_domain_images():
     assert page.items[0].id == "436535"
     assert page.items[0].author == "Vincent van Gogh"
     assert page.items[0].metadata["rights"] == "Public Domain"
+
+
+def test_met_normalizer_preserves_public_domain_artwork():
+    item = normalize_artwork(OBJECT)
+
+    assert item is not None
+    assert item.id == "436535"
+    assert item.author == "Vincent van Gogh"
+    assert item.metadata["rights"] == "Public Domain"
+    assert item.metadata["original_url"].endswith("/DP-42549-001.jpg")
 
 
 def test_met_detail_and_download_reverify_public_domain_object(tmp_path):
