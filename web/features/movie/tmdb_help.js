@@ -4,7 +4,7 @@ export function renderTmdbHelp(document) {
   const summary = document.createElement("summary");
   summary.textContent = "TMDB 配置与鸣谢";
   const logo = document.createElement("img");
-  logo.src = new URL("./tmdb-logo.svg", import.meta.url).href;
+  logo.src = new URL("../../assets/tmdb-logo.svg", import.meta.url).href;
   logo.alt = "TMDB";
   logo.width = 72;
   const instructions = document.createElement("p");

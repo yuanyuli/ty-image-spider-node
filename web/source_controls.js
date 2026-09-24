@@ -1,7 +1,8 @@
-import { createIcon, createIconButton } from "./icons.js";
-import { renderTmdbHelp } from "./tmdb_help.js";
+import { element } from "./core/dom.js";
+import { createIcon, createIconButton } from "./ui/icons.js";
+import { renderTmdbHelp } from "./features/movie/tmdb_help.js";
 
-import { normalizePresentation, visibleSources, sourceGroups } from "./presentation.js";
+import { normalizePresentation, visibleSources, sourceGroups } from "./core/presentation.js";
 
 export function renderSourceControls(context) {
   const {
@@ -263,11 +264,4 @@ function renderField(document, field, supplied, onFilterChange, options = {}) {
   if (field.kind === "toggle") wrapper.append(control, label);
   else wrapper.append(label, control);
   return wrapper;
-}
-
-function element(document, tag, className = "", text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
 }

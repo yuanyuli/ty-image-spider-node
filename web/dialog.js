@@ -1,9 +1,10 @@
-import { normalizePresentation } from "./presentation.js";
-import { createIcon, createIconButton } from "./icons.js";
-import { openImageViewer } from "./image_viewer.js";
-import { renderCollectionDetails } from "./collection_detail.js";
-import { renderEditorialDetails } from "./editorial_detail.js";
-import { createPreviewActions, handlePreviewKey } from "./preview_actions.js";
+import { element } from "./core/dom.js";
+import { normalizePresentation } from "./core/presentation.js";
+import { createIcon, createIconButton } from "./ui/icons.js";
+import { openImageViewer } from "./ui/image_viewer.js";
+import { renderCollectionDetails } from "./features/detail/collection_detail.js";
+import { renderEditorialDetails } from "./features/detail/editorial_detail.js";
+import { createPreviewActions, handlePreviewKey } from "./features/preview/preview_actions.js";
 
 export function openAssetDialog(context) {
   const {
@@ -402,11 +403,4 @@ async function defaultCopy(value, document) {
 
 function defaultOpenSource(url, document) {
   document.defaultView?.open(url, "_blank", "noopener,noreferrer");
-}
-
-function element(document, tag, className = "", text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
 }

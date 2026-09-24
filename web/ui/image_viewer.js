@@ -1,5 +1,5 @@
 import { createIconButton } from "./icons.js";
-import { createPreviewActions, handlePreviewKey } from "./preview_actions.js";
+import { createPreviewActions, handlePreviewKey } from "../features/preview/preview_actions.js";
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 8;

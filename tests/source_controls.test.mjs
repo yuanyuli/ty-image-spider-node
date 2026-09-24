@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
 
-import { createIcon, createIconButton } from "../web/icons.js";
+import { createIcon, createIconButton } from "../web/ui/icons.js";
 
 test("手动修改电影名后片单选择同步，不保留上一部电影", () => {
   const dom = new JSDOM("<body></body>");

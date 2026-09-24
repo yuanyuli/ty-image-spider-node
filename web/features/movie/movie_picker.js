@@ -1,4 +1,4 @@
-import { createIconButton } from "./icons.js";
+import { createIconButton } from "../../ui/icons.js";
 import { renderTmdbHelp } from "./tmdb_help.js";
 
 export function openMoviePicker({ document, page }) {

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { ApiError, createApiClient } from "../web/api.js";
+import { ApiError, createApiClient } from "../web/core/api.js";
 
 test("API 客户端解析统一成功响应", async () => {
   const calls = [];

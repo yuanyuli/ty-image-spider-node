@@ -1,18 +1,22 @@
-import { cacheTaskKey, createCacheTasks } from "./cache_tasks.js";
-import { normalizePresentation } from "./presentation.js";
-import { createApiClient } from "./api.js";
+import { cacheTaskKey, createCacheTasks } from "./features/cache/tasks.js";
+import { normalizePresentation } from "./core/presentation.js";
+import { createApiClient } from "./core/api.js";
+import { element } from "./core/dom.js";
 import { openAssetDialog } from "./dialog.js";
 import { createGallery } from "./gallery.js";
 import { createSearchHistory } from "./search_history.js";
 import { renderSourceControls } from "./source_controls.js";
-import { createMovieSearch } from "./movie_search.js";
-import { clearComfyPreview, installPreviewIsolation } from "./preview_isolation.js";
+import { createMovieSearch } from "./features/movie/movie_search.js";
+import {
+  clearComfyPreview,
+  installPreviewIsolation,
+} from "./features/preview/preview_isolation.js";
 import {
   createProviderSessions,
   createRequestGuard,
   createSpiderState,
   serializeWorkflowState,
-} from "./state.js";
+} from "./core/state.js";
 
 const INSTALLED = Symbol("tyImageSpiderInstalled");
 
@@ -594,13 +598,6 @@ function ensureStyles(document) {
   link.href = new URL("./ty_image_spider.css", import.meta.url).href;
   link.dataset.tyImageSpider = "styles";
   document.head.append(link);
-}
-
-function element(document, tag, className = "", text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
 }
 
 if (typeof window !== "undefined" && !window.__TY_IMAGE_SPIDER_DISABLE_AUTO_REGISTER__) {

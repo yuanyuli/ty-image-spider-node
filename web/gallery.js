@@ -1,5 +1,6 @@
-import { normalizePresentation } from "./presentation.js";
-import { createIcon, createIconButton } from "./icons.js";
+import { element } from "./core/dom.js";
+import { normalizePresentation } from "./core/presentation.js";
+import { createIcon, createIconButton } from "./ui/icons.js";
 
 export function createGallery(context) {
   const {
@@ -212,11 +213,4 @@ function emptyState(document, title, note) {
   root.append(element(document, "strong", "", title));
   if (note) root.append(element(document, "span", "", note));
   return root;
-}
-
-function element(document, tag, className = "", text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
 }

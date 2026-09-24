@@ -1,4 +1,4 @@
-import { createIconButton } from "./icons.js";
+import { createIconButton } from "../../ui/icons.js";
 
 export function handlePreviewKey(event, actions) {
   if (
