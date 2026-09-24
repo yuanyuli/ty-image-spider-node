@@ -1,14 +1,21 @@
+# 开发缓存与临时工作区
 .cache/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
-.venv/
 .superpowers/
 __pycache__/
 *.py[cod]
+
+# 本地依赖
+.venv/
 node_modules/
+
+# 构建、测试与发布产物
 .artifacts/
 .coverage
 htmlcov/
 dist/
+
+# 本机私有配置
 .local/
