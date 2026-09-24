@@ -49,9 +49,7 @@ class NasaVideoClient:
 
     def manifest(self, url: str, refresh: bool = False) -> list[str]:
         self._require_manifest_url(url)
-        data = self._get(
-            url, lambda host: host == "images-assets.nasa.gov", refresh
-        )
+        data = self._get(url, lambda host: host == "images-assets.nasa.gov", refresh)
         if not isinstance(data, list):
             raise SpiderError("nasa_video_invalid", "NASA 视频清单无效", status=502)
         return [value for value in data if isinstance(value, str)]
@@ -102,4 +100,3 @@ class NasaVideoClient:
             valid = False
         if not valid:
             raise SpiderError("unsafe_url", "NASA 视频清单地址无效")
-

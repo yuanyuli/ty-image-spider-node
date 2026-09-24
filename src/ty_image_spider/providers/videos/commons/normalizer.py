@@ -43,9 +43,7 @@ def normalize_search_item(raw: Mapping[str, object]) -> AssetItem | None:
             "rights": _meta(metadata, "LicenseShortName")
             or "请查看来源页面确认使用条件",
             "license_url": _meta(metadata, "LicenseUrl"),
-            "attribution_required": _meta(
-                metadata, "AttributionRequired"
-            ).casefold()
+            "attribution_required": _meta(metadata, "AttributionRequired").casefold()
             == "true",
             "collection": "Wikimedia Commons",
         },
@@ -54,7 +52,9 @@ def normalize_search_item(raw: Mapping[str, object]) -> AssetItem | None:
 
 def normalize_detail(item: AssetItem, raw: Mapping[str, object]) -> AssetDetail:
     page = _first_page(raw)
-    info = _video_info(page) if page is not None else None
+    if page is None:
+        return AssetDetail(item, (item.preview_url,) if item.preview_url else ())
+    info = _video_info(page)
     if info is None:
         return AssetDetail(item, (item.preview_url,) if item.preview_url else ())
     verified = normalize_search_item(page)
@@ -103,8 +103,12 @@ def _select_playback(info: Mapping[str, object]) -> MediaResource | None:
             duration_seconds=_duration(info.get("duration")),
             label=plain_text(raw.get("title")) or mime.removeprefix("video/").upper(),
         )
-        candidates.append((0 if mime == "video/mp4" else 1, abs((width or 720) - 1280), resource))
-    return min(candidates, default=(0, 0, None), key=lambda entry: (entry[0], entry[1]))[2]
+        candidates.append(
+            (0 if mime == "video/mp4" else 1, abs((width or 720) - 1280), resource)
+        )
+    return min(
+        candidates, default=(0, 0, None), key=lambda entry: (entry[0], entry[1])
+    )[2]
 
 
 def _original_resource(info: Mapping[str, object]) -> MediaResource | None:
@@ -112,7 +116,15 @@ def _original_resource(info: Mapping[str, object]) -> MediaResource | None:
     if not isinstance(url, str) or not _allowed_upload_url(url):
         return None
     suffix = urlsplit(url).path.casefold()
-    mime = "video/webm" if suffix.endswith(".webm") else "video/ogg" if suffix.endswith((".ogv", ".ogg")) else "video/mp4" if suffix.endswith(".mp4") else ""
+    mime = (
+        "video/webm"
+        if suffix.endswith(".webm")
+        else "video/ogg"
+        if suffix.endswith((".ogv", ".ogg"))
+        else "video/mp4"
+        if suffix.endswith(".mp4")
+        else ""
+    )
     if not mime:
         return None
     return MediaResource(

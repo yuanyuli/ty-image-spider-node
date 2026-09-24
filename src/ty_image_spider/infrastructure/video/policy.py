@@ -48,4 +48,3 @@ class VideoDownloadPolicy:
             or not self.host_rule(host)
         ):
             raise SpiderError("unsafe_url", "视频地址不在允许范围内")
-

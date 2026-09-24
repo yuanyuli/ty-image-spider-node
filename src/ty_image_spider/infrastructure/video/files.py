@@ -21,4 +21,3 @@ def find_valid_video(directory: Path, item_id: str) -> Path | None:
         if detected == extension:
             return candidate
     return None
-

@@ -104,9 +104,7 @@ class PrelingerProvider:
 
     def detail(self, item: AssetItem) -> AssetDetail:
         self._require_item(item)
-        return normalize_detail(
-            item, self._client.metadata(item.id, refresh=False)
-        )
+        return normalize_detail(item, self._client.metadata(item.id, refresh=False))
 
     def download(self, item: AssetItem, output_root: Path) -> DownloadResult:
         detail = self.detail(item)

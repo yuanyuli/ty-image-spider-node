@@ -38,6 +38,7 @@ USER_DOCS = frozenset(
         "docs/sources/loc.md",
         "docs/sources/museum.md",
         "docs/sources/nasa.md",
+        "docs/sources/video.md",
         "docs/guides/tmdb.md",
     }
 )

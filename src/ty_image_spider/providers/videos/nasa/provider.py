@@ -77,8 +77,7 @@ class NasaVideoProvider:
                     "select",
                     "space",
                     tuple(
-                        FilterOption(key, value[0])
-                        for key, value in CATEGORIES.items()
+                        FilterOption(key, value[0]) for key, value in CATEGORIES.items()
                     ),
                 ),
             ),
@@ -103,15 +102,21 @@ class NasaVideoProvider:
         collection = raw.get("collection")
         values = collection if isinstance(collection, Mapping) else {}
         rows = values.get("items")
-        items = tuple(
-            item
-            for row in rows
-            if isinstance(row, Mapping)
-            and (item := normalize_search_item(row)) is not None
-        ) if isinstance(rows, list) else ()
+        items = (
+            tuple(
+                item
+                for row in rows
+                if isinstance(row, Mapping)
+                and (item := normalize_search_item(row)) is not None
+            )
+            if isinstance(rows, list)
+            else ()
+        )
         metadata = values.get("metadata")
         total = metadata.get("total_hits") if isinstance(metadata, Mapping) else 0
-        next_cursor = str(page + 1) if isinstance(total, int) and page * 24 < total else None
+        next_cursor = (
+            str(page + 1) if isinstance(total, int) and page * 24 < total else None
+        )
         return SearchPage(items, next_cursor)
 
     def detail(self, item: AssetItem) -> AssetDetail:

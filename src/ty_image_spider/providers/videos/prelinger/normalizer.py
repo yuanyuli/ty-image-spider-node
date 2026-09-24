@@ -40,12 +40,16 @@ def normalize_detail(item: AssetItem, raw: Mapping[str, object]) -> AssetDetail:
     metadata = raw.get("metadata")
     values = metadata if isinstance(metadata, Mapping) else {}
     files = raw.get("files")
-    candidates = [
-        resource
-        for entry in files
-        if isinstance(entry, Mapping)
-        and (resource := _file_resource(item.id, entry)) is not None
-    ] if isinstance(files, list) else []
+    candidates = (
+        [
+            resource
+            for entry in files
+            if isinstance(entry, Mapping)
+            and (resource := _file_resource(item.id, entry)) is not None
+        ]
+        if isinstance(files, list)
+        else []
+    )
     candidates.sort(key=lambda resource: resource.size_bytes or 0)
     media: list[MediaResource] = []
     if candidates:
@@ -81,9 +85,7 @@ def normalize_detail(item: AssetItem, raw: Mapping[str, object]) -> AssetDetail:
     )
 
 
-def _file_resource(
-    identifier: str, raw: Mapping[str, object]
-) -> MediaResource | None:
+def _file_resource(identifier: str, raw: Mapping[str, object]) -> MediaResource | None:
     name = raw.get("name")
     file_format = plain_text(raw.get("format"))
     if (

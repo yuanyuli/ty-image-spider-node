@@ -45,7 +45,7 @@ class PrelingerClient:
         terms = "collection:prelinger AND mediatype:movies"
         if query:
             escaped = query.replace('"', " ").strip()
-            terms += f' AND ({escaped})'
+            terms += f" AND ({escaped})"
         params = {
             "q": terms,
             "fl[]": "identifier,title,creator,date,description,downloads,item_size",
@@ -56,9 +56,7 @@ class PrelingerClient:
         }
         return self._get(_SEARCH_URL + "?" + urlencode(params, doseq=True), refresh)
 
-    def metadata(
-        self, identifier: str, refresh: bool = False
-    ) -> Mapping[str, object]:
+    def metadata(self, identifier: str, refresh: bool = False) -> Mapping[str, object]:
         if not identifier or len(identifier) > 128:
             raise SpiderError("invalid_asset", "Prelinger 素材 ID 无效")
         return self._get(_METADATA_URL + quote(identifier, safe=""), refresh)
@@ -73,7 +71,9 @@ class PrelingerClient:
 
         def fetch() -> Mapping[str, object]:
             with self._open_url(request, timeout=30) as response:
-                require_https_host(response.geturl(), lambda host: host == "archive.org")
+                require_https_host(
+                    response.geturl(), lambda host: host == "archive.org"
+                )
                 data = json.loads(read_limited(response, 16 * 1024 * 1024))
             if not isinstance(data, Mapping):
                 raise ValueError("invalid JSON root")

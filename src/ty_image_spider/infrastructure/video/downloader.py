@@ -83,9 +83,7 @@ class VideoDownloader:
         except (OSError, TimeoutError) as exc:
             if temporary is not None:
                 temporary.unlink(missing_ok=True)
-            raise SpiderError(
-                "download_failed", "视频下载失败", status=502
-            ) from exc
+            raise SpiderError("download_failed", "视频下载失败", status=502) from exc
         finally:
             if descriptor >= 0:
                 os.close(descriptor)

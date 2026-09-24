@@ -92,7 +92,9 @@ class CommonsVideoProvider:
         )
         pages = _pages(raw)
         continuation = raw.get("continue")
-        offset = continuation.get("gsroffset") if isinstance(continuation, Mapping) else None
+        offset = (
+            continuation.get("gsroffset") if isinstance(continuation, Mapping) else None
+        )
         next_cursor = f"s:{offset}" if isinstance(offset, int) else None
         return SearchPage(
             tuple(

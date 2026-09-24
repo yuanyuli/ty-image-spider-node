@@ -91,14 +91,20 @@ def test_commons_video_search_round_trips_cursor_and_metadata():
 
 
 def test_commons_video_detail_prefers_mp4_playback_and_original_download():
-    item = CommonsVideoProvider(FakeClient(), FakeDownloader()).search(
-        SearchRequest("commons-video")
-    ).items[0]
+    item = (
+        CommonsVideoProvider(FakeClient(), FakeDownloader())
+        .search(SearchRequest("commons-video"))
+        .items[0]
+    )
 
     detail = normalize_detail(item, DETAIL)
 
-    playback = next(resource for resource in detail.media if resource.role == "playback")
-    download = next(resource for resource in detail.media if resource.role == "download")
+    playback = next(
+        resource for resource in detail.media if resource.role == "playback"
+    )
+    download = next(
+        resource for resource in detail.media if resource.role == "download"
+    )
     assert playback.mime_type == "video/mp4"
     assert playback.width == 1280
     assert download.url.endswith("Example_film.webm")

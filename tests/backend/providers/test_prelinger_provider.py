@@ -108,8 +108,12 @@ def test_prelinger_detail_selects_medium_playback_and_best_download():
 
     assert detail.item.duration_seconds == 558
     assert detail.metadata["rights"] == "Public Domain Mark 1.0"
-    playback = next(resource for resource in detail.media if resource.role == "playback")
-    download = next(resource for resource in detail.media if resource.role == "download")
+    playback = next(
+        resource for resource in detail.media if resource.role == "playback"
+    )
+    download = next(
+        resource for resource in detail.media if resource.role == "download"
+    )
     assert playback.url.endswith("Design_for_Dreaming_512kb.mp4")
     assert playback.width == 640
     assert download.url.endswith("Design_for_Dreaming.mp4")

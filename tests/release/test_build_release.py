@@ -63,6 +63,7 @@ def repo(tmp_path):
         "CODE_OF_CONDUCT.md": "# 行为\n",
         "THIRD_PARTY_NOTICES.md": "# 第三方\n",
         "docs/guides/compatibility.md": "# 兼容性\n",
+        "docs/sources/video.md": "# 视频素材源\n",
         "tests/private.py": "development only",
         "docs/superpowers/plan.md": "development only",
         "scripts/dev.py": "development only",
@@ -91,6 +92,7 @@ def test_release_uses_commit_bytes_and_repeats_exactly(release_module, repo, tmp
         )
         assert archive.read("ty-image-spider-node/README.md").decode() == "# 安装\n"
         assert "ty-image-spider-node/web/features/cache/tasks.js" in names
+        assert "ty-image-spider-node/docs/sources/video.md" in names
         assert len({i.date_time for i in archive.infolist()}) == 1
     assert (
         hashlib.sha256(first.read_bytes()).hexdigest()

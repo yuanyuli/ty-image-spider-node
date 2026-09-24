@@ -106,8 +106,12 @@ def test_nasa_video_detail_selects_medium_playback_and_original_download():
 
     detail = provider.detail(item)
 
-    playback = next(resource for resource in detail.media if resource.role == "playback")
-    download = next(resource for resource in detail.media if resource.role == "download")
+    playback = next(
+        resource for resource in detail.media if resource.role == "playback"
+    )
+    download = next(
+        resource for resource in detail.media if resource.role == "download"
+    )
     assert playback.url.endswith("~medium.mp4")
     assert download.url.endswith("~orig.mp4")
     assert all("attacker.test" not in resource.url for resource in detail.media)

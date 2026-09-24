@@ -19,6 +19,9 @@
 | Are.na | [公开频道](https://www.are.na/)；收藏者并非原作者，沿素材原始来源核对权利。 |
 | 美国国会图书馆 | [官方接口](https://www.loc.gov/apis/)；逐项查看 Rights & Access，无已知限制并非对所有用途的担保。 |
 | NASA Image Library | [官方图片库](https://images.nasa.gov/)；核对 [媒体使用规范](https://www.nasa.gov/nasa-brand-center/images-and-media/)，第三方署名、人物肖像和标识可能另有限制。 |
+| Prelinger Archives | [Internet Archive 馆藏](https://archive.org/details/prelinger)；不同条目的 Rights、License URL、音乐和第三方片段条件可能不同，逐项核对。 |
+| Wikimedia Commons 视频 | [公开视频搜索](https://commons.wikimedia.org/wiki/Special:MediaSearch?type=video)；逐项遵守许可、署名、相同方式共享等条件，不从“可下载”推断商用授权。 |
+| NASA 视频 | [NASA Image and Video Library](https://images.nasa.gov/)；核对 [媒体使用规范](https://www.nasa.gov/nasa-brand-center/images-and-media/)，合作机构素材、人物肖像、音乐和标识可能另有限制。 |
 | FilmGrab | [电影静帧](https://film-grab.com/)；电影画面通常受版权保护，网站收录不等于提供商用许可。 |
 | TMDB 图片 | [TMDB 图片 API](https://developer.themoviedb.org/reference/movie-images) 与 [图片主机](https://image.tmdb.org/)；电影海报和剧照通常受电影版权及 TMDB 条款限制。 |
 | V&A | [馆藏接口](https://developers.vam.ac.uk/)；逐项核对馆藏页及图像使用条款。 |

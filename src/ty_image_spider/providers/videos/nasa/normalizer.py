@@ -26,11 +26,11 @@ def normalize_search_item(raw: Mapping[str, object]) -> AssetItem | None:
         return None
     preview = next(
         (
-            link.get("href")
+            url
             for link in _mappings(raw.get("links"))
             if link.get("render") == "image"
-            and isinstance(link.get("href"), str)
-            and _allowed_asset(link["href"], image=True)
+            and isinstance(url := link.get("href"), str)
+            and _allowed_asset(url, image=True)
         ),
         None,
     )
@@ -115,9 +115,13 @@ def _allowed_manifest(url: str) -> bool:
 def _allowed_asset(url: str, *, image: bool) -> bool:
     try:
         parsed = urlsplit(url)
-        suffixes = (".jpg", ".jpeg", ".png", ".webp") if image else (
-            ".json",
-            ".mp4",
+        suffixes = (
+            (".jpg", ".jpeg", ".png", ".webp")
+            if image
+            else (
+                ".json",
+                ".mp4",
+            )
         )
         return (
             parsed.scheme == "https"
@@ -144,4 +148,3 @@ def _strings(value: object) -> list[str]:
         return [text for entry in value if (text := plain_text(entry))]
     text = plain_text(value)
     return [text] if text else []
-

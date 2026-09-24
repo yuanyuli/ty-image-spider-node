@@ -9,4 +9,3 @@ def detect_video_extension(header: bytes) -> str | None:
     if header.startswith(b"OggS"):
         return ".ogv"
     return None
-

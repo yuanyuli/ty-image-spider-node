@@ -113,7 +113,9 @@ def test_download_rejects_unsafe_redirect(tmp_path):
 
 def test_download_rejects_declared_oversize_without_reading(tmp_path):
     response = FakeResponse(MP4, content_length=2048)
-    downloader = VideoDownloader(_policy(max_bytes=64), open_url=lambda *a, **k: response)
+    downloader = VideoDownloader(
+        _policy(max_bytes=64), open_url=lambda *a, **k: response
+    )
 
     with pytest.raises(SpiderError) as error:
         downloader.download(_resource(), "item", tmp_path)
@@ -124,7 +126,9 @@ def test_download_rejects_declared_oversize_without_reading(tmp_path):
 
 def test_download_counts_stream_when_content_length_is_missing(tmp_path):
     response = FakeResponse(MP4 + b"y" * 128)
-    downloader = VideoDownloader(_policy(max_bytes=64), open_url=lambda *a, **k: response)
+    downloader = VideoDownloader(
+        _policy(max_bytes=64), open_url=lambda *a, **k: response
+    )
 
     with pytest.raises(SpiderError) as error:
         downloader.download(_resource(), "item", tmp_path)
@@ -163,9 +167,7 @@ def test_download_atomically_replaces_damaged_canonical_file(tmp_path):
     directory.mkdir(parents=True)
     target = directory / "item.mp4"
     target.write_bytes(b"broken")
-    downloader = VideoDownloader(
-        _policy(), open_url=lambda *a, **k: FakeResponse(MP4)
-    )
+    downloader = VideoDownloader(_policy(), open_url=lambda *a, **k: FakeResponse(MP4))
 
     result = downloader.download(_resource(), "item", tmp_path)
 

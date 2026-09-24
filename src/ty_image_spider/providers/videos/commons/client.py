@@ -85,9 +85,7 @@ class CommonsVideoClient:
             refresh,
         )
 
-    def _get(
-        self, params: Mapping[str, object], refresh: bool
-    ) -> Mapping[str, object]:
+    def _get(self, params: Mapping[str, object], refresh: bool) -> Mapping[str, object]:
         url = _API + "?" + urlencode(sorted(params.items()))
         cached = self._cache.get(url, 300) if self._cache and not refresh else None
         if isinstance(cached, Mapping):
@@ -119,4 +117,3 @@ class CommonsVideoClient:
         if self._cache:
             self._cache.put(url, dict(result))
         return result
-
