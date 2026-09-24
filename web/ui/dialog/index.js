@@ -5,7 +5,11 @@ import { openImageViewer } from "../image_viewer.js";
 import { renderCollectionDetails } from "../../features/detail/collection_detail.js";
 import { renderEditorialDetails } from "../../features/detail/editorial_detail.js";
 import { renderVideoDetail } from "../../features/video/detail.js";
-import { createPreviewActions, handlePreviewKey } from "../../features/preview/preview_actions.js";
+import {
+  createPreviewActions,
+  handlePreviewKey,
+  selectPreviewSaveAction,
+} from "../../features/preview/preview_actions.js";
 import { renderFacts } from "./facts.js";
 import { defaultCopy, defaultOpenSource, sectionWithTitle, textSection } from "./actions.js";
 import {
@@ -85,7 +89,7 @@ export function openAssetDialog(context) {
   const actions = {
     previous: () => navigate(-1),
     next: () => navigate(1),
-    save: saveCurrentImage,
+    save: saveCurrentAsset,
   };
   const previewActions = createPreviewActions(document, actions);
   let videoDetail = null;
@@ -114,8 +118,10 @@ export function openAssetDialog(context) {
     }
   } else panel.append(renderLocal(document, detail));
   const actionBar = element(document, "div", "tyis-detail-actions");
+  let downloadButton = null;
+  let downloadStatus = null;
   if (item.download_mode !== "none") {
-    const download = element(
+    downloadButton = element(
       document,
       "button",
       "tyis-primary-button",
@@ -127,11 +133,14 @@ export function openAssetDialog(context) {
             ? "下载视频"
             : "下载图片",
     );
-    download.type = "button";
-    download.dataset.action = "download";
-    download.prepend(createIcon(document, "download", 16));
-    download.addEventListener("click", () => onDownload(item));
-    actionBar.append(download);
+    downloadButton.type = "button";
+    downloadButton.dataset.action = "download";
+    downloadButton.prepend(createIcon(document, "download", 16));
+    downloadButton.addEventListener("click", () => {
+      if (isVideo) saveCurrentAsset();
+      else onDownload(item);
+    });
+    actionBar.append(downloadButton);
   }
   if (item.source_url) {
     const source = element(document, "button", "tyis-subtle-button", "打开来源");
@@ -139,6 +148,12 @@ export function openAssetDialog(context) {
     source.prepend(createIcon(document, "external-link", 15));
     source.addEventListener("click", () => onOpenSource(item.source_url, document));
     actionBar.append(source);
+  }
+  if (isVideo) {
+    downloadStatus = element(document, "span", "tyis-preview-status");
+    downloadStatus.setAttribute("role", "status");
+    downloadStatus.setAttribute("aria-live", "polite");
+    actionBar.append(downloadStatus);
   }
   panel.append(actionBar);
   body.append(stage, panel);
@@ -179,10 +194,16 @@ export function openAssetDialog(context) {
     syncPreview();
   }
   function controlsState() {
+    const saveAction = selectPreviewSaveAction({
+      item,
+      imageIndex,
+      onDownload,
+      onDownloadImage,
+    });
     return {
       hasPrevious: imageIndex > 0 || Boolean(onPreviousItem),
       hasNext: imageIndex + 1 < images.length || Boolean(onNextItem),
-      canSave: Boolean(onDownloadImage) && item.download_mode !== "none" && images.length > 0,
+      canSave: Boolean(saveAction) && (isVideo || images.length > 0),
       saving,
       message: saveMessage,
       position: images.length
@@ -198,24 +219,41 @@ export function openAssetDialog(context) {
     const controls = controlsState();
     previewActions.update(controls);
     viewer?.update({ src: mainImage.src, alt: mainImage.alt, controls });
+    if (isVideo) {
+      if (downloadButton) downloadButton.disabled = saving;
+      if (downloadStatus) downloadStatus.textContent = saveMessage;
+    }
   }
   function navigate(direction) {
     if (closed) return;
+    if (isVideo) {
+      (direction < 0 ? onPreviousItem : onNextItem)?.(false);
+      return;
+    }
     const index = imageIndex + direction;
     if (index >= 0 && index < images.length) selectImage(index);
     else (direction < 0 ? onPreviousItem : onNextItem)?.(Boolean(viewer));
   }
-  async function saveCurrentImage() {
-    if (closed || saving || !controlsState().canSave) return;
+  async function saveCurrentAsset() {
+    const saveAction = selectPreviewSaveAction({
+      item,
+      imageIndex,
+      onDownload,
+      onDownloadImage,
+    });
+    if (closed || saving || !saveAction || (!isVideo && images.length === 0)) return;
     saving = true;
     const selected = imageIndex;
-    saveMessage = `正在保存第 ${selected + 1} 张…`;
+    saveMessage = isVideo ? "正在下载视频…" : `正在保存第 ${selected + 1} 张…`;
     syncPreview();
     try {
-      const message = await onDownloadImage(item, selected);
-      saveMessage = message || `第 ${selected + 1} 张已保存`;
+      const message = await saveAction();
+      saveMessage =
+        isVideo && message === null
+          ? "视频下载失败，请重试"
+          : message || (isVideo ? "视频已下载" : `第 ${selected + 1} 张已保存`);
     } catch (error) {
-      saveMessage = error.message || "图片保存失败，请重试";
+      saveMessage = error.message || (isVideo ? "视频下载失败，请重试" : "图片保存失败，请重试");
     } finally {
       saving = false;
       if (!closed) syncPreview();

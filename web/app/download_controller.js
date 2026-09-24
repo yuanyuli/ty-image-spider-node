@@ -17,13 +17,14 @@ export function createDownloadController({ client, state, downloadLocation, setA
     downloadLocation.textContent = resultMessage(result);
     downloadLocation.title = downloadLocation.textContent;
     downloadLocation.hidden = false;
+    return downloadLocation.textContent;
   }
 
   async function downloadItem(item) {
     downloadLocation.hidden = true;
     setActivity("下载中");
     try {
-      showResult(
+      return showResult(
         await client.requestJson("/ty-image-spider/download", {
           method: "POST",
           body: { item },
@@ -31,6 +32,7 @@ export function createDownloadController({ client, state, downloadLocation, setA
       );
     } catch (error) {
       setActivity(error.message || "下载失败", true);
+      return null;
     }
   }
 
@@ -40,8 +42,7 @@ export function createDownloadController({ client, state, downloadLocation, setA
         method: "POST",
         body: { item, image_index: imageIndex },
       });
-      showResult(result);
-      return resultMessage(result);
+      return showResult(result);
     } catch (error) {
       if (error.code === "invalid_response" && (error.status === 404 || error.status === 405)) {
         throw new Error("请重启 ComfyUI 以启用保存当前图片功能");

@@ -1,5 +1,13 @@
 import { createIconButton } from "../../ui/icons.js";
 
+export function selectPreviewSaveAction({ item, imageIndex, onDownload, onDownloadImage }) {
+  if (!item || item.download_mode === "none") return null;
+  if (item.kind === "video") {
+    return typeof onDownload === "function" ? () => onDownload(item) : null;
+  }
+  return typeof onDownloadImage === "function" ? () => onDownloadImage(item, imageIndex) : null;
+}
+
 export function handlePreviewKey(event, actions) {
   if (
     event.isComposing ||

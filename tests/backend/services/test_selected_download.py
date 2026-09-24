@@ -84,6 +84,22 @@ def test_selected_download_keeps_provider_host_validation(tmp_path, monkeypatch)
     assert reads == []
 
 
+def test_selected_download_rejects_video_before_reading_or_writing(
+    tmp_path, monkeypatch
+):
+    service, item, reads = setup_gallery(tmp_path, monkeypatch)
+    payload = item.to_dict()
+    payload["kind"] = "video"
+
+    with pytest.raises(SpiderError) as error:
+        service.execute_image({"item": payload, "image_index": 0})
+
+    assert error.value.code == "invalid_image_index"
+    assert "视频素材" in error.value.message
+    assert reads == []
+    assert not (tmp_path / "ty-node").exists()
+
+
 def test_whole_gallery_download_still_saves_all_images(tmp_path, monkeypatch):
     service, item, reads = setup_gallery(tmp_path, monkeypatch)
     result = service.execute({"item": item.to_dict()})

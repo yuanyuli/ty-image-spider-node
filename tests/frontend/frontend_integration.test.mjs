@@ -128,6 +128,16 @@ function response(data) {
   });
 }
 
+function errorResponse(message) {
+  return Promise.resolve({
+    ok: false,
+    status: 500,
+    async json() {
+      return { ok: false, error: { code: "download_failed", message } };
+    },
+  });
+}
+
 function harness(
   fetchApi = (path) => response(path.endsWith("/providers") ? providers : { items: [] }),
 ) {
@@ -731,6 +741,120 @@ test("下载完成后显示可见的绝对保存路径", async () => {
     location.textContent,
     /C:\\ComfyUI\\output\\ty-node\\ty-image-spider\\civitai\\101\.png/,
   );
+});
+
+test("视频详情下方向键通过素材下载接口保存并显示路径", async () => {
+  const item = {
+    provider: "commons-video",
+    id: "File:Portrait.webm",
+    kind: "video",
+    title: "Portrait film",
+    preview_url: "https://upload.wikimedia.org/poster.jpg",
+    download_mode: "single",
+    metadata: {},
+    stats: {},
+  };
+  const entries = [
+    {
+      provider: sourceDescriptor("commons-video"),
+      status: { available: true, message: "就绪" },
+    },
+  ];
+  const requests = [];
+  const { extension, NodeType, document } = harness((path, options = {}) => {
+    if (path.endsWith("/providers")) return response(entries);
+    if (path.endsWith("/search")) return response({ items: [item] });
+    const payload = JSON.parse(options.body);
+    if (path.endsWith("/detail")) {
+      return response({
+        item,
+        images: [item.preview_url],
+        media: [
+          {
+            kind: "video",
+            url: "https://upload.wikimedia.org/portrait.webm",
+            mime_type: "video/webm",
+            role: "playback",
+          },
+        ],
+      });
+    }
+    if (path.endsWith("/download")) {
+      requests.push(payload);
+      return response({
+        files: ["ty-image-spider/commons-video/portrait.webm"],
+        output_root: "C:\\ComfyUI\\output\\ty-node",
+        message: "视频已下载",
+      });
+    }
+    throw new Error(`意外接口 ${path}`);
+  });
+  const mediaPrototype = document.defaultView.HTMLMediaElement.prototype;
+  mediaPrototype.pause = () => {};
+  mediaPrototype.load = () => {};
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+  await node.tyImageSpider.search();
+  const root = node.domWidgets[0].element;
+  root.querySelector(".tyis-card-media").click();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  document.dispatchEvent(new document.defaultView.KeyboardEvent("keydown", { key: "ArrowDown" }));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].item.id, item.id);
+  assert.match(root.querySelector(".tyis-download-location").textContent, /portrait\.webm/);
+  node.onRemoved();
+});
+
+test("视频下载接口失败后详情提示失败并允许快捷键重试", async () => {
+  const item = {
+    provider: "commons-video",
+    id: "File:Retry.webm",
+    kind: "video",
+    preview_url: "https://upload.wikimedia.org/poster.jpg",
+    download_mode: "single",
+    metadata: {},
+    stats: {},
+  };
+  const entries = [
+    {
+      provider: sourceDescriptor("commons-video"),
+      status: { available: true, message: "就绪" },
+    },
+  ];
+  let attempts = 0;
+  const { extension, NodeType, document } = harness((path, options = {}) => {
+    if (path.endsWith("/providers")) return response(entries);
+    if (path.endsWith("/search")) return response({ items: [item] });
+    if (path.endsWith("/detail")) return response({ item, images: [item.preview_url], media: [] });
+    if (path.endsWith("/download")) {
+      attempts += 1;
+      if (attempts === 1) return errorResponse("视频下载失败");
+      return response({ files: ["retry.webm"], message: "视频已下载" });
+    }
+    throw new Error(`意外接口 ${path} ${options.method || ""}`);
+  });
+  await extension.beforeRegisterNodeDef(NodeType, { name: "TyImageSpider" });
+  const node = new NodeType();
+  node.onNodeCreated();
+  await node.tyImageSpider.ready;
+  await node.tyImageSpider.search();
+  node.domWidgets[0].element.querySelector(".tyis-card-media").click();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  document.dispatchEvent(new document.defaultView.KeyboardEvent("keydown", { key: "ArrowDown" }));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.match(document.querySelector(".tyis-dialog").textContent, /视频下载失败/);
+  document.dispatchEvent(new document.defaultView.KeyboardEvent("keydown", { key: "ArrowDown" }));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.equal(attempts, 2);
+  assert.match(document.querySelector(".tyis-dialog").textContent, /视频已下载/);
+  node.onRemoved();
 });
 
 test("全屏跨素材方向键导航和保存请求对应当前图片", async () => {

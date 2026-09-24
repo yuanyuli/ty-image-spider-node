@@ -11,6 +11,8 @@ def download_selected_image(
 ) -> DownloadResult:
     if type(image_index) is not int or image_index < 0:
         raise SpiderError("invalid_image_index", "图片序号无效")
+    if item.kind == "video":
+        raise SpiderError("invalid_image_index", "视频素材不支持按图片序号保存")
     if not provider.descriptor().capabilities.download:
         raise SpiderError("download_unsupported", "当前素材无需或不支持下载")
     images = provider.detail(item).images

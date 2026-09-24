@@ -115,6 +115,83 @@ test("按住保存键和下载进行中不重复保存，失败可重试，输�
   view.close();
 });
 
+test("视频详情按钮和下方向键都调用素材下载且按键重复被忽略", async () => {
+  const document = new JSDOM("<body></body>").window.document;
+  stubMediaLifecycle(document);
+  const downloaded = [];
+  const value = videoDetail();
+  const view = openAssetDialog({
+    document,
+    detail: value,
+    onDownload: async (item) => {
+      downloaded.push(item.id);
+      return "视频已下载";
+    },
+    onDownloadImage: () => {
+      throw new Error("视频不应调用单图下载");
+    },
+  });
+
+  view.dialog.querySelector('[data-action="download"]').click();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  key(document, "ArrowDown", { repeat: true });
+  key(document, "ArrowDown");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.deepEqual(downloaded, [value.item.id, value.item.id]);
+  view.close();
+});
+
+test("视频下载进行中抑制按钮和快捷键重复请求，失败后允许重试", async () => {
+  const document = new JSDOM("<body></body>").window.document;
+  stubMediaLifecycle(document);
+  const pending = [];
+  let calls = 0;
+  const view = openAssetDialog({
+    document,
+    detail: videoDetail(),
+    onDownload: () => {
+      calls += 1;
+      return new Promise((resolve, reject) => pending.push({ resolve, reject }));
+    },
+  });
+
+  key(document, "ArrowDown");
+  key(document, "ArrowDown");
+  view.dialog.querySelector('[data-action="download"]').click();
+  assert.equal(calls, 1);
+  assert.equal(view.dialog.querySelector('[data-action="download"]').disabled, true);
+
+  pending[0].reject(new Error("视频写入失败"));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  key(document, "ArrowDown");
+  assert.equal(calls, 2);
+  pending[1].resolve("视频已下载");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  view.close();
+});
+
+test("视频方向键直接切换相邻素材且输入框不拦截快捷键", () => {
+  const document = new JSDOM("<body></body>").window.document;
+  stubMediaLifecycle(document);
+  const navigated = [];
+  const view = openAssetDialog({
+    document,
+    detail: videoDetail(),
+    onPreviousItem: () => navigated.push("previous"),
+    onNextItem: () => navigated.push("next"),
+  });
+  const input = document.createElement("input");
+  view.dialog.append(input);
+
+  assert.equal(key(document, "ArrowRight", {}, input).defaultPrevented, false);
+  key(document, "ArrowLeft");
+  key(document, "ArrowRight");
+
+  assert.deepEqual(navigated, ["previous", "next"]);
+  view.close();
+});
+
 test("专题图集显示下载范围并更新说明和缩略图", () => {
   const document = new JSDOM("<body></body>").window.document;
   const item = {
@@ -195,6 +272,42 @@ function detail() {
     workflow: { nodes: [] },
     metadata: {},
   };
+}
+
+function videoDetail() {
+  return {
+    item: {
+      provider: "commons-video",
+      id: "File:Portrait.webm",
+      kind: "video",
+      title: "Portrait film",
+      preview_url: "https://upload.wikimedia.org/poster.jpg",
+      download_mode: "single",
+      metadata: {},
+      stats: {},
+    },
+    images: [
+      "https://upload.wikimedia.org/poster.jpg",
+      "https://upload.wikimedia.org/alternate-poster.jpg",
+    ],
+    media: [
+      {
+        kind: "video",
+        url: "https://upload.wikimedia.org/portrait.webm",
+        mime_type: "video/webm",
+        role: "playback",
+        label: "720p WebM",
+      },
+    ],
+    content: "",
+    metadata: {},
+  };
+}
+
+function stubMediaLifecycle(document) {
+  const prototype = document.defaultView.HTMLMediaElement.prototype;
+  prototype.pause = () => {};
+  prototype.load = () => {};
 }
 
 test("详情弹窗切换图片、复制提示词并恢复先前焦点", async () => {
