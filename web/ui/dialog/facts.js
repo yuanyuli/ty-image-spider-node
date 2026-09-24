@@ -1,4 +1,5 @@
 import { element } from "../../core/dom.js";
+import { formatDuration } from "../../features/video/resources.js";
 
 export function renderFacts(document, item) {
   const section = element(document, "section", "tyis-detail-section");
@@ -6,6 +7,8 @@ export function renderFacts(document, item) {
   fact(document, list, "作者", item.author || "未知");
   if (item.created_at) fact(document, list, "时间", item.created_at);
   if (item.width && item.height) fact(document, list, "尺寸", `${item.width} × ${item.height}`);
+  if (item.duration_seconds !== undefined && item.duration_seconds !== null)
+    fact(document, list, "时长", formatDuration(item.duration_seconds));
   if (item.image_count > 1) fact(document, list, "图集", `${item.image_count} 张`);
   section.append(list);
   return section;

@@ -4,6 +4,7 @@ import { createIcon, createIconButton } from "../icons.js";
 import { openImageViewer } from "../image_viewer.js";
 import { renderCollectionDetails } from "../../features/detail/collection_detail.js";
 import { renderEditorialDetails } from "../../features/detail/editorial_detail.js";
+import { renderVideoDetail } from "../../features/video/detail.js";
 import { createPreviewActions, handlePreviewKey } from "../../features/preview/preview_actions.js";
 import { renderFacts } from "./facts.js";
 import { defaultCopy, defaultOpenSource, sectionWithTitle, textSection } from "./actions.js";
@@ -37,6 +38,7 @@ export function openAssetDialog(context) {
   let viewer = null;
   let saving = false;
   let saveMessage = "";
+  const isVideo = item.kind === "video";
   const priorFocus = document.activeElement;
   const { overlay, dialog } = createDialogShell(document, item.title || "素材详情");
 
@@ -86,11 +88,20 @@ export function openAssetDialog(context) {
     save: saveCurrentImage,
   };
   const previewActions = createPreviewActions(document, actions);
-  stage.append(imageFrame, previewActions.root, thumbs);
+  let videoDetail = null;
+  if (isVideo) {
+    videoDetail = renderVideoDetail(document, detail, context);
+    stage.append(videoDetail.root);
+  } else stage.append(imageFrame, previewActions.root, thumbs);
 
   const panel = element(document, "aside", "tyis-detail-panel");
   panel.append(renderFacts(document, item));
-  if (item.provider === "civitai") panel.append(renderCivitai(document, item, detail, copyText));
+  if (item.kind === "video" && detail.content) {
+    const section = sectionWithTitle(document, "视频说明");
+    section.append(element(document, "p", "tyis-detail-copy", detail.content));
+    panel.append(section);
+  } else if (item.provider === "civitai")
+    panel.append(renderCivitai(document, item, detail, copyText));
   else if (item.provider === "wallhaven") panel.append(renderWallhaven(document, item));
   else if (item.provider === "xiaohongshu") panel.append(renderXiaohongshu(document, item, detail));
   else if (item.kind === "collection") panel.append(renderCollectionDetails(document, detail));
@@ -112,7 +123,9 @@ export function openAssetDialog(context) {
         ? "下载整篇"
         : item.download_mode === "gallery"
           ? "下载图集"
-          : "下载图片",
+          : item.kind === "video"
+            ? "下载视频"
+            : "下载图片",
     );
     download.type = "button";
     download.dataset.action = "download";
@@ -134,6 +147,7 @@ export function openAssetDialog(context) {
   document.body.append(overlay);
 
   function openFullscreen() {
+    if (isVideo) return;
     if (!mainImage.src) return;
     viewer?.close();
     viewer = openImageViewer({
@@ -211,6 +225,7 @@ export function openAssetDialog(context) {
     if (closed) return;
     closed = true;
     viewer?.close();
+    videoDetail?.destroy();
     document.removeEventListener("keydown", onKeyDown, true);
     overlay.remove();
     if (priorFocus?.isConnected) priorFocus.focus();
@@ -220,11 +235,12 @@ export function openAssetDialog(context) {
     if (closed || !nextDetail?.item) return;
     const nextItem = nextDetail.item;
     item = nextItem;
+    if (isVideo) videoDetail?.update(nextDetail);
     const collection = panel.querySelector(".tyis-collection-info");
     if (collection) collection.replaceWith(renderCollectionDetails(document, nextDetail));
     const editorial = panel.querySelector(".tyis-editorial-info");
     if (editorial) editorial.replaceWith(renderEditorialDetails(document, nextDetail));
-    if (nextDetail.images?.length) {
+    if (!isVideo && nextDetail.images?.length) {
       images = [...nextDetail.images];
       imageIndex = selectLastOnUpdate ? images.length - 1 : Math.min(imageIndex, images.length - 1);
       selectLastOnUpdate = false;

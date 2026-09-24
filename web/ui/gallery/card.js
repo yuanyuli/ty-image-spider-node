@@ -1,6 +1,7 @@
 import { element } from "../../core/dom.js";
 import { normalizePresentation } from "../../core/presentation.js";
 import { createIconButton } from "../icons.js";
+import { decorateVideoCard } from "../../features/video/card.js";
 
 export function renderCard(document, item, provider, onOpen, onDownload, descriptor) {
   const card = element(document, "article", `tyis-card is-${provider}`);
@@ -36,6 +37,7 @@ export function renderCard(document, item, provider, onOpen, onDownload, descrip
   if ((item.image_count || 1) > 1) {
     top.append(element(document, "span", "tyis-image-count", `${item.image_count} 张`));
   }
+  if (item.kind === "video") decorateVideoCard(document, media, item);
   const hoverActions = element(document, "div", "tyis-card-actions");
   if (item.download_mode !== "none") {
     const download = createIconButton(
@@ -45,7 +47,9 @@ export function renderCard(document, item, provider, onOpen, onDownload, descrip
         ? "下载整篇"
         : item.download_mode === "gallery"
           ? "下载图集"
-          : "下载图片",
+          : item.kind === "video"
+            ? "下载视频"
+            : "下载图片",
     );
     download.dataset.action = "download";
     download.addEventListener("click", (event) => {
@@ -68,6 +72,9 @@ export function renderCard(document, item, provider, onOpen, onDownload, descrip
   const meta = element(document, "div", "tyis-card-meta");
   const author = item.author || (provider === "local" ? "本地输出" : "未知作者");
   meta.append(element(document, "span", "", author));
+  if (item.kind === "video" && item.width && item.height) {
+    meta.append(element(document, "span", "", `${item.width} × ${item.height}`));
+  }
   if (provider === "xiaohongshu" && item.stats?.likes !== undefined) {
     meta.append(element(document, "span", "", `${item.stats.likes} 赞`));
   } else if (provider === "wallhaven" && item.stats?.favorites !== undefined) {

@@ -361,3 +361,12 @@ test("详情异步返回原图时替换预览并更新图集", () => {
   assert.equal(view.mainImage.src, "https://example.com/second.jpg");
   view.close();
 });
+
+test("图片详情仍只创建图片视图而不创建视频播放器", () => {
+  const document = new JSDOM("<body></body>").window.document;
+  const view = openAssetDialog({ document, detail: detail() });
+
+  assert.equal(view.dialog.querySelectorAll(".tyis-detail-image").length, 1);
+  assert.equal(view.dialog.querySelectorAll("video").length, 0);
+  view.close();
+});
