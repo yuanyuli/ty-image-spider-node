@@ -194,3 +194,23 @@ def test_commons_video_download_delegates_original_resource(tmp_path):
     assert resource.url.endswith("Example_film.webm")
     assert item_id == "123456"
     assert output_root == tmp_path
+
+
+def test_commons_video_download_falls_back_to_playback_for_unsupported_original(
+    tmp_path,
+):
+    payload = json.loads(json.dumps(DETAIL))
+    info = payload["query"]["pages"][0]["videoinfo"][0]
+    info["url"] = "https://upload.wikimedia.org/wikipedia/commons/example.mpg"
+    info["mime"] = "video/mpeg"
+    downloader = FakeDownloader()
+    provider = CommonsVideoProvider(FakeClient(payload), downloader)
+    item = provider.search(SearchRequest("commons-video")).items[0]
+
+    provider.download(item, tmp_path)
+
+    resource, item_id, output_root = downloader.calls[0]
+    assert resource.role == "playback"
+    assert resource.mime_type == "video/mp4"
+    assert item_id == "123456"
+    assert output_root == tmp_path

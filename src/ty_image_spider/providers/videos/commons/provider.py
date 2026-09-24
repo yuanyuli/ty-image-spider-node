@@ -118,6 +118,10 @@ class CommonsVideoProvider:
             (entry for entry in detail.media if entry.role == "download"), None
         )
         if resource is None:
+            resource = next(
+                (entry for entry in detail.media if entry.role == "playback"), None
+            )
+        if resource is None:
             raise SpiderError("video_unavailable", "当前视频没有可下载文件", status=404)
         return self._downloader.download(resource, item.id, output_root)
 

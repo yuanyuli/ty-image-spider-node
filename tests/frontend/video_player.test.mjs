@@ -68,6 +68,21 @@ test("详情按需创建一个原生播放器且不会自动播放", () => {
   assert.equal(video.style.objectFit, "contain");
 });
 
+test("播放器加载失败后释放媒体并显示不可播放状态", () => {
+  const document = new JSDOM("<body></body>").window.document;
+  const view = createVideoPlayer({ document, detail: detail([playback]) });
+  const video = view.root.querySelector("video");
+  const calls = [];
+  video.pause = () => calls.push("pause");
+  video.load = () => calls.push("load");
+
+  video.dispatchEvent(new document.defaultView.Event("error"));
+
+  assert.deepEqual(calls, ["pause", "load"]);
+  assert.equal(view.root.querySelector("video"), null);
+  assert.match(view.root.textContent, /当前视频暂不可播放/);
+});
+
 test("没有播放资源时保留不可播放状态和下载资源", () => {
   const document = new JSDOM("<body></body>").window.document;
   const view = renderVideoDetail(document, detail([download]), {});
