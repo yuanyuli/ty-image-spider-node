@@ -2,10 +2,19 @@
 import { readdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 
-const tests = readdirSync("tests")
-  .filter((name) => name.endsWith(".test.mjs"))
-  .sort()
-  .map((name) => `tests/${name}`);
+function findFiles(root, accept) {
+  return readdirSync(root, { withFileTypes: true })
+    .flatMap((entry) => {
+      const path = `${root}/${entry.name}`;
+      if (entry.isDirectory()) {
+        return entry.name === "node_modules" ? [] : findFiles(path, accept);
+      }
+      return accept(path) ? [path] : [];
+    })
+    .sort();
+}
+
+const tests = findFiles("tests", (path) => path.endsWith(".test.mjs"));
 const result = spawnSync(process.execPath, ["--test", ...tests], {
   stdio: "inherit",
 });

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "node scripts/test_frontend.mjs",
-    "format:check": "prettier --check web tests/*.test.mjs"
+    "format:check": "prettier --check --ignore-unknown \"web/**/*.{js,css,svg}\" \"tests/**/*.test.mjs\""
   },
   "devDependencies": {
     "jsdom": "^27.0.0",

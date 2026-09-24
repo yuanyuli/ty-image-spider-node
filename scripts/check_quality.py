@@ -33,10 +33,10 @@ def main() -> None:
     node = executable("node")
     npx = executable("npx")
     js_tests = sorted(
-        str(path.relative_to(ROOT)) for path in (ROOT / "tests").glob("*.test.mjs")
+        str(path.relative_to(ROOT)) for path in (ROOT / "tests").rglob("*.test.mjs")
     )
     js_modules = sorted(
-        str(path.relative_to(ROOT)) for path in (ROOT / "web").glob("*.js")
+        str(path.relative_to(ROOT)) for path in (ROOT / "web").rglob("*.js")
     )
 
     run("Ruff 规则", [PYTHON, "-m", "ruff", "check", *python_targets])
@@ -54,7 +54,18 @@ def main() -> None:
     )
     run("Python 测试", [PYTHON, "-m", "pytest", "-q"])
     run("前端测试", [node, "--test", *js_tests])
-    run("Prettier", [npx, "--no-install", "prettier", "--check", "web", *js_tests])
+    run(
+        "Prettier",
+        [
+            npx,
+            "--no-install",
+            "prettier",
+            "--check",
+            "--ignore-unknown",
+            "web/**/*.{js,css,svg}",
+            "tests/**/*.test.mjs",
+        ],
+    )
     for module in js_modules:
         run(f"JS 语法：{module}", [node, "--check", module])
     run("Python 字节码", [PYTHON, "-m", "compileall", "-q", "src"])
