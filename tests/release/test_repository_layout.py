@@ -24,7 +24,9 @@ def test_repository_uses_organized_development_paths():
 def test_relative_markdown_links_resolve():
     missing: list[str] = []
     for document in ROOT.rglob("*.md"):
-        if any(part in {"node_modules", ".artifacts", ".git"} for part in document.parts):
+        if any(
+            part in {"node_modules", ".artifacts", ".git"} for part in document.parts
+        ):
             continue
         for target in re.findall(r"\[[^\]]*\]\(([^)]+)\)", document.read_text("utf-8")):
             target = target.strip().split("#", 1)[0]

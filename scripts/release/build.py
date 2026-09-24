@@ -48,11 +48,9 @@ FORBIDDEN_PARTS = frozenset(
         "__pycache__",
         "node_modules",
         ".venv",
-        "cache",
-        "output",
-        "dist",
     }
 )
+FORBIDDEN_ROOTS = frozenset({"cache", "output", "dist"})
 SECRET_NAME = re.compile(
     r"(?:^|/)(?:tmdb\.json|credentials(?:\.(?:json|ya?ml|toml|ini|txt))?|id_rsa|id_ed25519|[^/]+\.(?:pem|key|p12|pfx))$",
     re.I,
@@ -97,7 +95,12 @@ def snapshot(repo: Path, ref: str) -> tuple[str, int, dict[str, bytes]]:
         if ".." in parts or name.startswith("/") or "\\" in name:
             raise ValueError("Git 路径不安全")
         # 只检查路径，不打开误跟踪的本地凭据。
-        if set(p.lower() for p in parts) & FORBIDDEN_PARTS or SECRET_NAME.search(name):
+        normalized_parts = {part.lower() for part in parts}
+        if (
+            normalized_parts & FORBIDDEN_PARTS
+            or parts[0].lower() in FORBIDDEN_ROOTS
+            or SECRET_NAME.search(name)
+        ):
             raise ValueError("Git 跟踪了禁止分发的路径，请从版本控制移除")
         if included(name) or name in {"package.json", "package-lock.json"}:
             if mode not in {"100644", "100755"} or kind != "blob":

@@ -15,9 +15,12 @@ def normalize(raw: Mapping[str, Any]) -> AssetItem:
         raise SpiderError(
             "wallhaven_invalid_response", "Wallhaven 返回了无效素材", status=502
         )
-    thumbs = raw.get("thumbs") if isinstance(raw.get("thumbs"), Mapping) else {}
-    uploader = raw.get("uploader") if isinstance(raw.get("uploader"), Mapping) else {}
-    raw_tags = raw.get("tags") if isinstance(raw.get("tags"), list) else []
+    thumbs_value = raw.get("thumbs")
+    thumbs = thumbs_value if isinstance(thumbs_value, Mapping) else {}
+    uploader_value = raw.get("uploader")
+    uploader = uploader_value if isinstance(uploader_value, Mapping) else {}
+    tags_value = raw.get("tags")
+    raw_tags = tags_value if isinstance(tags_value, list) else []
     tags = tuple(
         str(tag["name"])
         for tag in raw_tags

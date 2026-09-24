@@ -47,6 +47,7 @@ def repo(tmp_path):
         "__init__.py": "# 节点入口\n",
         "src/ty_image_spider/version.py": '__version__ = "2.5.0"\n',
         "web/app.js": "// 界面\n",
+        "web/features/cache/tasks.js": "// 缓存任务界面\n",
         "pyproject.toml": '[project]\nversion = "2.5.0"\n',
         "package.json": json.dumps({"version": "2.5.0"}),
         "package-lock.json": json.dumps(
@@ -89,6 +90,7 @@ def test_release_uses_commit_bytes_and_repeats_exactly(release_module, repo, tmp
             for p in ("tests/", "scripts/", "superpowers/", "package.json")
         )
         assert archive.read("ty-image-spider-node/README.md").decode() == "# 安装\n"
+        assert "ty-image-spider-node/web/features/cache/tasks.js" in names
         assert len({i.date_time for i in archive.infolist()}) == 1
     assert (
         hashlib.sha256(first.read_bytes()).hexdigest()
@@ -100,6 +102,7 @@ def test_release_uses_commit_bytes_and_repeats_exactly(release_module, repo, tmp
     "name,value",
     [
         (".local/tmdb.json", "do not read"),
+        ("cache/probe.json", "development only"),
         ("web/private-key.pem", "private"),
         ("README.md", "C:\\Users\\someone\\project"),
         (
