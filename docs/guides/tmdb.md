@@ -36,10 +36,10 @@ FilmGrab 提供电影静帧，TMDB 提供中文名、原名、上映年份、导
 
 | 内容 | 路径 | 行为 |
 | --- | --- | --- |
-| 电影身份及来源映射 | `ty-image-spider/.cache/movie-mappings.sqlite3` | 持久保存，重启后复用；可通过“查找电影版本”更新 |
-| TMDB 资料 | `ty-image-spider/.cache/tmdb/` | 24小时 |
-| FilmGrab 电影目录 | `ty-image-spider/.cache/film-directory/` | 1小时 |
-| FilmGrab 静帧文章 | `ty-image-spider/.cache/filmgrab/` | 5分钟；来源失败时可回退已有数据 |
+| 电影身份及来源映射 | `ty-node/ty-image-spider/.cache/movie-mappings.sqlite3` | 持久保存，重启后复用；可通过“查找电影版本”更新 |
+| TMDB 资料 | `ty-node/ty-image-spider/.cache/tmdb/` | 24小时 |
+| FilmGrab 电影目录 | `ty-node/ty-image-spider/.cache/film-directory/` | 1小时 |
+| FilmGrab 静帧文章 | `ty-node/ty-image-spider/.cache/filmgrab/` | 5分钟；来源失败时可回退已有数据 |
 | 图片预览与素材索引 | `ty-node/ty-image-spider/cache/` | 批量缓存及浏览复用；原图按需下载 |
 | 手动下载静帧 | `ty-node/ty-image-spider/filmgrab/` | 下载完成后界面显示完整路径 |
 

@@ -7,6 +7,7 @@ import threading
 from pathlib import Path
 
 from ..app import ApplicationServices, build_services
+from ..infrastructure.cache_paths import prepare_cache_root
 
 
 _services: ApplicationServices | None = None
@@ -21,6 +22,6 @@ def get_services() -> ApplicationServices:
         if _services is None:
             folder_paths = importlib.import_module("folder_paths")
             output_root = Path(folder_paths.get_output_directory())
-            cache_root = output_root / "ty-image-spider" / ".cache"
+            cache_root = prepare_cache_root(output_root)
             _services = build_services(output_root, cache_root)
     return _services
